@@ -1,0 +1,252 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Crazy Farm",
+    "description": "Official Crazy Farm API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:12000/"
+    }
+  ],
+  "paths": {
+    "/users/enter": {
+      "post": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Выполняет вход для указанного пользователя и возвращает JWS в случае успеха",
+        "requestBody": {
+          "description": "Учетные данные пользователя - логин и пароль",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/cridentialForEnterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "В учетных данных допущена ошибка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/registration/firstStep": {
+      "post": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Выполняет вход для указанного пользователя и возвращает JWS в случае успеха",
+        "description": "Первый из двух шагов регистраци нового пользователя через почту. Метод принимает учетные данные нового пользователя, проверяет их корректность и отправляет письмо с подтверждением на указанную почту.",
+        "parameters": [],
+        "requestBody": {
+          "description": "Учетные данные нового пользователя - логин, пароль и почта",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/cridentialForRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Confirmation email sent to email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "В учетных данных допущена ошибка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/registration/finalStep": {
+      "post": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Завершающий шаг регистрации нового пользователя через почту",
+        "description": "Второй и завершающий шаг регистраци нового пользователя через почту. Метод сохраняет учетные данные пользователя извелченные из JWS токена регистрации, а затем возвращает JWT токен общего доступа.",
+        "security": [{"registrationAuthKey": []}],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Если передан не корректный токен или токен не указан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/getByJws": {
+      "get": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Возвращает учетные данные пользователя по JWS токену",
+        "description": "",
+        "security": [{"commonAuthKey": []}],
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "Если передан не корректный токен или токен не указан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "jwsResponse": {
+        "type": "object",
+        "properties": {
+          "jws": {
+            "type": "string",
+            "example": "token-value"
+          },
+          "user": {
+            "$ref": "#/components/schemas/userResponse"
+          }
+        }
+      },
+      "userResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "uuid"
+          },
+          "login": {
+            "type": "string",
+            "example": "login"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@email.com"
+          }
+        }
+      },
+      "errorResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "example": "yyyy-MM-dd hh:mm:ss.SSS"
+          },
+          "httpStatus": {
+            "type": "string",
+            "example": "http status short descrition"
+          },
+          "httpErrorCode": {
+            "type": "number",
+            "example": 400
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "cridentialForEnterRequest": {
+        "type": "object",
+        "properties": {
+          "loggin": {
+            "type": "string",
+            "description": "Логин пользователя.\n\nОграничения:\nДолжен содержать как минимум один отображаемый символ.\nКол-во символов должно быть в диапозоне [1, 20].\nДолжен быть уникален среди других пользователей."
+          },
+          "password": {
+            "type": "string",
+            "description": "Пароль пользователя.\n\nОграничения:\nДолжен содержать как минимум один отображаемый символ.\nКол-во символов должно быть в диапозоне [8, 50]."
+          }
+        }
+      },
+      "cridentialForRegistrationRequest": {
+        "type": "object",
+        "properties": {
+          "loggin": {
+            "type": "string",
+            "description": "Логин пользователя.\n\nОграничения:\nДолжен содержать как минимум один отображаемый символ.\nКол-во символов должно быть в диапозоне [1, 20].\nДолжен быть уникален среди других пользователей."
+          },
+          "email": {
+            "type": "string",
+            "description": "Почта пользователя.\n\nОграничения:\nЗадаваемое значение должно представлять корректный аддрес электронной почты.\nУказываемая почта должна существовать."
+          },
+          "password": {
+            "type": "string",
+            "description": "Пароль пользователя.\n\nОграничения:\nДолжен содержать как минимум один отображаемый символ.\nКол-во символов должно быть в диапозоне [8, 50]."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "commonAuthKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "registrationAuthKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

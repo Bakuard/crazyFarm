@@ -1,0 +1,34 @@
+{
+    "register": {
+        "firstStep": "The mail was sent to your mail successfully",
+        "compliteMessage": "Follow the link to complete registration.",
+        "link": "complete registration"
+    },
+    "unexpectedException": "Unexpected Exception",
+    "User": {
+        "logginOrEmail": {
+            "notUnique": "User with such loggin or email already exists."
+        },
+        "loggin": {
+            "unknown": "There is no user with such loggin."
+        },
+        "password": {
+            "incorrect": "Incorrect password."
+        }
+    },
+    "Unauthorized": "Login to the application or register again.",
+    "newUser": {
+        "loggin": {
+            "min": "Login must contain at least one not-blank characters.",
+            "max": "Login can't contain more than 20 characters."
+        },
+        "password": {
+            "min": "Password must contain at least 8 characters.",
+            "max": "Password can't contain more than 50 character."
+        },
+        "email": {
+            "format": "Email format is incorrect.",
+            "notEmpty": "Email can't be empty."
+        }
+    }
+}
