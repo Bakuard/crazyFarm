@@ -4,12 +4,12 @@ module.exports.SystemManager = class SystemManager {
 
     #systems;
     #groups;
-    #events;
+    #world;
 
-    constructor() {
+    constructor(world) {
         this.#systems = {};
         this.#groups = {};
-        this.#events = {};
+        this.#world = world;
     }
 
     addSystem(name, updateMethod, ...groups) {
@@ -20,21 +20,9 @@ module.exports.SystemManager = class SystemManager {
         }
     }
 
-    updateGroup(groupName, entityComponentManager, elapsedTime) {
+    updateGroup(groupName) {
         this.#groups[groupName].
-            forEach(systemName => this.#systems[systemName](entityComponentManager, this, groupName, elapsedTime));
-    }
-
-    writeEvent(name, event) {
-        this.#events[name] = event;
-    }
-
-    readEvent(name) {
-        return this.#events[name];
-    }
-
-    removeEvent(name) {
-        delete this.#events[name];
+            forEach(systemName => this.#systems[systemName](groupName, this.#world));
     }
 
 }
