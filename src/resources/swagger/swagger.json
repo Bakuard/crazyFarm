@@ -143,10 +143,50 @@
           }
         }
       }
+    },
+    "/game/getJwtForConnection": {
+      "get": {
+        "tags": ["Игровой процесс"],
+        "summary": "Возвращает новый токен для подключения к игровому процессу через Websocket",
+        "description": "Возвращает JWT токен для подключения к игровому процессу через Websocket. Данный токен передается как параметр 'token' в запросе на установление соединения через Websocket.",
+        "security": [{"commonAuthKey": []}],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Переданный токен корректен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsWebsocketConnectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Если передан не корректный токен или токен не указан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "jwsWebsocketConnectionResponse": {
+        "type": "object",
+        "properties": {
+          "jws": {
+            "type": "string",
+            "example": "token-value"
+          }
+        }
+      },
       "jwsResponse": {
         "type": "object",
         "properties": {
