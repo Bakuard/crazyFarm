@@ -40,3 +40,10 @@ class JwsResponse {
     }
 }
 module.exports.JwsResponse = JwsResponse;
+
+class JwsWebsocketConnectionResponse {
+    constructor(jws) {
+        this.jws = jws;
+    }
+}
+module.exports.JwsWebsocketConnectionResponse = JwsWebsocketConnectionResponse;
