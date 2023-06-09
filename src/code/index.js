@@ -26,7 +26,7 @@ app.use(i18nMiddleware.handle(i18next));
 app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use(function (req, res, next) {
     res.append('Access-Control-Allow-Origin', ['*']);
-    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,HEAD,OPTIONS,PATCH');
     res.append('Access-Control-Allow-Headers', ['*']);
     res.append('Access-Control-Max-Age', '600');
     next();
