@@ -5,11 +5,6 @@
     "description": "Official Crazy Farm API",
     "version": "0.1.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:12000/"
-    }
-  ],
   "paths": {
     "/users/enter": {
       "post": {
