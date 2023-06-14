@@ -2,7 +2,7 @@
 
 const {Entity} = require('./entity.js');
 const BitSet = require('bitset');
-const exceptions = require('./exception/exceptions.js');
+const exceptions = require('../exception/exceptions.js');
 
 class Archetype {
     bitmask;
