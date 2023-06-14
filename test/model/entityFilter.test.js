@@ -1,5 +1,5 @@
-const {EntityFilter} = require('../../src/code/model/entityComponentManager.js');
-const {EntityComponentManager} = require('../../src/code/model/entityComponentManager.js');
+const {EntityFilter} = require('../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityComponentManager} = require('../../src/code/model/gameEngine/entityComponentManager.js');
 const BitSet = require('bitset');
 
 let A, B, C, D, E = null;

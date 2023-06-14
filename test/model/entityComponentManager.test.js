@@ -1,6 +1,6 @@
-const {EntityComponentManager} = require('../../src/code/model/entityComponentManager.js');
-const {EntityFilter} = require('../../src/code/model/entityComponentManager.js');
-const {Entity} = require('../../src/code/model/entity.js');
+const {EntityComponentManager} = require('../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityFilter} = require('../../src/code/model/gameEngine/entityComponentManager.js');
+const {Entity} = require('../../src/code/model/gameEngine/entity.js');
 
 let A, B, C, D, E = null;
 let manager = null;
