@@ -1,5 +1,7 @@
 'use strict'
 
+const {fixedIntervalAdapter} = require('../gameEngine/gameLoop.js');
+
 module.exports.Thirst = class Thirst {
     constructor(max, start, declineRatePerSeconds) {
         this.max = max;
@@ -8,6 +10,6 @@ module.exports.Thirst = class Thirst {
     }
 };
 
-module.exports.thisrtSystem = function thisrtSystem(groupName, world) {
+module.exports.thisrtSystem = fixedIntervalAdapter((groupName, world) => {
     
-};
+}, 1000);
