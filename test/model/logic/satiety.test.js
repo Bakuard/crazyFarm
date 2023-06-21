@@ -8,7 +8,7 @@ beforeEach(() => {
     manager.registerComponents([Satiety]);
 });
 
-test(`satietySystem(groupName, world):
+test(`update(groupName, world):
         update all satiety components`,
         () => {
             let entity1 = manager.createEntity();
@@ -22,7 +22,7 @@ test(`satietySystem(groupName, world):
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
             manager.bindEntity(entity4);
-            let world = {
+            let worldMock = {
                 getGameLoop: () => {
                     return {
                         getElapsedTime: () => 2000
@@ -32,14 +32,14 @@ test(`satietySystem(groupName, world):
             };
             
             let system = new SatietySystem();
-            system.update('update', world);
+            system.update('update', worldMock);
 
             expect(entity1.get(Satiety).current).toEqual(8);
             expect(entity2.get(Satiety).current).toEqual(9);
             expect(entity3.get(Satiety).current).toEqual(9.5);
         });
 
-test(`satietySystem(groupName, world):
+test(`update(groupName, world):
         method was called too many times
         => each satiety.current must be 0`,
         () => {
@@ -54,7 +54,7 @@ test(`satietySystem(groupName, world):
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
             manager.bindEntity(entity4);
-            let world = {
+            let worldMock = {
                 getGameLoop: () => {
                     return {
                         getElapsedTime: () => 2000
@@ -64,7 +64,7 @@ test(`satietySystem(groupName, world):
             };
             
             let system = new SatietySystem();
-            for(let i = 0; i < 100; i++) system.update('update', world);
+            for(let i = 0; i < 100; i++) system.update('update', worldMock);
 
             expect(entity1.get(Satiety).current).toEqual(0);
             expect(entity2.get(Satiety).current).toEqual(0);

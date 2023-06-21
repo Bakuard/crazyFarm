@@ -7,18 +7,22 @@ const groups = Object.freeze({
 });
 module.exports.groups = groups;
 
-module.exports.fixedIntervalAdapter = function fixedIntervalAdapter(callback, timeInMillis) {
-    let currentTime = 0;
-    return function(groupName, world) {
-        currentTime += world.getGameLoop().getElapsedTime();
-        let isElapsed = currentTime >= timeInMillis;
+module.exports.FixedInterval = class FixedInterval {
+    constructor(timeInMillis) {
+        this.currentTime = 0;
+        this.timeInMillis = timeInMillis;
+    }
+
+    execute(callback, elapsedTime) {
+        this.currentTime += elapsedTime;
+        let isElapsed = this.currentTime >= this.timeInMillis;
         while(isElapsed) {
-            currentTime -= timeInMillis;
-            isElapsed = currentTime >= timeInMillis;
-            callback(groupName, world);
+            this.currentTime -= this.timeInMillis;
+            isElapsed = this.currentTime >= this.timeInMillis;
+            callback();
         }
-    };
-}
+    }
+};
 
 module.exports.GameLoop = class GameLoop {
     #state;
