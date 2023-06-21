@@ -1,5 +1,5 @@
-const {EntityFilter} = require('../../src/code/model/gameEngine/entityComponentManager.js');
-const {EntityComponentManager} = require('../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const BitSet = require('bitset');
 
 let A, B, C, D, E = null;
@@ -23,7 +23,7 @@ function createMask(...componentTypes) {
 }
 
 test(`EventFilter:
-        interset(checking set, 'all' set) == checking set,
+        intersect(checking set, 'all' set) == checking set,
         power(checking set) == power('all' set)
         => return true`,
         () => {
@@ -36,7 +36,7 @@ test(`EventFilter:
         });
 
 test(`EventFilter:
-        interset(checking set, 'all' set) == 'all' set,
+intersect(checking set, 'all' set) == 'all' set,
         power(checking set) > power('all' set)
         => return true`,
         () => {
@@ -49,7 +49,7 @@ test(`EventFilter:
         });
 
 test(`EventFilter:
-        interset(checking set, 'all' set) == checking set,
+        intersect(checking set, 'all' set) == checking set,
         power(checking set) < power('all' set)
         => return true`,
         () => {
@@ -62,9 +62,9 @@ test(`EventFilter:
         });
 
 test(`EventFilter:
-        interset(checking set, 'all' set) != 'all' set,
-        interset(checking set, 'all' set) != checking set,
-        interset(checking set, 'all' set) is not empty
+        intersect(checking set, 'all' set) != 'all' set,
+        intersect(checking set, 'all' set) != checking set,
+        intersect(checking set, 'all' set) is not empty
         => return false`,
         () => {
             let filter = new EntityFilter().all(A, B, C);
@@ -76,7 +76,7 @@ test(`EventFilter:
         });
 
 test(`EventFilter:
-        interset(checking set, 'all' set) is empty
+        intersect(checking set, 'all' set) is empty
         => return false`,
         () => {
             let filter = new EntityFilter().all(A, B);
@@ -86,4 +86,3 @@ test(`EventFilter:
 
             expect(actual).toBe(false);
         });
-

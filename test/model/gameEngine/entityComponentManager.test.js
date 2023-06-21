@@ -1,6 +1,6 @@
-const {EntityComponentManager} = require('../../src/code/model/gameEngine/entityComponentManager.js');
-const {EntityFilter} = require('../../src/code/model/gameEngine/entityComponentManager.js');
-const {Entity} = require('../../src/code/model/gameEngine/entity.js');
+const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {Entity} = require('../../../src/code/model/gameEngine/entity.js');
 
 let A, B, C, D, E = null;
 let manager = null;
@@ -14,13 +14,6 @@ beforeEach(() => {
     manager = new EntityComponentManager();
     manager.registerComponents([A, B, C, D, E]);
 });
-
-function fillEntity(entity, ...componentTypes) {
-    for(let componentType of componentTypes) {
-        let componentName = componentType.name.toLowerCase();
-        entity[componentName] = new componentType();
-    }
-}
 
 test(`createEntity():
         all entities id have never been used
@@ -117,7 +110,7 @@ test(`bindEntity(entity) and select(entityFilter):
         => select shouldn't return this entity (doesn't bind entity)`,
         () => {
             let entity = manager.createEntity();
-            fillEntity(entity, A, B, C);
+            entity.put(new A(), new B(), new C());
             manager.removeEntity(entity);
 
             manager.bindEntity(entity); //try to bind dead entity
@@ -135,7 +128,7 @@ test(`bindEntity(entity) and select(entityFilter):
         => select should return this entity (bind entity)`,
         () => {
             let entity = manager.createEntity();
-            fillEntity(entity, A, B, C);
+            entity.put(new A(), new B(), new C());
 
             manager.bindEntity(entity); //try to bind alive entity
             let filter = new EntityFilter().all(A, B, C);
@@ -151,7 +144,7 @@ test(`bindEntity(entity) and select(entityFilter):
         => select shouldn't return this entity (bind entity)`,
         () => {
             let entity = manager.createEntity();
-            fillEntity(entity, A, B, C);
+            entity.put(new A(), new B(), new C());
             manager.bindEntity(entity); 
 
             let filter = new EntityFilter().all(A, D);
@@ -168,9 +161,10 @@ test(`bindEntity(entity) and select(entityFilter):
             let entity1 = manager.createEntity();
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
-            fillEntity(entity1, A, B, C);
-            fillEntity(entity2, A, C);
-            fillEntity(entity3, A, B, C, D);
+            let entity4 = manager.createEntity();
+            entity1.put(new A(), new B(), new C());
+            entity2.put(new A(), new C());
+            entity3.put(new A(), new B(), new C(), new D());
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -180,4 +174,42 @@ test(`bindEntity(entity) and select(entityFilter):
             let actual = [...generator];
 
             expect(actual).containsEntities(entity1, entity3);
+        });
+
+test(`bindEntity(entity) and select(entityFilter):
+        use default entityFilter
+        => find all enitties in componentManager`,
+        () => {
+            let entity1 = manager.createEntity();
+            let entity2 = manager.createEntity();
+            let entity3 = manager.createEntity();
+            let entity4 = manager.createEntity();
+            entity1.put(new A(), new B(), new C());
+            entity2.put(new A(), new C());
+            entity3.put(new A(), new B(), new C(), new D());
+            manager.bindEntity(entity1); 
+            manager.bindEntity(entity2); 
+            manager.bindEntity(entity3); 
+
+            let filter = new EntityFilter();
+            let generator = manager.select(filter);
+            let actual = [...generator];
+
+            expect(actual).containsEntities(entity1, entity2, entity3, entity4);
+        });
+
+test(`bindEntity(entity) and select(entityFilter):
+        entityFilter is not default
+        => select doesn't return empty entities`,
+        () => {
+            let emptyEntity1 = manager.createEntity();
+            let emptyEntity2 = manager.createEntity();
+            let emptyEntity3 = manager.createEntity();
+            let emptyEntity4 = manager.createEntity();
+
+            let filter = new EntityFilter().all(A, B, C).none(D);
+            let generator = manager.select(filter);
+            let actual = [...generator];
+
+            expect(actual).toHaveLength(0);
         });

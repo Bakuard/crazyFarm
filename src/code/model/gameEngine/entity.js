@@ -1,6 +1,9 @@
 'use strict' 
 
 module.exports.Entity = class Entity {
+    static undeletableKeys = 
+        ['personalId', 'generation', 'put', 'get', 'remove', 'removeAll', 'equals', 'toString'];
+
     personalId;
     generation;
 
@@ -9,20 +12,31 @@ module.exports.Entity = class Entity {
         this.generation = generation;
         Object.defineProperties(this, {
             personalId: {writable: false, configurable: false, enumerable: true},
-            generation: {writable: false, configurable: false, enumerable: true},
-            equals: {writable: false, configurable: false, enumerable: true, value: Object.getPrototypeOf(this).equals},
-            toString: {writable: false, configurable: false, enumerable: true, value: Object.getPrototypeOf(this).toString}
+            generation: {writable: false, configurable: false, enumerable: true}
         });
     }
 
-    putComponent(component) {
-        let key = Object.getPrototypeOf(component).constructor.name;
-        this[key] = component;
+    put(...components) {
+        for(let component of components) {
+            let key = Object.getPrototypeOf(component).constructor.name;
+            this[key] = component;
+        }
     }
 
-    getComponent(componentConstructor) {
+    get(componentConstructor) {
         let key = componentConstructor.name;
         return this[key];
+    }
+
+    remove(componentConstructor) {
+        let key = componentConstructor.name;
+        delete this[key];
+    }
+
+    removeAll() {
+        Object.keys(this).
+            filter(key => !Entity.undeletableKeys.includes(key)).
+            forEach(key => delete this[key]);
     }
 
     equals(otherEntity) {
