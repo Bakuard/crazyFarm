@@ -85,48 +85,40 @@ module.exports.EntityFilter = class EntityFilter {
 
 module.exports.EntityComponentManager = class EntityComponentManager {
 
-    #entityGeneration;
     #reusableEntityId;
-    #lastEntityId;
-
     #entitiesById;
 
     #emptyArchetype;
     #arhytypes;
     #archytypesByEntityId;
-    #lastArchytypeId;
+
+    #lastComponentTypeId;
 
     constructor() {
-        this.#entityGeneration = [];
         this.#reusableEntityId = [];
-        this.#lastEntityId = 0;
-
         this.#entitiesById = [];
 
         this.#emptyArchetype = new Archetype(new BitSet());
         this.#arhytypes = [this.#emptyArchetype];
         this.#archytypesByEntityId = [];
-        this.#lastArchytypeId = 0;
+        this.#lastComponentTypeId = 0;
     }
 
     createEntity() {
-        let personalEntityId = this.#getNewEntityId();
-        let generation = this.#getGeneration(personalEntityId);
-        let entity = new Entity(personalEntityId, generation);
-
-        this.#entitiesById[personalEntityId] = entity;
-
-        this.#emptyArchetype.add(entity);
-        this.#archytypesByEntityId[entity.personalId] = this.#emptyArchetype;
-
-        return entity;
+        if(this.#reusableEntityId.length > 0) {
+            return this.#entitiesById[this.#reusableEntityId.pop()];
+        } else {
+            let entity = new Entity(this.#entitiesById.length, 0);
+            this.#entitiesById[this.#entitiesById.length] = entity;
+            return entity;
+        }
     }
 
     removeEntity(entity) {
         if(this.isAlive(entity)) {
             this.#reusableEntityId.push(entity.personalId);
-            this.#entitiesById[entity.personalId] = null;
-            this.#archytypesByEntityId[entity.personalId].remove(entity);
+            this.#entitiesById[entity.personalId] = new Entity(entity.personalId, entity.generation + 1);
+            this.#archytypesByEntityId[entity.personalId]?.remove(entity);
             this.#archytypesByEntityId[entity.personalId] = null;
         }
     }
@@ -163,24 +155,10 @@ module.exports.EntityComponentManager = class EntityComponentManager {
 
     registerComponents(componentTypes) {
         for(let componentType of componentTypes) {
-            componentType.prototype.componentTypeId = this.#lastArchytypeId++;
+            componentType.prototype.componentTypeId = this.#lastComponentTypeId++;
         }
     }
 
-
-    #getGeneration(entityId) {
-        if(this.#entityGeneration.length <= entityId) this.#entityGeneration.length = entityId + 1;
-        if(!this.#entityGeneration[entityId]) this.#entityGeneration[entityId] = 0;
-        let currentGeneration = this.#entityGeneration[entityId]++;
-        return currentGeneration;
-    }
-
-    #getNewEntityId() {
-        let personalEntityId = 0;
-        if(this.#reusableEntityId.length > 0) personalEntityId = this.#reusableEntityId.pop();
-        else personalEntityId = this.#lastEntityId++;
-        return personalEntityId;
-    }
 
     #findOrCreateArhytype(bitmask) {
         let archytype = this.#arhytypes.find(archytype => archytype.isMatch(bitmask));
@@ -194,7 +172,7 @@ module.exports.EntityComponentManager = class EntityComponentManager {
     #createBitMaskBy(entity) {
         let mask = new BitSet();
         Object.entries(entity).
-            filter(pair => !['personalId', 'generation', 'toString', 'equals'].includes(pair[0])).
+            filter(pair => !Entity.undeletableKeys.includes(pair[0])).
             map(pair => pair[1]).
             forEach(component => {
                 let prototype = Object.getPrototypeOf(component);

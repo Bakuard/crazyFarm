@@ -46,7 +46,7 @@ test(`createEntity():
 
 test(`createEntity():
         some entity id has been used and deleted several times
-        => return entities with reuse id and increased generation`,
+        => return entity with reused id and increased generation`,
         () => {
             for(let i = 0; i < 100; i++) {
                 let actual = manager.createEntity();
@@ -61,34 +61,51 @@ test(`isAlive(entity):
         => return true`,
         () => {
             let entity = manager.createEntity();
+
             let actual = manager.isAlive(entity);
 
             expect(actual).toBe(true);
         });
 
 test(`isAlive(entity):
-        entity has already been deleted,
-        there is not entity with same id
-        => return false`,
+        entity with such id has already been deleted,
+        there is not new entity with same id
+        => return false for deleted entity`,
         () => {
             let entity = manager.createEntity();
             manager.removeEntity(entity);
+
             let actual = manager.isAlive(entity);
 
             expect(actual).toBe(false);
         });
 
 test(`isAlive(entity):
-        entity has already been deleted,
-        there is entity with same id
-        => return false`,
+        entity with such id has already been deleted,
+        there is new entity with same id
+        => return false for delete entity`,
         () => {
             let entity = manager.createEntity();
             manager.removeEntity(entity);
             manager.createEntity();
+
             let actual = manager.isAlive(entity);
 
             expect(actual).toBe(false);
+        });
+
+test(`isAlive(entity):
+        entity with such id has already been deleted,
+        there is new entity with same id
+        => return true for new entity`,
+        () => {
+            let entity = manager.createEntity();
+            manager.removeEntity(entity);
+            let newEntity = manager.createEntity();
+
+            let actual = manager.isAlive(newEntity);
+
+            expect(actual).toBe(true);
         });
 
 test(`removeEntity(entity):
@@ -97,6 +114,7 @@ test(`removeEntity(entity):
         => doesn't remove entity with same id`,
         () => {
             let entity = manager.createEntity();
+
             manager.removeEntity(entity);
             let newEntity = manager.createEntity();
 
@@ -168,6 +186,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
+            manager.bindEntity(entity4);
 
             let filter = new EntityFilter().all(A, B, C);
             let generator = manager.select(filter);
@@ -190,6 +209,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
+            manager.bindEntity(entity4);
 
             let filter = new EntityFilter();
             let generator = manager.select(filter);
@@ -206,6 +226,29 @@ test(`bindEntity(entity) and select(entityFilter):
             let emptyEntity2 = manager.createEntity();
             let emptyEntity3 = manager.createEntity();
             let emptyEntity4 = manager.createEntity();
+            manager.bindEntity(emptyEntity1); 
+            manager.bindEntity(emptyEntity2); 
+            manager.bindEntity(emptyEntity3); 
+            manager.bindEntity(emptyEntity4);
+
+            let filter = new EntityFilter().all(A, B, C).none(D);
+            let generator = manager.select(filter);
+            let actual = [...generator];
+
+            expect(actual).toHaveLength(0);
+        });
+
+test(`select(entityFilter):
+        entities were never bound
+        => select doesn't return such entities`,
+        () => {
+            let entity1 = manager.createEntity();
+            let entity2 = manager.createEntity();
+            let entity3 = manager.createEntity();
+            let entity4 = manager.createEntity();
+            entity1.put(new A(), new B(), new C());
+            entity2.put(new A(), new C());
+            entity3.put(new A(), new B(), new C(), new D());
 
             let filter = new EntityFilter().all(A, B, C).none(D);
             let generator = manager.select(filter);
