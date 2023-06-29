@@ -1,8 +1,10 @@
 'use strict'
 
 const {Entity} = require('./entity.js');
+const {CommandBuffer} = require('./commandBuffer.js');
 const BitSet = require('bitset');
 const exceptions = require('../exception/exceptions.js');
+const e = require('express');
 
 class Archetype {
     bitmask;
@@ -85,8 +87,7 @@ module.exports.EntityFilter = class EntityFilter {
 
 module.exports.EntityComponentManager = class EntityComponentManager {
 
-    #reusableEntityId;
-    #entitiesById;
+    #entityManager;
 
     #emptyArchetype;
     #arhytypes;
@@ -94,9 +95,8 @@ module.exports.EntityComponentManager = class EntityComponentManager {
 
     #lastComponentTypeId;
 
-    constructor() {
-        this.#reusableEntityId = [];
-        this.#entitiesById = [];
+    constructor(entityManager) {
+        this.#entityManager = entityManager;
 
         this.#emptyArchetype = new Archetype(new BitSet());
         this.#arhytypes = [this.#emptyArchetype];
@@ -105,30 +105,21 @@ module.exports.EntityComponentManager = class EntityComponentManager {
     }
 
     createEntity() {
-        if(this.#reusableEntityId.length > 0) {
-            return this.#entitiesById[this.#reusableEntityId.pop()];
-        } else {
-            let entity = new Entity(this.#entitiesById.length, 0);
-            this.#entitiesById[this.#entitiesById.length] = entity;
-            return entity;
-        }
+        return this.#entityManager.create();
     }
 
     removeEntity(entity) {
-        if(this.isAlive(entity)) {
-            this.#reusableEntityId.push(entity.personalId);
-            this.#entitiesById[entity.personalId] = new Entity(entity.personalId, entity.generation + 1);
-            this.#archytypesByEntityId[entity.personalId]?.remove(entity);
-            this.#archytypesByEntityId[entity.personalId] = null;
-        }
+        this.#entityManager.remove(entity);
+        this.#archytypesByEntityId[entity.personalId]?.remove(entity);
+        this.#archytypesByEntityId[entity.personalId] = null;
     }
 
     isAlive(entity) {
-        return entity.equals(this.#entitiesById[entity.personalId]);
+        return this.#entityManager.isAlive(entity);
     }
 
     bindEntity(entity) {
-        if(this.isAlive(entity)) {
+        if(this.#entityManager.isAlive(entity)) {
             let mask = this.#createBitMaskBy(entity);
             let archytype = this.#archytypesByEntityId[entity.personalId];
             if(!archytype) {
@@ -151,6 +142,14 @@ module.exports.EntityComponentManager = class EntityComponentManager {
                 }
             }
         }
+    }
+
+    createCommandBuffer() {
+        return new CommandBuffer(this.#entityManager);
+    }
+
+    flush(commandBuffer) {
+        
     }
 
     registerComponents(componentTypes) {

@@ -1,10 +1,11 @@
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {ImmunitySystem} = require('../../../src/code/model/logic/immunity.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const { EntityManager } = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager();
+    manager = new EntityComponentManager(new EntityManager());
     manager.registerComponents([Immunity]);
 });
 

@@ -1,10 +1,11 @@
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {SatietySystem} = require('../../../src/code/model/logic/satiety.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager();
+    manager = new EntityComponentManager(new EntityManager());
     manager.registerComponents([Satiety]);
 });
 

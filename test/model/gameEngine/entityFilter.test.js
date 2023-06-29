@@ -1,5 +1,6 @@
 const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const BitSet = require('bitset');
 
 let A, B, C, D, E = null;
@@ -10,7 +11,7 @@ beforeEach(() => {
     D = function D() {}
     E = function E() {}
 
-    let manager = new EntityComponentManager();
+    let manager = new EntityComponentManager(new EntityManager());
     manager.registerComponents([A, B, C, D, E]);
 });
 
