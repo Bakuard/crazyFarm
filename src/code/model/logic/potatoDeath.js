@@ -24,7 +24,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
 
             if(entityMeta.typeName == 'Potato'
                && (thirst.current <= 0 || satiety.current <= 0 || immunity.current <= 0)) {
-                entity.removeAll();
+                entity.clear();
                 entity.put(new PotatoGhost(5000));
                 world.getEntityComponentManager().bindEntity(entity);
             }

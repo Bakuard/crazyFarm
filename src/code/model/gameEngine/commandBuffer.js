@@ -16,10 +16,10 @@ module.exports.CommandBuffer = class CommandBuffer {
         return this.#entityManager.create();
     }
 
-    bind(entity) {
+    bind(entityClone) {
         this.#commandsQueue.push({
             type: 'bind',
-            entity: entity
+            entity: entityClone
         });
     }
 
@@ -30,8 +30,12 @@ module.exports.CommandBuffer = class CommandBuffer {
         });
     }
 
+    clear() {
+        this.#commandsQueue.length = 0;
+    }
+
     forEach(callback) {
-        this.#commandsQueue.forEach(callback);
+        this.#commandsQueue.forEach(command => callback(command));
     }
 
 };

@@ -149,7 +149,13 @@ module.exports.EntityComponentManager = class EntityComponentManager {
     }
 
     flush(commandBuffer) {
-        
+        commandBuffer.forEach((command) => {
+            if(command.type == 'bind') {
+                this.bindEntity(command.entity);
+            } else if(command.type == 'remove') {
+                this.removeEntity(command.entity);
+            }
+        });
     }
 
     registerComponents(componentTypes) {
@@ -170,19 +176,16 @@ module.exports.EntityComponentManager = class EntityComponentManager {
 
     #createBitMaskBy(entity) {
         let mask = new BitSet();
-        Object.entries(entity).
-            filter(pair => !Entity.undeletableKeys.includes(pair[0])).
-            map(pair => pair[1]).
-            forEach(component => {
-                let prototype = Object.getPrototypeOf(component);
-                if(prototype.componentTypeId === undefined) {
-                    throw new exceptions.UnregisteredComponentException(
-                        'unexpectedException',
-                        `Unregister componentType=${prototype.constructor.name}`
-                    );
-                }
-                mask.set(prototype.componentTypeId, 1);
-            });
+        entity.forEachComponent(component => {
+            let prototype = Object.getPrototypeOf(component);
+            if(prototype.componentTypeId === undefined) {
+                throw new exceptions.UnregisteredComponentException(
+                    'unexpectedException',
+                    `Unregister componentType=${prototype.constructor.name}`
+                );
+            }
+            mask.set(prototype.componentTypeId, 1);
+        });
         return mask;
     }
 

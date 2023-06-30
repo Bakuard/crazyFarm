@@ -9,6 +9,16 @@ class A {
 class B {}
 class C {}
 class D {}
+class E {
+    constructor() {
+        this.valueA = {
+            x: 100,
+            y: 200
+        };
+        this.valueB = ['a', 1200, {x: 10, y: 15}, [1, 2, 3, 4]];
+        this.valueC = new Set().add('a').add('b').add('c');
+    }
+}
 
 test(`get and put component:
     put single component,
@@ -52,30 +62,38 @@ test(`remove component:
         expect(actual).toBeUndefined();
     });
 
-test(`removeAll component:
+test(`clear:
     entity contains removed component
-    => remove all aomponents`,
+    => remove all components`,
     () => {
         let entity = new Entity(0, 0);
         entity.put(new A(10, -10), new B(), new C(), new D());
 
-        entity.removeAll();
+        entity.clear();
         let actual = [entity.get(A), entity.get(B), entity.get(C), entity.get(D)];
 
         expect(actual).toEqual([undefined, undefined, undefined, undefined]);
     });
 
-test(`removeAll component:
-    entity contains removed component
-    => doesn't remove entity necessary fields and methods`,
+test(`clone:
+    entity doesn't contain components
+    => return correct copy`,
     () => {
         let entity = new Entity(0, 0);
-        entity.put(new A(10, -10), new B(), new C(), new D());
 
-        entity.removeAll();
-        let actual = [entity.personalId, entity.generation, entity.get, 
-                        entity.put, entity.remove, entity.equals, 
-                        entity.toString, entity.removeAll];
+        let actual = entity.clone();
 
-        expect(actual.some(value => value == undefined)).toBe(false);
+        expect(actual).toEqual(entity);
+    });
+
+test(`clone:
+    entity contains components
+    => return correct copy`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.put(new A(10, -10), new B(), new C(), new D(), new E());
+
+        let actual = entity.clone();
+
+        expect(actual).toEqual(entity);
     });
