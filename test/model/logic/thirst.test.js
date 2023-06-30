@@ -16,9 +16,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new Thirst(10, 1));
-            entity2.put(new Thirst(10, 2));
-            entity3.put(new Thirst(10, 4));
+            entity1.put(Thirst.of(10, 1));
+            entity2.put(Thirst.of(10, 2));
+            entity3.put(Thirst.of(10, 4));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -48,9 +48,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new Thirst(10, 1));
-            entity2.put(new Thirst(10, 2));
-            entity3.put(new Thirst(10, 4));
+            entity1.put(Thirst.of(10, 1));
+            entity2.put(Thirst.of(10, 2));
+            entity3.put(Thirst.of(10, 4));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 

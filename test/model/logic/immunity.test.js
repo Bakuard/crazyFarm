@@ -18,9 +18,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new Immunity(10, 1, 0.5));
-            entity2.put(new Immunity(10, 1, 0.5));
-            entity3.put(new Immunity(10, 1, 0.5));
+            entity1.put(Immunity.of(10, 1, 0.5));
+            entity2.put(Immunity.of(10, 1, 0.5));
+            entity3.put(Immunity.of(10, 1, 0.5));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -38,9 +38,9 @@ test(`update(groupName, world):
             let system = new ImmunitySystem(randomGeneratorMock);
             for(let i = 0; i < 100; i++) system.update('update', worldMock);
 
-            expect(entity1.get(Immunity)).toEqual(new Immunity(10, 1, 0.5));
-            expect(entity2.get(Immunity)).toEqual(new Immunity(10, 1, 0.5));
-            expect(entity3.get(Immunity)).toEqual(new Immunity(10, 1, 0.5));
+            expect(entity1.get(Immunity)).toEqual(Immunity.of(10, 1, 0.5));
+            expect(entity2.get(Immunity)).toEqual(Immunity.of(10, 1, 0.5));
+            expect(entity3.get(Immunity)).toEqual(Immunity.of(10, 1, 0.5));
         });
 
 test(`update(groupName, world):
@@ -52,9 +52,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new Immunity(10, 1, 0.5));
-            entity2.put(new Immunity(10, 2, 0.5));
-            entity3.put(new Immunity(10, 4, 0.5));
+            entity1.put(Immunity.of(10, 1, 0.5));
+            entity2.put(Immunity.of(10, 2, 0.5));
+            entity3.put(Immunity.of(10, 4, 0.5));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 

@@ -4,26 +4,31 @@ const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
 
 class Immunity {
-    constructor(max, declineRatePerSeconds, probability) {
+    static of(max, declineRatePerSeconds, probability) {
+        return new Immunity(max, max, false, declineRatePerSeconds, probability);
+    }
+
+    constructor(max, current, isSick, declineRatePerSeconds, probability) {
         this.max = max;
-        this.current = max;
-        this.isSick = false;
+        this.current = current;
+        this.isSick = isSick;
         this.declineRatePerSeconds = declineRatePerSeconds;
         this.probability = probability;
     }
 };
 module.exports.Immunity = Immunity;
 
-let filter = new EntityFilter().all(Immunity);
 module.exports.ImmunitySystem = class ImmunitySystem {
+    filter;
     constructor(randomGenerator) {
         this.randomGenerator = randomGenerator;
         this.fixedInterval = new FixedInterval(1000);
+        this.filter = new EntityFilter().all(Immunity);
     }
 
     update(groupName, world) {
         let elapsedTime = world.getGameLoop().getElapsedTime();
-        for(let entity of world.getEntityComponentManager().select(filter)) {
+        for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let immunity = entity.get(Immunity);
 
             this.fixedInterval.execute(() => {

@@ -13,11 +13,11 @@ beforeEach(() => {
 test(`GrowTimer(growState, intervalsInSeconds):
         growTimer.currentTimeInMillis must be correct for that growState`,
         () => {
-            let component1 = new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]);
-            let component2 = new GrowTimer(growStates.sprout, [10, 20, 20, 30, 30]);
-            let component3 = new GrowTimer(growStates.child, [10, 20, 20, 30, 30]);
-            let component4 = new GrowTimer(growStates.youth, [10, 20, 20, 30, 30]);
-            let component5 = new GrowTimer(growStates.adult, [10, 20, 20, 30, 30]);
+            let component1 = GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]);
+            let component2 = GrowTimer.of(growStates.sprout, [10, 20, 20, 30, 30]);
+            let component3 = GrowTimer.of(growStates.child, [10, 20, 20, 30, 30]);
+            let component4 = GrowTimer.of(growStates.youth, [10, 20, 20, 30, 30]);
+            let component5 = GrowTimer.of(growStates.adult, [10, 20, 20, 30, 30]);
 
             expect(component1.currentTimeInMillis).toBe(0);
             expect(component2.currentTimeInMillis).toBe(10000);
@@ -35,9 +35,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity2.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity3.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
+            entity1.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity2.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity3.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -68,9 +68,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity2.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity3.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
+            entity1.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity2.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity3.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -101,9 +101,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity2.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity3.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
+            entity1.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity2.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity3.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 
@@ -135,9 +135,9 @@ test(`update(groupName, world):
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
             let entity4 = manager.createEntity();
-            entity1.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity2.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
-            entity3.put(new GrowTimer(growStates.seed, [10, 20, 20, 30, 30]));
+            entity1.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity2.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
+            entity3.put(GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]));
             manager.bindEntity(entity1); 
             manager.bindEntity(entity2); 
             manager.bindEntity(entity3); 

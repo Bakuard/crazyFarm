@@ -3,19 +3,27 @@
 const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 
 class Satiety {
-    constructor(max, declineRatePerSeconds) {
+    static of(max, declineRatePerSeconds) {
+        return new Satiety(max, max, declineRatePerSeconds);
+    }
+
+    constructor(max, current, declineRatePerSeconds) {
         this.max = max;
-        this.current = max;
+        this.current = current;
         this.declineRatePerSeconds = declineRatePerSeconds;
     }
 };
 module.exports.Satiety = Satiety;
 
-let filter = new EntityFilter().all(Satiety);
 module.exports.SatietySystem = class SatietySystem {
+    filter;
+    constructor() {
+        this.filter = new EntityFilter().all(Satiety);
+    }
+
     update(groupName, world) {
         let elapsedTime = world.getGameLoop().getElapsedTime();
-        for(let entity of world.getEntityComponentManager().select(filter)) {
+        for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let satiety = entity.get(Satiety);
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
         }

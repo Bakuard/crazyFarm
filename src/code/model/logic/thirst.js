@@ -3,19 +3,27 @@
 const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 
 class Thirst {
-    constructor(max, declineRatePerSeconds) {
+    static of(max, declineRatePerSeconds) {
+        return new Thirst(max, max, declineRatePerSeconds);
+    }
+
+    constructor(max, current, declineRatePerSeconds) {
         this.max = max;
-        this.current = max;
+        this.current = current;
         this.declineRatePerSeconds = declineRatePerSeconds;
     }
 };
 module.exports.Thirst = Thirst;
 
-let filter = new EntityFilter().all(Thirst);
 module.exports.ThirstSystem = class ThirstSystem {
+    filter;
+    constructor() {
+        this.filter = new EntityFilter().all(Thirst);
+    }
+
     update(groupName, world) {
         let elapsedTime = world.getGameLoop().getElapsedTime();
-        for(let entity of world.getEntityComponentManager().select(filter)) {
+        for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let thirst = entity.get(Thirst);
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
         }

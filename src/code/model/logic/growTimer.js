@@ -18,19 +18,31 @@ growStates = Object.freeze(growStates);
 module.exports.growStates = growStates;
 
 class GrowTimer {
-    constructor(growState, intervalsInSeconds) {
+    static of(growState, intervalsInSeconds) {
+        return new GrowTimer(
+            growState, 
+            intervalsInSeconds, 
+            calculateTimeByGrowState(growState, intervalsInSeconds)
+        );
+    }
+
+    constructor(growState, intervalsInSeconds, currentTimeInMillis) {
         this.growState = growState;
         this.intervalsInSeconds = intervalsInSeconds;
-        this.currentTimeInMillis = calculateTimeByGrowState(growState, intervalsInSeconds);
+        this.currentTimeInMillis = currentTimeInMillis;
     }
 };
 module.exports.GrowTimer = GrowTimer;
 
-let filter = new EntityFilter().all(GrowTimer);
 module.exports.GrowTimerSystem = class GrowTimerSystem {
+    filter;
+    constructor() {
+        this.filter = new EntityFilter().all(GrowTimer);
+    }
+
     update(groupName, world) {
         let elapsedTime = world.getGameLoop().getElapsedTime();
-        for(let entity of world.getEntityComponentManager().select(filter)) {
+        for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let growTimer = entity.get(GrowTimer);
 
             if(growTimer.growState != growStates.adult) {

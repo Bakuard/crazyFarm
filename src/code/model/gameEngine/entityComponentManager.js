@@ -83,6 +83,10 @@ module.exports.EntityFilter = class EntityFilter {
         return true;
     }
 
+    toString() {
+        return `EntityFilter: all->${this.#allMath.toString(2)}, oneOf->${this.#oneOfMatch.toString(2)}, none->${this.#noneMatch.toString(2)}`;
+    }
+
 };
 
 module.exports.EntityComponentManager = class EntityComponentManager {
