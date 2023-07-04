@@ -75,6 +75,20 @@ test(`clear:
         expect(actual).toEqual([undefined, undefined, undefined, undefined]);
     });
 
+test(`clear:
+    entity contains several tags
+    => remove all tags`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.addTags('tag1', 'tag2', 'tag3');
+
+        entity.clear();
+        let actual = [];
+        entity.forEachTag(tag => actual.push(tag));
+
+        expect(actual).toHaveLength(0);
+    });
+
 test(`clone:
     entity doesn't contain components
     => return correct copy`,
@@ -96,4 +110,82 @@ test(`clone:
         let actual = entity.clone();
 
         expect(actual).toEqual(entity);
+    });
+
+test(`addTags:
+    add one tag to entity
+    => hasTags must return true for this tag`,
+    () => {
+        let entity = new Entity(0, 0);
+        
+        entity.addTags('tag');
+        let actual = entity.hasTags('tag');
+
+        expect(actual).toBe(true);
+    });
+
+test(`addTags:
+    add several tags to entity
+    => hasTags must return true for each of this tag`,
+    () => {
+        let entity = new Entity(0, 0);
+        
+        entity.addTags('tag1', 'tag2', 'tag3');
+        let actual1 = entity.hasTags('tag1');
+        let actual2 = entity.hasTags('tag2');
+        let actual3 = entity.hasTags('tag3');
+
+        expect(actual1).toBe(true);
+        expect(actual2).toBe(true);
+        expect(actual3).toBe(true);
+    });
+
+test(`hasTags:
+    entity contains all of this tags,
+    entity tags number > hasTags arguments number
+    => return true`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.addTags('tag1', 'tag2', 'tag3');
+
+        let actual = entity.hasTags('tag1', 'tag2');
+
+        expect(actual).toBe(true);
+    });
+
+test(`hasTags:
+    entity contains all of this tags,
+    entity tags number = hasTags arguments number
+    => return true`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.addTags('tag1', 'tag2', 'tag3');
+
+        let actual = entity.hasTags('tag1', 'tag2', 'tag3');
+
+        expect(actual).toBe(true);
+    });
+
+test(`hasTags:
+    one of tags is not contained in the entity
+    => return false`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.addTags('tag1', 'tag2', 'tag3');
+
+        let actual = entity.hasTags('tag1', 'tag2', 'tag3', 'uknown tag');
+
+        expect(actual).toBe(false);
+    });
+
+test(`hasTags:
+    all tags is not contained in the entity
+    => return false`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.addTags('tag1', 'tag2', 'tag3');
+
+        let actual = entity.hasTags('uknown tag1', 'uknown tag2');
+
+        expect(actual).toBe(false);
     });

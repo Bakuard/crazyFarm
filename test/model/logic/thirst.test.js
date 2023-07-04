@@ -1,12 +1,12 @@
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {ThirstSystem} = require('../../../src/code/model/logic/thirst.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([Thirst]);
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 });
 
 test(`update(groupName, world):
@@ -32,7 +32,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new ThirstSystem();
+            let system = new ThirstSystem(manager);
             system.update('update', worldMock);
 
             expect(entity1.get(Thirst).current).toEqual(8);
@@ -64,7 +64,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new ThirstSystem();
+            let system = new ThirstSystem(manager);
             for(let i = 0; i < 100; i++) system.update('update', worldMock);
 
             expect(entity1.get(Thirst).current).toEqual(0);

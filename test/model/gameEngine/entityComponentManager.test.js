@@ -1,10 +1,11 @@
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
-const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {Entity} = require('../../../src/code/model/gameEngine/entity.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let A, B, C, D, E = null;
 let manager = null;
+let generatorCompId = null;
 beforeEach(() => {
     A = function A() {}
     B = function B() {}
@@ -12,8 +13,8 @@ beforeEach(() => {
     D = function D() {}
     E = function E() {}
 
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([A, B, C, D, E]);
+    generatorCompId = new ComponentIdGenerator();
+    manager = new EntityComponentManager(new EntityManager(), generatorCompId);
 });
 
 test(`bindEntity(entity) and select(entityFilter):
@@ -26,7 +27,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.removeEntity(entity);
 
             manager.bindEntity(entity); //try to bind dead entity
-            let filter = new EntityFilter().all(A, B, C);
+            let filter = manager.createFilter().all(A, B, C);
             let generator = manager.select(filter);
             let actual = generator.next();
 
@@ -43,7 +44,7 @@ test(`bindEntity(entity) and select(entityFilter):
             entity.put(new A(), new B(), new C());
 
             manager.bindEntity(entity); //try to bind alive entity
-            let filter = new EntityFilter().all(A, B, C);
+            let filter = manager.createFilter().all(A, B, C);
             let generator = manager.select(filter);
             let actual = generator.next();
 
@@ -59,7 +60,7 @@ test(`bindEntity(entity) and select(entityFilter):
             entity.put(new A(), new B(), new C());
             manager.bindEntity(entity); 
 
-            let filter = new EntityFilter().all(A, D);
+            let filter = manager.createFilter().all(A, D);
             let generator = manager.select(filter);
             let actual = generator.next();
 
@@ -82,7 +83,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(entity3); 
             manager.bindEntity(entity4);
 
-            let filter = new EntityFilter().all(A, B, C);
+            let filter = manager.createFilter().all(A, B, C);
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -105,7 +106,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(entity3); 
             manager.bindEntity(entity4);
 
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -125,7 +126,7 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(emptyEntity3); 
             manager.bindEntity(emptyEntity4);
 
-            let filter = new EntityFilter().all(A, B, C).none(D);
+            let filter = manager.createFilter().all(A, B, C).none(D);
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -144,7 +145,7 @@ test(`select(entityFilter):
             entity2.put(new A(), new C());
             entity3.put(new A(), new B(), new C(), new D());
 
-            let filter = new EntityFilter().all(A, B, C).none(D);
+            let filter = manager.createFilter().all(A, B, C).none(D);
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -164,9 +165,35 @@ test(`bindEntity(entity) and select(entityFilter):
             manager.bindEntity(entity3); 
             manager.bindEntity(entity4);
 
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
             expect(actual).containsEntities(entity1, entity2, entity3, entity4);
+        });
+
+test(`bindEntity(entity) and select(entityFilter):
+        entities haven't any components,
+        entities have some tags,
+        entityFilter contains these tags
+        => select must return entities with such tags`,
+        () => {
+            let entity1 = manager.createEntity();
+            let entity2 = manager.createEntity();
+            let entity3 = manager.createEntity();
+            let entity4 = manager.createEntity();
+            entity1.addTags('tagA', 'tagB', 'tagC');
+            entity2.addTags('tagA', 'tagB', 'tagD');
+            entity3.addTags('tagA', 'tagB', 'tagE');
+            entity4.addTags('tagA', 'tagC', 'tagF');
+            manager.bindEntity(entity1); 
+            manager.bindEntity(entity2); 
+            manager.bindEntity(entity3); 
+            manager.bindEntity(entity4);
+
+            let filter = manager.createFilter().allTags('tagA', 'tagB');
+            let generator = manager.select(filter);
+            let actual = [...generator];
+
+            expect(actual).containsEntities(entity1, entity2, entity3);
         });

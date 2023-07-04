@@ -36,8 +36,8 @@ module.exports.GrowTimer = GrowTimer;
 
 module.exports.GrowTimerSystem = class GrowTimerSystem {
     filter;
-    constructor() {
-        this.filter = new EntityFilter().all(GrowTimer);
+    constructor(entityComponentManager) {
+        this.filter = entityComponentManager.createFilter().all(GrowTimer);
     }
 
     update(groupName, world) {

@@ -2,12 +2,12 @@ const {GrowTimer} = require('../../../src/code/model/logic/growTimer.js');
 const {GrowTimerSystem} = require('../../../src/code/model/logic/growTimer.js');
 const {growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([GrowTimer]);
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 });
 
 test(`GrowTimer(growState, intervalsInSeconds):
@@ -51,7 +51,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new GrowTimerSystem();
+            let system = new GrowTimerSystem(manager);
             system.update('update', worldMock);
 
             expect(entity1.get(GrowTimer).growState).toBe(growStates.seed);
@@ -84,7 +84,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new GrowTimerSystem();
+            let system = new GrowTimerSystem(manager);
             system.update('update', worldMock);
 
             expect(entity1.get(GrowTimer).growState).toBe(growStates.sprout);
@@ -117,7 +117,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new GrowTimerSystem();
+            let system = new GrowTimerSystem(manager);
             for(let i = 0; i < 45; i++) system.update('update', worldMock);
 
             expect(entity1.get(GrowTimer).growState).toBe(growStates.child);
@@ -151,7 +151,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new GrowTimerSystem();
+            let system = new GrowTimerSystem(manager);
             for(let i = 0; i < 200; i++) system.update('update', worldMock);
 
             expect(entity1.get(GrowTimer).growState).toBe(growStates.adult);

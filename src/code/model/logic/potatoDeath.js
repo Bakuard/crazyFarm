@@ -12,10 +12,9 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     deadFilter;
-    constructor(randomGenerator) {
-        this.randomGenerator = randomGenerator;
+    constructor(entityComponentManager) {
         this.fixedInterval = new FixedInterval(1000);
-        this.deadFilter = new EntityFilter().all(PotatoGhost);
+        this.deadFilter = entityComponentManager.createFilter().all(PotatoGhost);
     }
 
     update(groupName, world) {

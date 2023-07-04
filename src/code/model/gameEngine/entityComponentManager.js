@@ -4,7 +4,6 @@ const {Entity} = require('./entity.js');
 const {CommandBuffer} = require('./commandBuffer.js');
 const BitSet = require('bitset');
 const exceptions = require('../exception/exceptions.js');
-const e = require('express');
 
 class Archetype {
     bitmask;
@@ -27,10 +26,6 @@ class Archetype {
         }
     }
 
-    isMatch(bitmask) {
-        return this.bitmask.equals(bitmask);
-    }
-
     [Symbol.iterator]() {
         return {
             currentIndex: 0,
@@ -44,29 +39,65 @@ class Archetype {
     }
 }
 
-module.exports.EntityFilter = class EntityFilter {
+class EntityFilter {
+
+    #componentIdGenerator;
     #allMath;
     #oneOfMatch;
     #noneMatch;
 
-    constructor() {
+    constructor(componentIdGenerator) {
+        this.#componentIdGenerator = componentIdGenerator;
         this.#allMath = new BitSet();
         this.#oneOfMatch = new BitSet();
         this.#noneMatch = new BitSet();
     }
 
     all(...componentTypes) {
-        componentTypes.forEach(c => this.#allMath.set(c.prototype.componentTypeId, 1));
+        componentTypes.forEach(c => {
+            let componentTypeId = this.#componentIdGenerator.getOrAssignIdForComponent(c);
+            this.#allMath.set(componentTypeId, 1);
+        });
         return this;
     }
 
     oneOf(...componentTypes) {
-        componentTypes.forEach(c => this.#oneOfMatch.set(c.prototype.componentTypeId, 1));
+        componentTypes.forEach(c => {
+            let componentTypeId = this.#componentIdGenerator.getOrAssignIdForComponent(c);
+            this.#oneOfMatch.set(componentTypeId, 1);
+        });
         return this;
     }
 
     none(...componentTypes) {
-        componentTypes.forEach(c => this.#noneMatch.set(c.prototype.componentTypeId, 1));
+        componentTypes.forEach(c => {
+            let componentTypeId = this.#componentIdGenerator.getOrAssignIdForComponent(c);
+            this.#noneMatch.set(componentTypeId, 1);
+        });
+        return this;
+    }
+
+    allTags(...tags) {
+        tags.forEach(tag => {
+            let tagId = this.#componentIdGenerator.getOrAssignIdForTag(tag);
+            this.#allMath.set(tagId, 1);
+        });
+        return this;
+    }
+
+    oneOfTags(...tags) {
+        tags.forEach(tag => {
+            let tagId = this.#componentIdGenerator.getOrAssignIdForTag(tag);
+            this.#oneOfMatch.set(tagId, 1);
+        });
+        return this;
+    }
+
+    noneTags(...tags) {
+        tags.forEach(tag => {
+            let tagId = this.#componentIdGenerator.getOrAssignIdForTag(tag);
+            this.#noneMatch.set(tagId, 1);
+        });
         return this;
     }
 
@@ -88,24 +119,20 @@ module.exports.EntityFilter = class EntityFilter {
     }
 
 };
+module.exports.EntityFilter = EntityFilter;
 
 module.exports.EntityComponentManager = class EntityComponentManager {
 
     #entityManager;
-
-    #emptyArchetype;
     #arhytypes;
     #archytypesByEntityId;
+    #componentsIdGenerator;
 
-    #lastComponentTypeId;
-
-    constructor(entityManager) {
+    constructor(entityManager, componentsIdGenerator) {
         this.#entityManager = entityManager;
-
-        this.#emptyArchetype = new Archetype(new BitSet());
-        this.#arhytypes = [this.#emptyArchetype];
+        this.#componentsIdGenerator = componentsIdGenerator;
+        this.#arhytypes = [];
         this.#archytypesByEntityId = [];
-        this.#lastComponentTypeId = 0;
     }
 
     createEntity() {
@@ -129,7 +156,7 @@ module.exports.EntityComponentManager = class EntityComponentManager {
             if(!archytype) {
                 archytype = this.#findOrCreateArhytype(mask);
                 archytype.add(entity);
-            } else if(!archytype.isMatch(mask)) {
+            } else if(!mask.equals(archytype.bitmask)) {
                 archytype.remove(entity);
                 archytype = this.#findOrCreateArhytype(mask);
                 archytype.add(entity);
@@ -162,15 +189,13 @@ module.exports.EntityComponentManager = class EntityComponentManager {
         });
     }
 
-    registerComponents(componentTypes) {
-        for(let componentType of componentTypes) {
-            componentType.prototype.componentTypeId = this.#lastComponentTypeId++;
-        }
+    createFilter() {
+        return new EntityFilter(this.#componentsIdGenerator);
     }
 
 
     #findOrCreateArhytype(bitmask) {
-        let archytype = this.#arhytypes.find(archytype => archytype.isMatch(bitmask));
+        let archytype = this.#arhytypes.find(archytype => bitmask.equals(archytype.bitmask));
         if(!archytype) {
             archytype = new Archetype(bitmask);
             this.#arhytypes.push(archytype);
@@ -181,14 +206,12 @@ module.exports.EntityComponentManager = class EntityComponentManager {
     #createBitMaskBy(entity) {
         let mask = new BitSet();
         entity.forEachComponent(component => {
-            let prototype = Object.getPrototypeOf(component);
-            if(prototype.componentTypeId === undefined) {
-                throw new exceptions.UnregisteredComponentException(
-                    'unexpectedException',
-                    `Unregister componentType=${prototype.constructor.name}`
-                );
-            }
-            mask.set(prototype.componentTypeId, 1);
+            let componentTypeId = this.#componentsIdGenerator.getOrAssignIdForComponent(component);
+            mask.set(componentTypeId, 1);
+        });
+        entity.forEachTag(tag => {
+            let tagId = this.#componentsIdGenerator.getOrAssignIdForTag(tag);
+            mask.set(tagId, 1);
         });
         return mask;
     }

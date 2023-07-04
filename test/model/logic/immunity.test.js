@@ -1,12 +1,12 @@
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {ImmunitySystem} = require('../../../src/code/model/logic/immunity.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const { EntityManager } = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([Immunity]);
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 });
 
 test(`update(groupName, world):
@@ -35,7 +35,7 @@ test(`update(groupName, world):
             };
             let randomGeneratorMock = () => 0.6;
             
-            let system = new ImmunitySystem(randomGeneratorMock);
+            let system = new ImmunitySystem(randomGeneratorMock, manager);
             for(let i = 0; i < 100; i++) system.update('update', worldMock);
 
             expect(entity1.get(Immunity)).toEqual(Immunity.of(10, 1, 0.5));
@@ -69,7 +69,7 @@ test(`update(groupName, world):
             };
             let randomGeneratorMock = () => 0.4;
             
-            let system = new ImmunitySystem(randomGeneratorMock);
+            let system = new ImmunitySystem(randomGeneratorMock, manager);
             system.update('update', worldMock);
 
             expect(entity1.get(Immunity).current).toEqual(8);

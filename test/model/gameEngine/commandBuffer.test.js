@@ -1,6 +1,6 @@
 const {CommandBuffer} = require('../../../src/code/model/gameEngine/commandBuffer.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
-const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 
@@ -15,7 +15,7 @@ test(`CommandBuffer:
         buffer hasn't been flushed
         => isAlive(entity) must return true`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity = buffer.create();
@@ -29,7 +29,7 @@ test(`CommandBuffer:
         buffer has been flushed
         => isAlive(entity) must return true`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity = buffer.create();
@@ -46,7 +46,7 @@ test(`CommandBuffer:
         buffer hasn't been flushed
         => select doesn't return entity that was created with not flushed buffer`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity1 = buffer.create();
@@ -57,7 +57,7 @@ test(`CommandBuffer:
             buffer.bind(entity2);
             buffer.bind(entity3);
             buffer.bind(entity4);
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -71,7 +71,7 @@ test(`CommandBuffer:
         buffer has been flushed
         => select must return entity that was created with flushed buffer`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity1 = buffer.create();
@@ -83,7 +83,7 @@ test(`CommandBuffer:
             buffer.bind(entity3);
             buffer.bind(entity4);
             manager.flush(buffer);
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -97,8 +97,7 @@ test(`CommandBuffer:
         buffer hasn't been flushed
         => select doesn't return entity that was created with not flushed buffer`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
-            manager.registerComponents([A, B, C, D, E]);
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity1 = buffer.create().put(new A(), new B(), new C());
@@ -109,7 +108,7 @@ test(`CommandBuffer:
             buffer.bind(entity2);
             buffer.bind(entity3);
             buffer.bind(entity4);
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -123,8 +122,7 @@ test(`CommandBuffer:
         buffer has been flushed
         => select must return entity that was created with flushed buffer`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
-            manager.registerComponents([A, B, C, D, E]);
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity1 = buffer.create().put(new A(), new B(), new C());
@@ -136,7 +134,7 @@ test(`CommandBuffer:
             buffer.bind(entity3);
             buffer.bind(entity4);
             manager.flush(buffer);
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -149,7 +147,7 @@ test(`CommandBuffer:
         buffer has been flushed
         => select doesn't return not binded entities`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
             let entity1 = buffer.create();
@@ -157,7 +155,7 @@ test(`CommandBuffer:
             let entity3 = buffer.create();
             let entity4 = buffer.create();
             manager.flush(buffer);
-            let filter = new EntityFilter();
+            let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -170,7 +168,7 @@ test(`CommandBuffer:
         buffer hasn't been flushed
         => select doesn't return not binded entities`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
             let entity1 = manager.createEntity().put(new A(), new B(), new C());
             let entity2 = manager.createEntity().put(new A(), new B(), new C());
             let entity3 = manager.createEntity().put(new A(), new B(), new C());
@@ -186,7 +184,7 @@ test(`CommandBuffer:
             buffer.bind(entity3.clone().set(new D(), new E()));
             buffer.bind(entity4.clone().set(new D(), new E()));
             manager.flush(buffer);
-            let filter = new EntityFilter().all(D, E);
+            let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -199,7 +197,7 @@ test(`CommandBuffer:
         buffer hasn been flushed
         => select must return entity that was changed with flushed buffer`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
             let entity1 = manager.createEntity().put(new A(), new B(), new C());
             let entity2 = manager.createEntity().put(new A(), new B(), new C());
             let entity3 = manager.createEntity().put(new A(), new B(), new C());
@@ -214,7 +212,7 @@ test(`CommandBuffer:
             buffer.bind(entity2.clone().set(new D(), new E()));
             buffer.bind(entity3.clone().set(new D(), new E()));
             buffer.bind(entity4.clone().set(new D(), new E()));
-            let filter = new EntityFilter().all(D, E);
+            let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
             let actual = [...generator];
 
@@ -226,7 +224,7 @@ test(`CommandBuffer:
         buffer hasn't been flushed
         => isAlive(entity) for this entity must return true`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
             let entity = manager.createEntity();
 
             let buffer = manager.createCommandBuffer();  
@@ -241,8 +239,7 @@ test(`CommandBuffer:
         buffer has been flushed
         => isAlive(entity) for this entity must return false`,
         () => {
-            let manager = new EntityComponentManager(new EntityManager());
-            manager.registerComponents([A, B, C, D, E]);
+            let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
             let entity = manager.createEntity();
 
             let buffer = manager.createCommandBuffer();  

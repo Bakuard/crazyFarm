@@ -1,12 +1,12 @@
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {SatietySystem} = require('../../../src/code/model/logic/satiety.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([Satiety]);
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 });
 
 test(`update(groupName, world):
@@ -32,7 +32,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new SatietySystem();
+            let system = new SatietySystem(manager);
             system.update('update', worldMock);
 
             expect(entity1.get(Satiety).current).toEqual(8);
@@ -64,7 +64,7 @@ test(`update(groupName, world):
                 getEntityComponentManager: () => manager
             };
             
-            let system = new SatietySystem();
+            let system = new SatietySystem(manager);
             for(let i = 0; i < 100; i++) system.update('update', worldMock);
 
             expect(entity1.get(Satiety).current).toEqual(0);

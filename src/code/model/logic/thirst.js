@@ -17,8 +17,8 @@ module.exports.Thirst = Thirst;
 
 module.exports.ThirstSystem = class ThirstSystem {
     filter;
-    constructor() {
-        this.filter = new EntityFilter().all(Thirst);
+    constructor(entityComponentManager) {
+        this.filter = entityComponentManager.createFilter().all(Thirst);
     }
 
     update(groupName, world) {

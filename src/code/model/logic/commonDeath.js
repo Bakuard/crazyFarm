@@ -1,6 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
@@ -9,8 +8,8 @@ const {PotatoGhost} = require('./potatoDeath.js');
 
 module.exports.DeathSystem = class DeathSystem {
     liveFilter;
-    constructor() {
-        this.liveFilter = new EntityFilter().all(Thirst, Satiety, Immunity, EntityMeta);
+    constructor(entityComponentManager) {
+        this.liveFilter = entityComponentManager.createFilter().all(Thirst, Satiety, Immunity, EntityMeta);
     }
 
     update(groupName, world) {

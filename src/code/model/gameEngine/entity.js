@@ -4,11 +4,13 @@ module.exports.Entity = class Entity {
     personalId;
     generation;
     #components;
+    #tags;
 
     constructor(personalId, generation) {
         this.personalId = personalId;
         this.generation = generation;
         this.#components = {};
+        this.#tags = new Set();
         Object.defineProperties(this, {
             personalId: {writable: false, configurable: false, enumerable: true},
             generation: {writable: false, configurable: false, enumerable: true}
@@ -18,6 +20,7 @@ module.exports.Entity = class Entity {
     clone() {
         let entity = new Entity(this.personalId, this.generation);
         entity.#components = structuredClone(this.#components);
+        entity.#tags = structuredClone(this.#tags);
         return entity;
     }
 
@@ -38,6 +41,11 @@ module.exports.Entity = class Entity {
         return this;
     }
 
+    addTags(...tags) {
+        for(let tag of tags) this.#tags.add(tag);
+        return this;
+    }
+
     remove(...componentConstructors) {
         for(let componentConstructor of componentConstructors) {
             let key = componentConstructor.name;
@@ -46,8 +54,14 @@ module.exports.Entity = class Entity {
         return this;
     }
 
+    removeTags(...tags) {
+        for(let tag of tags) this.#tags.delete(tag);
+        return this;
+    }
+
     clear() {
         this.#components = {};
+        this.#tags.clear();
         return this;
     }
 
@@ -56,8 +70,20 @@ module.exports.Entity = class Entity {
         return this.#components[key];
     }
 
+    hasTags(...tags) {
+        let result = true;
+        for(let i = 0; i < tags.length && result; i++) {
+            result &&= this.#tags.has(tags[i]);
+        }
+        return result;
+    }
+
     forEachComponent(callback) {
         Object.values(this.#components).forEach(component => callback(component));
+    }
+
+    forEachTag(callback) {
+        this.#tags.forEach(callback);
     }
 
     equals(otherEntity) {

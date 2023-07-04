@@ -5,13 +5,12 @@ const {EntityMeta} = require('../../../src/code/model/logic/entityMeta.js');
 const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 const {DeathSystem} = require('../../../src/code/model/logic/commonDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
+const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
-const {EntityFilter} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 
 let manager = null;
 beforeEach(() => {
-    manager = new EntityComponentManager(new EntityManager());
-    manager.registerComponents([PotatoGhost, Thirst, Satiety, Immunity, EntityMeta]);
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 });
 
 test(`update(groupName, world):
@@ -32,9 +31,9 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new DeathSystem();
+        let system = new DeathSystem(manager);
         for(let i = 0; i < 100; i++) system.update('update', worldMock);
-        let filter = new EntityFilter().all(PotatoGhost);
+        let filter = manager.createFilter().all(PotatoGhost);
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -58,9 +57,9 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new DeathSystem();
+        let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = new EntityFilter().all(PotatoGhost);
+        let filter = manager.createFilter().all(PotatoGhost);
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -84,9 +83,9 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new DeathSystem();
+        let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = new EntityFilter().all(PotatoGhost);
+        let filter = manager.createFilter().all(PotatoGhost);
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -110,9 +109,9 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new DeathSystem();
+        let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = new EntityFilter().all(PotatoGhost);
+        let filter = manager.createFilter().all(PotatoGhost);
         let generator = manager.select(filter);
         let actual = [...generator];
 

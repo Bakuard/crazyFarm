@@ -17,8 +17,8 @@ module.exports.Satiety = Satiety;
 
 module.exports.SatietySystem = class SatietySystem {
     filter;
-    constructor() {
-        this.filter = new EntityFilter().all(Satiety);
+    constructor(entityComponentManager) {
+        this.filter = entityComponentManager.createFilter().all(Satiety);
     }
 
     update(groupName, world) {

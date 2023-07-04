@@ -20,10 +20,10 @@ module.exports.Immunity = Immunity;
 
 module.exports.ImmunitySystem = class ImmunitySystem {
     filter;
-    constructor(randomGenerator) {
+    constructor(randomGenerator, entityComponentManager) {
         this.randomGenerator = randomGenerator;
         this.fixedInterval = new FixedInterval(1000);
-        this.filter = new EntityFilter().all(Immunity);
+        this.filter = entityComponentManager.createFilter().all(Immunity);
     }
 
     update(groupName, world) {
