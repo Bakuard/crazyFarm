@@ -3,6 +3,7 @@
 const dto = require('../dto/dto.js');
 const ms = require('ms');
 const {newLogger} = require('../conf/logConf.js');
+const {Game} = require('../model/logic/game.js');
 
 const logger = newLogger('info', 'gameController.js');
 
@@ -34,14 +35,20 @@ module.exports.GameController = class GameController {
     }
 
     startNewGame(clientSocket, req) {
+        let game = new Game();
+
         clientSocket.on('message', data => {});
         clientSocket.on('error', e => logger.error(e));
-        clientSocket.on('close', () => {});
+        clientSocket.on('close', () => {
+            logger.info('stop game for userId=%s', clientSocket.userId);
+            game.stop();
+        });
         clientSocket.on('pong', () => clientSocket.isAlive = true);
 
         clientSocket.userId = req.userId;
         clientSocket.isAlive = true;
-        clientSocket.send(`You have been connected to CrazyFarm websocket. User id=${req.userId}`);
+        
+        clientSocket.send(JSON.stringify(new dto.GardenBed(game.getGardenBed()), null, 4));
     }
 
     authNewConnection(req, socket, head) {

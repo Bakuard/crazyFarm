@@ -1,23 +1,27 @@
 'use strict'
 
 module.exports.EventManager = class EventManager {
-    #evetns;
+    #events;
 
     constructor() {
-        this.#evetns = {};
+        this.#events = {};
     }
 
     writeEvent(name, event) {
-        this.#events[name] = event;
+        if(this.#events[name] == undefined) this.#events[name] = [];
+        this.#events[name].push(event);
     }
 
-    readEvent(name) {
-        return this.#events[name];
-    }
-
-    readAndRemoveEvent(name) {
-        let event = this.#events[name];
-        delete this.#events[name];
+    readEvent(name, index) {
+        let event = null;
+        if(index >= 0 && index < this.#events[name]?.length) {
+            event = this.#events[name].at(index);
+        }
         return event;
     }
+
+    clearEventQueue(name) {
+        if(this.#events[name] != undefined) this.#events[name].length = 0;
+    }
+
 };

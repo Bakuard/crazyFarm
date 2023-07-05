@@ -1,5 +1,29 @@
 'use strict'
 
+const groups = Object.freeze({
+    start: 'start',
+    update: 'update',
+    stop: 'stop'
+});
+module.exports.groups = groups;
+
+module.exports.FixedInterval = class FixedInterval {
+    constructor(timeInMillis) {
+        this.currentTime = 0;
+        this.timeInMillis = timeInMillis;
+    }
+
+    execute(callback, elapsedTime) {
+        this.currentTime += elapsedTime;
+        let isElapsed = this.currentTime >= this.timeInMillis;
+        while(isElapsed) {
+            this.currentTime -= this.timeInMillis;
+            isElapsed = this.currentTime >= this.timeInMillis;
+            callback();
+        }
+    }
+};
+
 module.exports.GameLoop = class GameLoop {
     #state;
     #elapsedTime;
@@ -17,14 +41,14 @@ module.exports.GameLoop = class GameLoop {
     start() {
         if(this.#state == 'init') {
             this.#state = 'update';
-            this.#world.systemManager.updateGroup('start', this.#world);
+            this.#world.systemManager.updateGroup(groups.start, this.#world);
             let lastTime = Date.now();
             this.#timerId = setInterval(() => {
                 let currentTime = Date.now();
                 this.#elapsedTime = currentTime - lastTime;
                 lastTime = currentTime;
                 
-                if(this.#state == 'update') this.#world.systemManager.updateGroup('update', this.#world);
+                if(this.#state == 'update') this.#world.systemManager.updateGroup(groups.update, this.#world);
             }, this.#frameDurationInMillis);
         }
     }
@@ -33,7 +57,7 @@ module.exports.GameLoop = class GameLoop {
         if(this.#state == 'update') {
             this.#state = 'init';
             clearInterval(this.#timerId);
-            this.#world.systemManager.updateGroup('stop', this.#world);
+            this.#world.systemManager.updateGroup(groups.stop, this.#world);
         }
     }
 
