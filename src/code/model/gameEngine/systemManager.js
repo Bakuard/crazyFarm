@@ -12,12 +12,13 @@ module.exports.SystemManager = class SystemManager {
         this.#world = world;
     }
 
-    addSystem(name, updateMethod, ...groups) {
+    putSystem(name, updateMethod, ...groupNames) {
         this.#systems[name] = updateMethod;
-        for(let groupName of groups) {
+        for(let groupName of groupNames) {
             if(!this.#groups[groupName]) this.#groups[groupName] = [];
             this.#groups[groupName].push(name);
         }
+        return this;
     }
 
     updateGroup(groupName) {

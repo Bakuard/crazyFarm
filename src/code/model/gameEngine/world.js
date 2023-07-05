@@ -7,7 +7,7 @@ const {SystemManager} = require('./systemManager.js');
 const {EventManager} = require('./eventManager.js');
 const {GameLoop} = require('./gameLoop.js');
 
-module.exports.Word = class World {
+module.exports.World = class World {
     #entityComponentManager;
     #systemManager;
     #eventManager;

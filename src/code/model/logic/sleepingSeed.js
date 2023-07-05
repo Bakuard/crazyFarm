@@ -25,8 +25,8 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
             event = events.readEvent('plant', i);
         }
 
-        if(events.readEvent('plant', 0)) {
-            for(let entity of manager.select(this.filter)) {
+        for(let entity of manager.select(this.filter)) {
+            if(events.readEvent('water', 0)) {
                 let updatedEntity = entity.clone().removeTags('sleeping seed').
                     put(
                         GrowTimer.of(growStates.seed, [10, 10, 10, 10, 10]),
