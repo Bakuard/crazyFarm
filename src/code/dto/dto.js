@@ -69,9 +69,9 @@ class Vegetable {
 class GardenBedCell {
     constructor(vegatable) {
         this.isEmpty = !vegatable;
-        this.isBlocked = vegatable?.get(PotatoGhost);
+        this.isBlocked = Boolean(vegatable?.get(PotatoGhost));
         this.name = 'central';
-        this.vegatable = vegatable ? vegatable : null;
+        this.character = vegatable ? vegatable : null;
     }
 }
 module.exports.GardenBedCell = GardenBedCell;

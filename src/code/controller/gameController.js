@@ -37,13 +37,13 @@ module.exports.GameController = class GameController {
     startNewGame(clientSocket, req) {
         let game = new Game();
 
+        clientSocket.on('pong', () => clientSocket.isAlive = true);
         clientSocket.on('message', data => {});
         clientSocket.on('error', e => logger.error(e));
         clientSocket.on('close', () => {
             logger.info('stop game for userId=%s', clientSocket.userId);
             game.stop();
         });
-        clientSocket.on('pong', () => clientSocket.isAlive = true);
 
         clientSocket.userId = req.userId;
         clientSocket.isAlive = true;
