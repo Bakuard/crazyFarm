@@ -1,45 +1,56 @@
 'use strict'
 
-const {EntityMeta} = require('./growTimer.js');
+const {VegetableMeta} = require('./vegetableMeta');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
 const {GrowTimer, growStates} = require('./growTimer.js');
+const {GardenBedCell} = require('./gardenBedCell.js');
+const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 
 module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().allTags('sleeping seed');
+        this.cellFilter = entityComponentManager.createFilter().all(GardenBedCell);
+        this.vegetableFilter = entityComponentManager.createFilter().allTags('sleeping seed');
     }
 
     update(groupName, world) {
         let manager = world.getEntityComponentManager();
         let buffer = manager.createCommandBuffer();
-        let events = world.getEventManager();
+        let eventManager = world.getEventManager();
 
-        let event = events.readEvent('plant', 0);
-        for(let i = 1; event != null; i++) {
-            let entity = buffer.create();
-            entity.put(new EntityMeta('Potato')).addTags('sleeping seed');
-            buffer.bind(entity);
-            event = events.readEvent('plant', i);
+        if(eventManager.readEvent('seeds', 0)) {
+            for(let entity of manager.select(this.cellFilter)) {
+                let cell = entity.get(GardenBedCell);
+
+                if(cell && !cell.vegetable) {
+                    let vegetable = buffer.create();
+                    vegetable.put(new VegetableMeta('Potato'), new GardenBedCellLink(entity)).
+                        addTags('sleeping seed');
+                    buffer.bind(vegetable);
+
+                    cell.vegetable = vegetable;
+                    buffer.bind(entity);
+                }
+            }
         }
 
-        for(let entity of manager.select(this.filter)) {
-            if(events.readEvent('water', 0)) {
-                let updatedEntity = entity.clone().removeTags('sleeping seed').
+        for(let entity of manager.select(this.vegetableFilter)) {
+            if(eventManager.readEvent('bailer', 0)) {
+                entity.removeTags('sleeping seed').
                     put(
-                        GrowTimer.of(growStates.seed, [10, 10, 10, 10, 10]),
+                        GrowTimer.of(growStates.seed, [2, 10, 10, 10, 10]),
                         Immunity.of(10, 1, 0.2),
                         Satiety.of(10, 1),
                         Thirst.of(10, 1)
                     );
-                buffer.bind(updatedEntity);
+                buffer.bind(entity);
             }
         }
 
         manager.flush(buffer);
-        events.clearEventQueue('plant');
+        eventManager.clearEventQueue('seeds');
     }
 
 };

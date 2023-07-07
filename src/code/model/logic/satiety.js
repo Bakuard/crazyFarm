@@ -1,7 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
-
 class Satiety {
     static of(max, declineRatePerSeconds) {
         return new Satiety(max, max, declineRatePerSeconds);
@@ -22,10 +20,18 @@ module.exports.SatietySystem = class SatietySystem {
     }
 
     update(groupName, world) {
+        let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
+        
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let satiety = entity.get(Satiety);
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
+
+            if(eventManager.readEvent('fertilizer', 0)) {
+                satiety.current = satiety.max;
+            }
         }
+
+        eventManager.clearEventQueue('fertilizer');
     }
 };

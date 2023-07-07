@@ -3,10 +3,13 @@ const {ImmunitySystem} = require('../../../src/code/model/logic/immunity.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const { EntityManager } = require('../../../src/code/model/gameEngine/entityManager.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 let manager = null;
+let eventManager = null;
 beforeEach(() => {
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
+    eventManager = new EventManager();
 });
 
 test(`update(groupName, world):
@@ -31,7 +34,8 @@ test(`update(groupName, world):
                         getElapsedTime: () => 1000
                     }
                 },
-                getEntityComponentManager: () => manager
+                getEntityComponentManager: () => manager,
+                getEventManager: () => eventManager
             };
             let randomGeneratorMock = () => 0.6;
             
@@ -65,7 +69,8 @@ test(`update(groupName, world):
                         getElapsedTime: () => 2000
                     }
                 },
-                getEntityComponentManager: () => manager
+                getEntityComponentManager: () => manager,
+                getEventManager: () => eventManager
             };
             let randomGeneratorMock = () => 0.4;
             

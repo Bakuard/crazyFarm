@@ -1,6 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
 
 class PotatoGhost {

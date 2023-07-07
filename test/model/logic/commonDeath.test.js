@@ -1,7 +1,7 @@
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
-const {EntityMeta} = require('../../../src/code/model/logic/entityMeta.js');
+const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 const {DeathSystem} = require('../../../src/code/model/logic/commonDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
@@ -24,7 +24,7 @@ test(`update(groupName, world):
             new Thirst(10, 1, 1),
             new Satiety(10, 1, 1),
             new Immunity(10, 1, false, 1, 0),
-            new EntityMeta('Potato')
+            new VegetableMeta('Potato')
         );
         manager.bindEntity(entity);
         let worldMock = {
@@ -50,7 +50,7 @@ test(`update(groupName, world):
             new Thirst(10, 1, 1),
             new Satiety(10, 0, 1),
             new Immunity(10, 1, false, 1, 0),
-            new EntityMeta('Potato')
+            new VegetableMeta('Potato')
         );
         manager.bindEntity(entity);
         let worldMock = {
@@ -76,7 +76,7 @@ test(`update(groupName, world):
             new Thirst(10, 0, 1),
             new Satiety(10, 1, 1),
             new Immunity(10, 1, false, 1, 0),
-            new EntityMeta('Potato')
+            new VegetableMeta('Potato')
         );
         manager.bindEntity(entity);
         let worldMock = {
@@ -102,7 +102,7 @@ test(`update(groupName, world):
             new Thirst(10, 1, 1),
             new Satiety(10, 1, 1),
             new Immunity(10, 0, false, 1, 1),
-            new EntityMeta('Potato')
+            new VegetableMeta('Potato')
         );
         manager.bindEntity(entity);
         let worldMock = {
