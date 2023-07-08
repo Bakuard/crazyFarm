@@ -40,7 +40,7 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
             if(eventManager.readEvent('bailer', 0)) {
                 entity.removeTags('sleeping seed').
                     put(
-                        GrowTimer.of(growStates.seed, [2, 10, 10, 10, 10]),
+                        GrowTimer.of(growStates.seed, [2, 3, 3, 3, 3]),
                         Immunity.of(10, 1, 0.2),
                         Satiety.of(10, 1),
                         Thirst.of(10, 1)

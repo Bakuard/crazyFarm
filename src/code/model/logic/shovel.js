@@ -11,7 +11,7 @@ module.exports.ShovelSystem = class ShovelSystem {
     update(groupName, world) {
         let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
-        let buffer = manager.createBuffer();
+        let buffer = manager.createCommandBuffer();
 
         if(eventManager.readEvent('shovel', 0)) {
             for(let entity of manager.select(this.filter)) {

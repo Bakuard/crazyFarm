@@ -50,3 +50,17 @@ test(`putSystem(name, updateMethod, ...groups):
 
         expect(actual).toEqual(['system1', 'system2', 'system3']);
     });
+
+test(`updateMethod(groupName):
+        there se not group with this name
+        => do nothing`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+        let system = jest.fn(() => {});
+        systemManager.putSystem('system1', system, 'group1');
+
+        systemManager.updateGroup('group2');
+
+        expect(system).toHaveBeenCalledTimes(0);
+    });
