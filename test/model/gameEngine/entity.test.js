@@ -179,13 +179,63 @@ test(`hasTags:
     });
 
 test(`hasTags:
-    all tags is not contained in the entity
+    all tags are not contained in the entity
     => return false`,
     () => {
         let entity = new Entity(0, 0);
         entity.addTags('tag1', 'tag2', 'tag3');
 
         let actual = entity.hasTags('uknown tag1', 'uknown tag2');
+
+        expect(actual).toBe(false);
+    });
+
+test(`hasComponents:
+    entity contains all of this components,
+    entity components number > hasComponents arguments number
+    => return true`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.put(new A(), new B(), new C());
+
+        let actual = entity.hasComponents(A, B);
+
+        expect(actual).toBe(true);
+    });
+
+test(`hasComponents:
+    entity contains all of this components,
+    entity components number = hasComponents arguments number
+    => return true`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.put(new A(), new B(), new C());
+
+        let actual = entity.hasComponents(A, B, C);
+
+        expect(actual).toBe(true);
+    });
+
+test(`hasComponents:
+    one of components is not contained in entity
+    => return false`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.put(new A(), new B(), new C());
+
+        let actual = entity.hasComponents(A, B, C, D);
+
+        expect(actual).toBe(false);
+    });
+
+test(`hasComponents:
+    all components are not contained in entity
+    => return false`,
+    () => {
+        let entity = new Entity(0, 0);
+        entity.put(new A(), new B(), new C());
+
+        let actual = entity.hasComponents(D, E);
 
         expect(actual).toBe(false);
     });

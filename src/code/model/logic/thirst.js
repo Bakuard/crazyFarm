@@ -1,7 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
-
 class Thirst {
     static of(max, declineRatePerSeconds) {
         return new Thirst(max, max, declineRatePerSeconds);
@@ -22,10 +20,18 @@ module.exports.ThirstSystem = class ThirstSystem {
     }
 
     update(groupName, world) {
+        let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
+
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let thirst = entity.get(Thirst);
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
+
+            if(eventManager.readEvent('bailer', 0)) {
+                thirst.current = thirst.max;
+            }
         }
+
+        eventManager.clearEventQueue('bailer');
     }
 };

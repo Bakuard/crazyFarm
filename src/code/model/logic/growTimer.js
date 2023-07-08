@@ -1,7 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
-
 let growStates = {
     seed: Object.freeze({ordinal: 0, name: 'seed'}),
     sprout: Object.freeze({ordinal: 1, name: 'sprout'}),

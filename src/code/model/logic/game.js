@@ -9,13 +9,20 @@ const {DeathSystem} = require('./commonDeath.js');
 const {PotatoDeathSystem} = require('./potatoDeath.js');
 const {GrowTimerSystem} = require('./growTimer.js');
 const {groups} = require('../gameEngine/gameLoop.js');
+const {ShovelSystem} = require('./shovel.js');
+const {OutputSystem} = require('./output.js');
+const {GardenBedCell} = require('./gardenBedCell.js');
 
 module.exports.Game = class Game {
 
-    constructor() {
+    constructor(outputCallback) {
         this.world = new World(1000);
-        this.plantsFilter = this.world.getEntityComponentManager().createFilter();
 
+        let cell = this.world.getEntityComponentManager().createEntity();
+        cell.put(GardenBedCell.of(0, 0));
+        this.world.getEntityComponentManager().bindEntity(cell);
+
+        let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
         let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager());
         let thirst = new ThirstSystem(this.world.getEntityComponentManager());
         let satiety = new SatietySystem(this.world.getEntityComponentManager());
@@ -23,15 +30,18 @@ module.exports.Game = class Game {
         let commonDeath = new DeathSystem(this.world.getEntityComponentManager());
         let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager());
         let grow = new GrowTimerSystem(this.world.getEntityComponentManager());
+        let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);
 
         this.world.getSystemManager().
+            putSystem('ShovelSystem', shovelSystem.update.bind(shovelSystem), groups.update).
             putSystem('SleepingSeedSystem', sleepingSeed.update.bind(sleepingSeed), groups.update).
             putSystem('ThirstSystem', thirst.update.bind(thirst), groups.update).
             putSystem('SatietySystem', satiety.update.bind(satiety), groups.update).
             putSystem('ImmunitySystem', immunity.update.bind(immunity), groups.update).
             putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
-            putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update);
+            putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
+            putSystem('OutputSystem', output.update.bind(output), groups.update);
     }
 
     start() {
@@ -42,8 +52,8 @@ module.exports.Game = class Game {
         this.world.getGameLoop().stop();
     }
 
-    getGardenBed() {
-        return [...this.world.getEntityComponentManager().select(this.plantsFilter)];
+    execute(command) {
+        this.world.getEventManager().writeEvent(command.tool, command);
     }
 
 };

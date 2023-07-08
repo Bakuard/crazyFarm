@@ -70,6 +70,14 @@ module.exports.Entity = class Entity {
         return this.#components[key];
     }
 
+    hasComponents(...componentConstructors) {
+        let result = true;
+        for(let i = 0; i < componentConstructors.length && result; i++) {
+            result = result && (this.get(componentConstructors[i]) != undefined);
+        }
+        return result;
+    }
+
     hasTags(...tags) {
         let result = true;
         for(let i = 0; i < tags.length && result; i++) {

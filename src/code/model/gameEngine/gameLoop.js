@@ -41,14 +41,14 @@ module.exports.GameLoop = class GameLoop {
     start() {
         if(this.#state == 'init') {
             this.#state = 'update';
-            this.#world.systemManager.updateGroup(groups.start, this.#world);
+            this.#world.getSystemManager().updateGroup(groups.start, this.#world);
             let lastTime = Date.now();
             this.#timerId = setInterval(() => {
                 let currentTime = Date.now();
                 this.#elapsedTime = currentTime - lastTime;
                 lastTime = currentTime;
                 
-                if(this.#state == 'update') this.#world.systemManager.updateGroup(groups.update, this.#world);
+                if(this.#state == 'update') this.#world.getSystemManager().updateGroup(groups.update, this.#world);
             }, this.#frameDurationInMillis);
         }
     }
@@ -57,7 +57,7 @@ module.exports.GameLoop = class GameLoop {
         if(this.#state == 'update') {
             this.#state = 'init';
             clearInterval(this.#timerId);
-            this.#world.systemManager.updateGroup(groups.stop, this.#world);
+            this.#world.getSystemManager().updateGroup(groups.stop, this.#world);
         }
     }
 

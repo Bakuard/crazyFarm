@@ -179,10 +179,10 @@ test(`CommandBuffer:
             manager.bindEntity(entity4);
 
             let buffer = manager.createCommandBuffer();
-            buffer.bind(entity1.clone().set(new D(), new E()));
-            buffer.bind(entity2.clone().set(new D(), new E()));
-            buffer.bind(entity3.clone().set(new D(), new E()));
-            buffer.bind(entity4.clone().set(new D(), new E()));
+            buffer.bind(entity1.set(new D(), new E()));
+            buffer.bind(entity2.set(new D(), new E()));
+            buffer.bind(entity3.set(new D(), new E()));
+            buffer.bind(entity4.set(new D(), new E()));
             manager.flush(buffer);
             let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
@@ -208,10 +208,10 @@ test(`CommandBuffer:
             manager.bindEntity(entity4);
 
             let buffer = manager.createCommandBuffer();
-            buffer.bind(entity1.clone().set(new D(), new E()));
-            buffer.bind(entity2.clone().set(new D(), new E()));
-            buffer.bind(entity3.clone().set(new D(), new E()));
-            buffer.bind(entity4.clone().set(new D(), new E()));
+            buffer.bind(entity1.set(new D(), new E()));
+            buffer.bind(entity2.set(new D(), new E()));
+            buffer.bind(entity3.set(new D(), new E()));
+            buffer.bind(entity4.set(new D(), new E()));
             let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
             let actual = [...generator];

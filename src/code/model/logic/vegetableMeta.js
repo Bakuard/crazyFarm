@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports.EntityMeta = class EntityMeta {
+module.exports.VegetableMeta = class VegetableMeta {
     constructor(typeName) {
         this.typeName = typeName;
     }

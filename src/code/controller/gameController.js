@@ -35,20 +35,20 @@ module.exports.GameController = class GameController {
     }
 
     startNewGame(clientSocket, req) {
-        let game = new Game();
+        let game = new Game(data => clientSocket.send(JSON.stringify(new dto.GardenBedResponse(data), null, 4)));
 
-        clientSocket.on('message', data => {});
+        clientSocket.on('pong', () => clientSocket.isAlive = true);
+        clientSocket.on('message', data => game.execute(JSON.parse(data)));
         clientSocket.on('error', e => logger.error(e));
         clientSocket.on('close', () => {
             logger.info('stop game for userId=%s', clientSocket.userId);
             game.stop();
         });
-        clientSocket.on('pong', () => clientSocket.isAlive = true);
 
         clientSocket.userId = req.userId;
         clientSocket.isAlive = true;
         
-        clientSocket.send(JSON.stringify(new dto.GardenBed(game.getGardenBed()), null, 4));
+        game.start();
     }
 
     authNewConnection(req, socket, head) {

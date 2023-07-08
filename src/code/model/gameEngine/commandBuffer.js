@@ -34,6 +34,10 @@ module.exports.CommandBuffer = class CommandBuffer {
         this.#commandsQueue.length = 0;
     }
 
+    isEmpty() {
+        return this.#commandsQueue.length == 0;
+    }
+
     forEach(callback) {
         this.#commandsQueue.forEach(command => callback(command));
     }

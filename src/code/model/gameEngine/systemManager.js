@@ -22,7 +22,7 @@ module.exports.SystemManager = class SystemManager {
     }
 
     updateGroup(groupName) {
-        this.#groups[groupName].
+        this.#groups[groupName]?.
             forEach(systemName => this.#systems[systemName](groupName, this.#world));
     }
 

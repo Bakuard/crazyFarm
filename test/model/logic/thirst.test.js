@@ -3,10 +3,13 @@ const {ThirstSystem} = require('../../../src/code/model/logic/thirst.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 let manager = null;
+let eventManager = null;
 beforeEach(() => {
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
+    eventManager = new EventManager();
 });
 
 test(`update(groupName, world):
@@ -29,7 +32,8 @@ test(`update(groupName, world):
                         getElapsedTime: () => 2000
                     }
                 },
-                getEntityComponentManager: () => manager
+                getEntityComponentManager: () => manager,
+                getEventManager: () => eventManager
             };
             
             let system = new ThirstSystem(manager);
@@ -61,7 +65,8 @@ test(`update(groupName, world):
                         getElapsedTime: () => 2000
                     }
                 },
-                getEntityComponentManager: () => manager
+                getEntityComponentManager: () => manager,
+                getEventManager: () => eventManager
             };
             
             let system = new ThirstSystem(manager);

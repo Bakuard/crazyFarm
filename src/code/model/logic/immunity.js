@@ -1,6 +1,5 @@
 'use strict'
 
-const {EntityFilter} = require('../gameEngine/entityComponentManager.js');
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
 
 class Immunity {
@@ -27,7 +26,9 @@ module.exports.ImmunitySystem = class ImmunitySystem {
     }
 
     update(groupName, world) {
+        let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
+        
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let immunity = entity.get(Immunity);
 
@@ -42,6 +43,13 @@ module.exports.ImmunitySystem = class ImmunitySystem {
                 immunity.current = Math.max(0, 
                     immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
             }
+
+            if(eventManager.readEvent('sprayer', 0)) {
+                immunity.current = immunity.max;
+                immunity.isSick = false;
+            }
         }
+
+        eventManager.clearEventQueue('sprayer');
     }
 };
