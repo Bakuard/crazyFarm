@@ -23,7 +23,10 @@ module.exports.BadCredentialException = class BadCredentialException extends Abs
 
 module.exports.ValidationException = class ValidationException extends AbstractDomainException {
     userMessageKeys;
-    constructor(logMessage, ...userMessageKeys) {
+    constructor(user, ...userMessageKeys) {
+        let logMessage = user != null ? 
+                    `Fail validation new user: ${JSON.stringify(user, (k, v) => k == 'password' ? '***' : v)}`:
+                    'Fail validation new user: null';
         super(null, logMessage, []);
         this.userMessageKeys = userMessageKeys;
     }

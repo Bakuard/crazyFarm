@@ -1,3 +1,5 @@
+let util = require('util');
+
 expect.extend({
     toEqualEntity(actual, entity) {
         let isPass = actual.equals(entity);
@@ -17,3 +19,31 @@ expect.extend({
         };
     }
 });
+
+expect.extend({
+    toThrowValidationException(actual, expectedException) {
+        let isPass = true;
+        try {
+            actual();
+            isPass = false;
+        } catch(err) {
+            actual = err;
+            isPass = actual instanceof Object.getPrototypeOf(expectedException).constructor &&
+                        actual.message === expectedException.message &&
+                        util.isDeepStrictEqual(new Set(actual.userMessageKeys), new Set(expectedException.userMessageKeys));
+        }
+        return {
+            message: () => isPass ? 'pass' : `expected => ${toPrettyMessage(expectedException)}\nactual => ${toPrettyMessage(actual)}`,
+            pass: isPass
+        };
+    }
+});
+
+function toPrettyMessage(exception) {
+    let result = {
+        typeName: Object.getPrototypeOf(exception).constructor.name,
+        message: exception.message,
+        userMessageKeys: exception.userMessageKeys
+    };
+    return util.inspect(result, {breakLength: Infinity, compact: true});
+}
