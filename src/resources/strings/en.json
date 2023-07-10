@@ -5,30 +5,28 @@
         "link": "complete registration"
     },
     "unexpectedException": "Unexpected Exception",
+    "Unauthorized": "Login to the application or register again.",
     "User": {
         "logginOrEmail": {
             "notUnique": "User with such loggin or email already exists."
         },
         "loggin": {
-            "unknown": "There is no user with such loggin."
-        },
-        "password": {
-            "incorrect": "Incorrect password."
-        }
-    },
-    "Unauthorized": "Login to the application or register again.",
-    "newUser": {
-        "loggin": {
-            "min": "Login must contain at least one not-blank characters.",
-            "max": "Login can't contain more than 20 characters."
+            "min": "Login must contain at least two not-blank characters.",
+            "max": "Login musn't contain more than 20 characters.",
+            "unknown": "There is no user with such loggin.",
+            "notEmpty": "Loggin mustn't be empty"
         },
         "password": {
             "min": "Password must contain at least 8 characters.",
-            "max": "Password can't contain more than 50 character."
+            "max": "Password musn't contain more than 50 character.",
+            "incorrect": "Incorrect password.",
+            "notEmpty": "Password mustn't be empty"
         },
         "email": {
             "format": "Email format is incorrect.",
-            "notEmpty": "Email can't be empty."
-        }
+            "notEmpty": "Email musn't be empty.",
+            "max": "Email musn't contain more than 50 characters."
+        },
+        "undefined": "User data is undefined"
     }
 }

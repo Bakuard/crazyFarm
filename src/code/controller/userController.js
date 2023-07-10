@@ -26,6 +26,7 @@ module.exports.UserController = class UserController {
     async enter(req, res, next) { 
         logger.info('enter(): user %s is trying to enter', req.body.loggin);
 
+        validator.checkExistedUser(req.body);
         let user = await userRepository.tryFindByLoggin(req.body.loggin);
         user.assertCorrectPassword(req.body.password);
         let jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));

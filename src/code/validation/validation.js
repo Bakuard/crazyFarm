@@ -4,21 +4,26 @@ const Joi = require('joi');
 const exceptions = require('../model/exception/exceptions.js');
 
 const registerUserSchema = Joi.object({
-    loggin: Joi.string().trim().min(1).max(20).required().messages({
-        'string.min': 'newUser.loggin.min',
-        'string.max': 'newUser.loggin.max',
-        'string.empty': 'newUser.loggin.min'
+    loggin: Joi.string().trim().min(2).max(20).required().messages({
+        'string.min': 'User.loggin.min',
+        'string.max': 'User.loggin.max',
+        'string.empty': 'User.loggin.notEmpty',
+        'any.required': 'User.loggin.notEmpty'
     }),
-    email: Joi.string().email().messages({
-        'string.email': 'newUser.email.format',
-        'string.empty': 'newUser.email.notEmpty'
+    email: Joi.string().trim().max(50).email().required().messages({
+        'string.email': 'User.email.format',
+        'string.max': 'User.email.max',
+        'string.empty': 'User.email.notEmpty',
+        'any.required': 'User.email.notEmpty'
     }),
     password: Joi.string().trim().min(8).max(50).required().messages({
-        'string.min': 'newUser.password.min',
-        'string.max': 'newUser.password.max',
-        'string.empty': 'newUser.password.min'
+        'string.min': 'User.password.min',
+        'string.max': 'User.password.max',
+        'string.empty': 'User.password.notEmpty',
+        'any.required': 'User.password.notEmpty'
     })
 });
+const existedUserSchema = registerUserSchema.fork(['email'], schema => schema.optional());
 
 function exstractKeys(joiError, domainException) {
     for(let key of joiError.details) {
@@ -27,13 +32,26 @@ function exstractKeys(joiError, domainException) {
     return domainException;
 }
 
-module.exports.checkNewUser = function(newUser) {
-    let {error, value} = registerUserSchema.validate(newUser, {abortEarly: false});
+module.exports.checkNewUser = function(user) {
+    let {error, value} = registerUserSchema.validate(user, {abortEarly: false});
     if(error) {
         throw exstractKeys(
             error,
-            new exceptions.ValidationException(
-                `Fail validation new user: ${JSON.stringify(newUser, (k, v) => k == 'password' ? '***' : v)}`)
+            new exceptions.ValidationException(user)
         );
+    } else if(user == null) {
+        throw new exceptions.ValidationException(null, 'User.undefined');
+    }
+}
+
+module.exports.checkExistedUser = function(user) {
+    let {error, value} = existedUserSchema.validate(user, {abortEarly: false});
+    if(error) {
+        throw exstractKeys(
+            error,
+            new exceptions.ValidationException(user)
+        );
+    } else if(user == null) {
+        throw new exceptions.ValidationException(null, 'User.undefined');
     }
 }
