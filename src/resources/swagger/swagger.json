@@ -3,7 +3,7 @@
   "info": {
     "title": "Crazy Farm",
     "description": "Official Crazy Farm API",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "paths": {
     "/users/enter": {

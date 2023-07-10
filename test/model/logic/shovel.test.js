@@ -6,6 +6,7 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
+const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 
 let manager = null;
 let eventManager = null;
@@ -98,4 +99,52 @@ test(`update(groupName, world):
         let actual = manager.isAlive(vegetable);
 
         expect(actual).toBe(false);
+    });
+
+test(`update(groupName, world):
+        there is 'shovel' event,
+        gardenBedCell contains potatoGhost
+        => don't remove vegetable from gardenCell`,
+    () => {
+        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
+        let ghost = manager.createEntity().addTags('sleeping seed').
+                        put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
+        cell.get(GardenBedCell).vegetable = ghost;
+        manager.bindEntity(cell);
+        manager.bindEntity(ghost);
+        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
+        let worldMock = {
+            getEntityComponentManager: () => manager,
+            getEventManager: () => eventManager
+        };
+
+        let system = new ShovelSystem(manager);
+        system.update('update', worldMock);
+        let actual = cell.get(GardenBedCell).vegetable;
+
+        expect(actual).toBe(ghost);
+    });
+
+test(`update(groupName, world):
+        there is 'shovel' event,
+        gardenBedCell contains potatoGhost
+        => don't remove vegetable entity`,
+    () => {
+        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
+        let ghost = manager.createEntity().addTags('sleeping seed').
+                        put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
+        cell.get(GardenBedCell).vegetable = ghost;
+        manager.bindEntity(cell);
+        manager.bindEntity(ghost);
+        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
+        let worldMock = {
+            getEntityComponentManager: () => manager,
+            getEventManager: () => eventManager
+        };
+
+        let system = new ShovelSystem(manager);
+        system.update('update', worldMock);
+        let actual = manager.isAlive(ghost);
+
+        expect(actual).toBe(true);
     });

@@ -2,6 +2,8 @@
 
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
+const {GardenBedCell} = require('./gardenBedCell.js');
+const {PotatoGhost} = require('./potatoDeath.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
     constructor(entityComponentManager) {
@@ -15,8 +17,11 @@ module.exports.ShovelSystem = class ShovelSystem {
 
         if(eventManager.readEvent('shovel', 0)) {
             for(let entity of manager.select(this.filter)) {
-                entity.get(GardenBedCellLink).gardenBedCell.vegetable = null;
-                buffer.remove(entity);
+                if(!entity.hasComponents(PotatoGhost)) {
+                    let cell = entity.get(GardenBedCellLink).gardenBedCell;
+                    cell.get(GardenBedCell).vegetable = null;
+                    buffer.remove(entity);
+                }
             }
         }
 
