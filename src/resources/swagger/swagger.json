@@ -5,11 +5,6 @@
     "description": "Official Crazy Farm API",
     "version": "0.1.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:12000/"
-    }
-  ],
   "paths": {
     "/users/enter": {
       "post": {
@@ -131,6 +126,47 @@
         "security": [{"commonAuthKey": []}],
         "parameters": [],
         "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Если передан не корректный токен или токен не указан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/getJwtForConnection": {
+      "get": {
+        "tags": ["Игровой процесс"],
+        "summary": "Возвращает новый токен для подключения к игровому процессу через Websocket",
+        "description": "Возвращает JWT токен для подключения к игровому процессу через Websocket. Передается в запросе ws://serverAddress/game?token=jwt на установление соединения через Websocket.",
+        "security": [{"commonAuthKey": []}],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Переданный токен корректен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsWebsocketConnectionResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Если передан не корректный токен или токен не указан",
             "content": {
@@ -147,6 +183,15 @@
   },
   "components": {
     "schemas": {
+      "jwsWebsocketConnectionResponse": {
+        "type": "object",
+        "properties": {
+          "jws": {
+            "type": "string",
+            "example": "token-value"
+          }
+        }
+      },
       "jwsResponse": {
         "type": "object",
         "properties": {

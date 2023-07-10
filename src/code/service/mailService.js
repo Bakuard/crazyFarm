@@ -34,7 +34,7 @@ module.exports.MailService = class MailService {
             subject: 'confirm registration',
             html: this.#compiledTemplateForRegistration({
                 registrationCompleteMessage: i18next.t('register.compliteMessage', {lng}),
-                returnAddressWithJwt: process.env.MAIL_RETURN_ADDRESS + '/' + jws,
+                returnAddressWithJwt: process.env.MAIL_RETURN_ADDRESS + '?token=' + jws,
                 link: i18next.t('register.link', {lng})
             })
         });
