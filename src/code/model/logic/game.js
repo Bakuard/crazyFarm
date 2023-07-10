@@ -47,7 +47,7 @@ module.exports.Game = class Game {
             putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
-            putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
+            //putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
             putSystem('OutputSystem', output.update.bind(output), groups.update);
     }
 
