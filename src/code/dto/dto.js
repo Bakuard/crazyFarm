@@ -66,9 +66,9 @@ class VegetableResponse {
             this.stage = growStates.allValues.length;
         } else {
             this.stage = vegetable.get(GrowTimer).growState.ordinal;
-            if(vegetable.get(Thirst).current < 5) this.needs.push('THIRST');
-            if(vegetable.get(Satiety).current < 5) this.needs.push('HUNGER');
-            if(vegetable.get(Immunity).current < 5) this.needs.push('SICKNESS');
+            if(vegetable.get(Thirst).current < 15) this.needs.push('THIRST');
+            if(vegetable.get(Satiety).current < 15) this.needs.push('HUNGER');
+            if(vegetable.get(Immunity).current < 15) this.needs.push('SICKNESS');
         }
     }
 }
