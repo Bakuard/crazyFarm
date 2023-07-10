@@ -2,6 +2,7 @@
 
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
+const {GardenBedCell} = require('./gardenBedCell.js');
 
 class PotatoGhost {
     constructor(timeInMillis) {
@@ -27,7 +28,8 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
 
             potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
             if(potatoGhost.timeInMillis == 0) {
-                entity.get(GardenBedCellLink).gardenBedCell.vegetable = null;
+                let cell = entity.get(GardenBedCellLink).gardenBedCell;
+                cell.get(GardenBedCell).vegetable = null;
                 buffer.remove(entity);
             }
         }
