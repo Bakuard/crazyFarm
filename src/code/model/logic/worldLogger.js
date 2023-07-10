@@ -1,8 +1,8 @@
 'use strict'
 
 const {VegetableMeta} = require('./vegetableMeta');
-const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {newLogger} = require('../../conf/logConf.js');
+const util = require('util');
 
 let logger = newLogger('info', 'worldLogger.js');
 
@@ -14,23 +14,23 @@ module.exports.WorldLogger = class WorldLogger {
 
     update(groupName, world) {
         let manager = world.getEntityComponentManager();
+        let gameLoop = world.getGameLoop();
 
         let empty = true;
         for(let vegetable of manager.select(this.filter)) {
-            logger.info('Updated world for userId=%s', this.userId);
-
             let res = `{personalId: ${vegetable.personalId}, generation: ${vegetable.generation}, tags=`;
-            res.tags = [];
-            vegetable.forEachTag(tag => res.tags.push(tag));
-            res = res + tags.toString() + ', ';
-            vegetable.forEachComponent(c => {
-                res += Object.getPrototypeOf(c).constructor.name;
-            });
-            logger.info(`entity for userId=%s: %s}`, this.userId, res);
+            let tags = [];
+            vegetable.forEachTag(tag => tags.push(tag));
+            res = res + '[' + tags + '], ';
+            vegetable.forEachComponent(c => 
+                res += util.formatWithOptions({breakLength: Infinity, compact: true}, '%O, ', c)
+            );
+            res += '}';
+            logger.info(`userId=%s; tick=%s; %s}`, this.userId, gameLoop.getFrameNumberSinceStart(), res);
 
             empty = false;
         }
 
-        if(empty) logger.info('empty garden cell for userId=%s', this.userId);
+        if(empty) logger.info('userId=%s; tick=%s; there are not vegetables', this.userId,  gameLoop.getFrameNumberSinceStart());
     }
 };

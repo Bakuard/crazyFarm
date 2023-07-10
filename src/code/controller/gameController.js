@@ -41,7 +41,7 @@ module.exports.GameController = class GameController {
         clientSocket.on('message', data => game.execute(JSON.parse(data)));
         clientSocket.on('error', e => logger.error(e));
         clientSocket.on('close', () => {
-            logger.info('stop game for userId=%s', clientSocket.userId);
+            logger.info('close socket for userId=%s', clientSocket.userId);
             game.stop();
         });
 

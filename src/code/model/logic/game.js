@@ -47,22 +47,22 @@ module.exports.Game = class Game {
             putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
-            //putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
+            putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
             putSystem('OutputSystem', output.update.bind(output), groups.update);
     }
 
     start() {
-        logger.info('start game for userId=%s', this.userId);
+        logger.info('userId=%s; start game', this.userId);
         this.world.getGameLoop().start();
     }
 
     stop() {
-        logger.info('stop game for userId=%s', this.userId);
+        logger.info('userId=%s: stop game', this.userId);
         this.world.getGameLoop().stop();
     }
 
     execute(command) {
-        logger.info('execute command=%s for userId=%s', command, this.userId);
+        logger.info('userId=%s; game command=%s', this.userId, command);
         this.world.getEventManager().writeEvent(command.tool, command);
     }
 
