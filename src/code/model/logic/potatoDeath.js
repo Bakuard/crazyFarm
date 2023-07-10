@@ -1,6 +1,7 @@
 'use strict'
 
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
+const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 
 class PotatoGhost {
     constructor(timeInMillis) {
@@ -25,7 +26,10 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
             let potatoGhost = entity.get(PotatoGhost);
 
             potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
-            if(potatoGhost.timeInMillis == 0) buffer.remove(entity);
+            if(potatoGhost.timeInMillis == 0) {
+                entity.get(GardenBedCellLink).gardenBedCell.vegetable = null;
+                buffer.remove(entity);
+            }
         }
 
         manager.flush(buffer);

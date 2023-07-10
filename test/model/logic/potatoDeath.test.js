@@ -3,6 +3,7 @@ const {PotatoDeathSystem} = require('../../../src/code/model/logic/potatoDeath.j
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
+const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 
 let manager = null;
 beforeEach(() => {
@@ -14,7 +15,8 @@ test(`update(groupName, world):
         => isAlive(entity) must return false`,
     () => {
         let entity = manager.createEntity().put(
-            new PotatoGhost(2000)
+            new PotatoGhost(2000),
+            new GardenBedCellLink({})
         );
         manager.bindEntity(entity);
         let worldMock = {
@@ -38,7 +40,8 @@ test(`update(groupName, world):
     => isAlive(entity) must return false`,
     () => {
         let entity = manager.createEntity().put(
-            new PotatoGhost(2000)
+            new PotatoGhost(2000),
+            new GardenBedCellLink({})
         );
         manager.bindEntity(entity);
         let worldMock = {
@@ -62,7 +65,8 @@ test(`update(groupName, world):
     => isAlive(entity) must return true`,
     () => {
         let entity = manager.createEntity().put(
-            new PotatoGhost(2000)
+            new PotatoGhost(2000),
+            new GardenBedCellLink({})
         );
         manager.bindEntity(entity);
         let worldMock = {
