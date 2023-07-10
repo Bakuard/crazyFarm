@@ -103,5 +103,5 @@ module.exports.Entity = class Entity {
     toString() {
         return `{personalId=${this.personalId}, generation=${this.generation}}`;
     }
-    
+
 };

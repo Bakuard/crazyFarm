@@ -2,22 +2,24 @@
 
 module.exports.ComponentIdGenerator = class ComponentIdGenerator {
 
+    #componentsId;
     #tagsId;
     #lastId;
 
     constructor() {
+        this.#componentsId = {};
         this.#tagsId = {};
         this.#lastId = 0;
     }
 
     getOrAssignIdForComponent(componentOrType) {
-        let prototype = typeof(componentOrType) == 'function' ? 
-                            componentOrType.prototype :
-                            Object.getPrototypeOf(componentOrType);
+        let typeName = typeof(componentOrType) == 'function' ? 
+                            componentOrType.name :
+                            Object.getPrototypeOf(componentOrType).constructor.name;
 
-        if(prototype.componentTypeId == undefined) prototype.componentTypeId = this.#lastId++;
+        if(this.#componentsId[typeName] == undefined) this.#componentsId[typeName] = this.#lastId++;
 
-        return prototype.componentTypeId;
+        return this.#componentsId[typeName];
     }
 
     getOrAssignIdForTag(tag) {

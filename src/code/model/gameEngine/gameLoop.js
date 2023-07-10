@@ -30,12 +30,14 @@ module.exports.GameLoop = class GameLoop {
     #timerId;
     #world;
     #frameDurationInMillis;
+    #frameNumberSinceStart;
 
     constructor(world, frameDurationInMillis) {
         this.#state = 'init';
         this.#elapsedTime = 0;
         this.#world = world;
         this.#frameDurationInMillis = frameDurationInMillis;
+        this.#frameNumberSinceStart = 0;
     }
 
     start() {
@@ -48,7 +50,10 @@ module.exports.GameLoop = class GameLoop {
                 this.#elapsedTime = currentTime - lastTime;
                 lastTime = currentTime;
                 
-                if(this.#state == 'update') this.#world.getSystemManager().updateGroup(groups.update, this.#world);
+                if(this.#state == 'update') {
+                    this.#world.getSystemManager().updateGroup(groups.update, this.#world);
+                    ++this.#frameNumberSinceStart;
+                }
             }, this.#frameDurationInMillis);
         }
     }
@@ -67,6 +72,10 @@ module.exports.GameLoop = class GameLoop {
 
     getElapsedTime() {
         return this.#elapsedTime;
+    }
+
+    getFrameNumberSinceStart() {
+        return this.#frameNumberSinceStart;
     }
 
 };

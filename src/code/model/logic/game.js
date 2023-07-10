@@ -12,10 +12,15 @@ const {groups} = require('../gameEngine/gameLoop.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
+const {WorldLogger} = require('./worldLogger.js');
+const {newLogger} = require('../../conf/logConf.js');
+
+let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback) {
+    constructor(outputCallback, userId) {
+        this.userId = userId;
         this.world = new World(1000);
 
         let cell = this.world.getEntityComponentManager().createEntity();
@@ -30,6 +35,7 @@ module.exports.Game = class Game {
         let commonDeath = new DeathSystem(this.world.getEntityComponentManager());
         let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager());
         let grow = new GrowTimerSystem(this.world.getEntityComponentManager());
+        let worldLogger = new WorldLogger(this.world.getEntityComponentManager(), userId);
         let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);
 
         this.world.getSystemManager().
@@ -41,18 +47,22 @@ module.exports.Game = class Game {
             putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
+            putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
             putSystem('OutputSystem', output.update.bind(output), groups.update);
     }
 
     start() {
+        logger.info('userId=%s; start game', this.userId);
         this.world.getGameLoop().start();
     }
 
     stop() {
+        logger.info('userId=%s: stop game', this.userId);
         this.world.getGameLoop().stop();
     }
 
     execute(command) {
+        logger.info('userId=%s; game command=%s', this.userId, command);
         this.world.getEventManager().writeEvent(command.tool, command);
     }
 

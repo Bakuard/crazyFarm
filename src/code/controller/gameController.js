@@ -35,13 +35,13 @@ module.exports.GameController = class GameController {
     }
 
     startNewGame(clientSocket, req) {
-        let game = new Game(data => clientSocket.send(JSON.stringify(new dto.GardenBedResponse(data), null, 4)));
+        let game = new Game(data => clientSocket.send(JSON.stringify(new dto.GardenBedResponse(data), null, 4)), req.userId);
 
         clientSocket.on('pong', () => clientSocket.isAlive = true);
         clientSocket.on('message', data => game.execute(JSON.parse(data)));
         clientSocket.on('error', e => logger.error(e));
         clientSocket.on('close', () => {
-            logger.info('stop game for userId=%s', clientSocket.userId);
+            logger.info('close socket for userId=%s', clientSocket.userId);
             game.stop();
         });
 
