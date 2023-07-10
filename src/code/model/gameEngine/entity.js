@@ -104,4 +104,11 @@ module.exports.Entity = class Entity {
         return `{personalId=${this.personalId}, generation=${this.generation}}`;
     }
     
+    toJSON() {
+        let result = {personalId: this.personalId, generation: this.generation};
+        Object.entries(this.#components).forEach(pair => result[pair[0]] = result[pair[1]]);
+        result.tags = Array.from(this.#tags);
+        return result;
+    }
+
 };

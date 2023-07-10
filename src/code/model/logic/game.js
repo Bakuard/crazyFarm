@@ -12,10 +12,14 @@ const {groups} = require('../gameEngine/gameLoop.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
+const {newLogger} = require('../../conf/logConf.js');
+
+let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback) {
+    constructor(outputCallback, userId) {
+        this.userId = userId;
         this.world = new World(1000);
 
         let cell = this.world.getEntityComponentManager().createEntity();
@@ -45,14 +49,17 @@ module.exports.Game = class Game {
     }
 
     start() {
+        logger.info('start game for userId=%s', this.userId);
         this.world.getGameLoop().start();
     }
 
     stop() {
+        logger.info('stop game for userId=%s', this.userId);
         this.world.getGameLoop().stop();
     }
 
     execute(command) {
+        logger.info('execute command=%s for userId=%s', command, this.userId);
         this.world.getEventManager().writeEvent(command.tool, command);
     }
 
