@@ -25,13 +25,13 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
                 let cell = entity.get(GardenBedCell);
 
                 if(cell && !cell.vegetable) {
-                    let vegetable = buffer.create();
+                    let vegetable = buffer.createEntity();
                     vegetable.put(new VegetableMeta('Potato'), new GardenBedCellLink(entity)).
                         addTags('sleeping seed');
-                    buffer.bind(vegetable);
+                    buffer.bindEntity(vegetable);
 
                     cell.vegetable = vegetable;
-                    buffer.bind(entity);
+                    buffer.bindEntity(entity);
                 }
             }
         }
@@ -45,7 +45,7 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
                         Satiety.of(60, 1),
                         Thirst.of(60, 1)
                     );
-                buffer.bind(entity);
+                buffer.bindEntity(entity);
             }
         }
 

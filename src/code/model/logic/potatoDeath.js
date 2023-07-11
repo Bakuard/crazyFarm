@@ -30,7 +30,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
             if(potatoGhost.timeInMillis == 0) {
                 let cell = entity.get(GardenBedCellLink).gardenBedCell;
                 cell.get(GardenBedCell).vegetable = null;
-                buffer.remove(entity);
+                buffer.removeEntity(entity);
             }
         }
 
