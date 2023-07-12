@@ -19,7 +19,7 @@ module.exports.ShovelSystem = class ShovelSystem {
             for(let entity of manager.select(this.filter)) {
                 if(!entity.hasComponents(PotatoGhost)) {
                     let cell = entity.get(GardenBedCellLink).gardenBedCell;
-                    cell.get(GardenBedCell).vegetable = null;
+                    cell.get(GardenBedCell).entity = null;
                     buffer.removeEntity(entity);
                 }
             }

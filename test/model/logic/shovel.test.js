@@ -62,7 +62,7 @@ test(`update(groupName, world):
     () => {
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let vegetable = manager.createEntity().addTags('sleeping seed').put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).vegetable = vegetable;
+        cell.get(GardenBedCell).entity = vegetable;
         manager.bindEntity(cell);
         manager.bindEntity(vegetable);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
@@ -73,7 +73,7 @@ test(`update(groupName, world):
 
         let system = new ShovelSystem(manager);
         system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).vegetable;
+        let actual = cell.get(GardenBedCell).entity;
 
         expect(actual).toBeNull();
     });
@@ -85,7 +85,7 @@ test(`update(groupName, world):
     () => {
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let vegetable = manager.createEntity().addTags('sleeping seed').put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).vegetable = vegetable;
+        cell.get(GardenBedCell).entity = vegetable;
         manager.bindEntity(cell);
         manager.bindEntity(vegetable);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
@@ -109,7 +109,7 @@ test(`update(groupName, world):
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let ghost = manager.createEntity().addTags('sleeping seed').
                         put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).vegetable = ghost;
+        cell.get(GardenBedCell).entity = ghost;
         manager.bindEntity(cell);
         manager.bindEntity(ghost);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
@@ -120,7 +120,7 @@ test(`update(groupName, world):
 
         let system = new ShovelSystem(manager);
         system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).vegetable;
+        let actual = cell.get(GardenBedCell).entity;
 
         expect(actual).toBe(ghost);
     });
@@ -133,7 +133,7 @@ test(`update(groupName, world):
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let ghost = manager.createEntity().addTags('sleeping seed').
                         put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).vegetable = ghost;
+        cell.get(GardenBedCell).entity = ghost;
         manager.bindEntity(cell);
         manager.bindEntity(ghost);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});

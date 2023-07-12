@@ -27,7 +27,7 @@ test(`update(groupName, world):
             new PotatoGhost(2000),
             new GardenBedCellLink(cell)
         );
-        cell.get(GardenBedCell).vegetable = entity;
+        cell.get(GardenBedCell).entity = entity;
         manager.bindEntity(entity);
         manager.bindEntity(cell);
         let worldMock = {
@@ -53,7 +53,7 @@ test(`update(groupName, world):
             new PotatoGhost(2000),
             new GardenBedCellLink(cell)
         );
-        cell.get(GardenBedCell).vegetable = entity;
+        cell.get(GardenBedCell).entity = entity;
         manager.bindEntity(entity);
         manager.bindEntity(cell);
         let worldMock = {
@@ -79,7 +79,7 @@ test(`update(groupName, world):
             new PotatoGhost(2000),
             new GardenBedCellLink(cell)
         );
-        cell.get(GardenBedCell).vegetable = entity;
+        cell.get(GardenBedCell).entity = entity;
         manager.bindEntity(entity);
         manager.bindEntity(cell);
         let worldMock = {
@@ -105,7 +105,7 @@ test(`update(groupName, world):
             new PotatoGhost(2000),
             new GardenBedCellLink(cell)
         );
-        cell.get(GardenBedCell).vegetable = entity;
+        cell.get(GardenBedCell).entity = entity;
         manager.bindEntity(entity);
         manager.bindEntity(cell);
         let worldMock = {
@@ -117,7 +117,7 @@ test(`update(groupName, world):
 
         let system = new PotatoDeathSystem(manager);
         system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).vegetable;
+        let actual = cell.get(GardenBedCell).entity;
 
         expect(actual).toBeNull();
     });
@@ -134,7 +134,7 @@ test(`update(groupName, world):
             Satiety.of(60, 1),
             Thirst.of(60, 1)
         ).addTags('Potato', 'dead');
-        cell.get(GardenBedCell).vegetable = entity;
+        cell.get(GardenBedCell).entity = entity;
         manager.bindEntity(entity);
         manager.bindEntity(cell);
         let worldMock = {

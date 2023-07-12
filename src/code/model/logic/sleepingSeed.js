@@ -24,13 +24,13 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
             for(let entity of manager.select(this.cellFilter)) {
                 let cell = entity.get(GardenBedCell);
 
-                if(cell && !cell.vegetable) {
+                if(cell && !cell.entity) {
                     let vegetable = buffer.createEntity();
                     vegetable.put(new VegetableMeta('Potato'), new GardenBedCellLink(entity)).
                         addTags('sleeping seed');
-                    buffer.bindEntity(vegetable);
+                    cell.entity = vegetable;
 
-                    cell.vegetable = vegetable;
+                    buffer.bindEntity(vegetable);
                     buffer.bindEntity(entity);
                 }
             }
