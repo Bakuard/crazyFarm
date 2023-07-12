@@ -215,3 +215,38 @@ test(`create entity during iteration:
 
         expect(() => generator.next()).not.toThrow();
     });
+
+test(`putSingletonEntity(name, entity) and getSingletonEntity(name):
+        there is not entity with this name
+        => getSingletonEntity(name) must return this entity by this name`,
+    () => {
+        let entity = manager.createEntity();
+
+        manager.putSingletonEntity('singleton', entity);
+        let actual = manager.getSingletonEntity('singleton');
+
+        expect(actual).toBe(entity);
+    });
+
+test(`putSingletonEntity(name, entity) and getSingletonEntity(name):
+        there is entity with this name
+        => getSingletonEntity(name) must return new entity by this namey`,
+    () => {
+        let originalEntity = manager.createEntity();
+        let newEntity = manager.createEntity();
+        manager.putSingletonEntity('singleton', originalEntity);
+
+        manager.putSingletonEntity('singleton', newEntity);
+        let actual = manager.getSingletonEntity('singleton');
+
+        expect(actual).toBe(newEntity);
+    });
+
+test(`getSingletonEntity(name):
+        there is not entity with this name
+        => return undefined`,
+    () => {
+        let actual = manager.getSingletonEntity('singleton');
+
+        expect(actual).toBeUndefined();
+    });
