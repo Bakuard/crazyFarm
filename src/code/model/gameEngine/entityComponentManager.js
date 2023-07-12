@@ -26,6 +26,14 @@ class Archetype {
         }
     }
 
+    size() {
+        return this.entities.length;
+    }
+
+    get(index) {
+        return this.entities[index];
+    }
+
     [Symbol.iterator]() {
         return {
             currentIndex: 0,

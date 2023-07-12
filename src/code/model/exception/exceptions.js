@@ -49,9 +49,3 @@ module.exports.UnauthorizedException = class UnauthorizedException extends Abstr
         super(userMessageKey, logMessage, reasons);
     }
 }
-
-module.exports.UnregisteredComponentException = class UnregisteredComponentException extends AbstractDomainException {
-    constructor(userMessageKey, logMessage, ...reasons) {
-        super(userMessageKey, logMessage, reasons);
-    }
-}
