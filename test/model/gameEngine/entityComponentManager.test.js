@@ -1,6 +1,5 @@
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
-const {Entity} = require('../../../src/code/model/gameEngine/entity.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let A, B, C, D, E = null;
@@ -197,3 +196,22 @@ test(`bindEntity(entity) and select(entityFilter):
 
             expect(actual).containsEntities(entity1, entity2, entity3);
         });
+    
+test(`create entity during iteration:
+        don't throw exception`,
+    () => {
+        let entity1 = manager.createEntity();
+        let entity2 = manager.createEntity();
+        let entity3 = manager.createEntity();
+        let entity4 = manager.createEntity();
+        manager.bindEntity(entity1); 
+        manager.bindEntity(entity2); 
+        manager.bindEntity(entity3); 
+        manager.bindEntity(entity4);
+
+        let filter = manager.createFilter();
+        let generator = manager.select(filter);
+        manager.createEntity();
+
+        expect(() => generator.next()).not.toThrow();
+    });

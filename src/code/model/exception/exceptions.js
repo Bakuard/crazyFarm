@@ -50,8 +50,8 @@ module.exports.UnauthorizedException = class UnauthorizedException extends Abstr
     }
 }
 
-module.exports.UnregisteredComponentException = class UnregisteredComponentException extends AbstractDomainException {
-    constructor(userMessageKey, logMessage, ...reasons) {
-        super(userMessageKey, logMessage, reasons);
+module.exports.UnknownVegetableType = class UnknownVegetableType extends Error {
+    constructor(logMessage) {
+        super(logMessage);
     }
 }

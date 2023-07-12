@@ -4,7 +4,6 @@ const http = require('http');
 const format = require('date-format');
 const exceptions = require('../model/exception/exceptions.js');
 const {i18next} = require('../conf/i18nConf.js');
-const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
@@ -76,7 +75,7 @@ module.exports.VegetableResponse = VegetableResponse;
 
 class GardenBedCellResponse {
     constructor(cell) {
-        let vegetable = cell.get(GardenBedCell).vegetable;
+        let vegetable = cell.get(GardenBedCell).entity;
 
         this.isEmpty = !vegetable;
         this.isBlocked = Boolean(vegetable?.get(PotatoGhost));
