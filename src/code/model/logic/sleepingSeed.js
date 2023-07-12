@@ -1,18 +1,15 @@
 'use strict'
 
 const {VegetableMeta} = require('./vegetableMeta');
-const {Thirst} = require('./thirst.js');
-const {Satiety} = require('./satiety.js');
-const {Immunity} = require('./immunity.js');
-const {GrowTimer, growStates} = require('./growTimer.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 
 module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
-    constructor(entityComponentManager) {
+    constructor(entityComponentManager, fabric) {
         this.cellFilter = entityComponentManager.createFilter().all(GardenBedCell);
         this.vegetableFilter = entityComponentManager.createFilter().allTags('sleeping seed');
+        this.fabric = fabric;
     }
 
     update(groupName, world) {
@@ -40,10 +37,10 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
             if(eventManager.readEvent('bailer', 0)) {
                 entity.removeTags('sleeping seed').
                     put(
-                        GrowTimer.of(growStates.seed, [3, 40, 40, 40, 40]),
-                        Immunity.of(60, 1, 0.2),
-                        Satiety.of(60, 1),
-                        Thirst.of(60, 1)
+                        this.fabric.growTimer('Potato'),
+                        this.fabric.thirst('Potato'),
+                        this.fabric.satiety('Potato'),
+                        this.fabric.immunity('Potato')
                     );
                 buffer.bindEntity(entity);
             }

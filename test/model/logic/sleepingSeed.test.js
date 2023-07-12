@@ -10,10 +10,13 @@ const {GrowTimer} = require('../../../src/code/model/logic/growTimer.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
+const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 
+let fabric = null;
 let manager = null;
 let eventManager = null;
 beforeEach(() => {
+    fabric = Fabric.createWithDefaultSettings();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     eventManager = new EventManager();
 });
@@ -36,7 +39,7 @@ test(`update(groupName, world):
         let expectEntity1 = entity1.clone();
         let expectEntity2 = entity2.clone();
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
 
         expect(entity1).toEqualEntity(expectEntity1);
@@ -58,7 +61,7 @@ test(`update(groupName, world):
         };
         let expectEntity = entity.clone();
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
@@ -79,7 +82,7 @@ test(`update(groupName, world):
         };
         let expectEntity = entity.clone();
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
@@ -104,7 +107,7 @@ test(`update(groupName, world):
         let expectEntity1 = entity1.clone();
         let expectEntity2 = entity2.clone();
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
 
         expect(entity1).toEqualEntity(expectEntity1);
@@ -125,7 +128,7 @@ test(`update(groupName, world):
             getEventManager: () => eventManager
         };
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
         let filter = manager.createFilter().all(VegetableMeta);
         let actual = [...manager.select(filter)];
@@ -147,7 +150,7 @@ test(`update(groupName, world):
             getEventManager: () => eventManager
         };
 
-        let system = new SleepingSeedSystem(manager);
+        let system = new SleepingSeedSystem(manager, fabric);
         system.update('update', worldMock);
         let filter = manager.createFilter().all(VegetableMeta);
         let actual = [...manager.select(filter)];

@@ -16,10 +16,11 @@ class PotatoGhost {
 module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
-    constructor(entityComponentManager) {
+    constructor(entityComponentManager, fabric) {
         this.fixedInterval = new FixedInterval(1000);
         this.deadFilter = entityComponentManager.createFilter().allTags('Potato', 'dead');
         this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
+        this.fabric = fabric;
     }
 
     update(groupName, world) {
@@ -29,7 +30,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         for(let entity of manager.select(this.deadFilter)) {
             entity.remove(GrowTimer, Immunity, Satiety, Thirst).
                 removeTags('Potato', 'dead').
-                put(new PotatoGhost(10000));
+                put(this.fabric.potatoGhost());
             buffer.bindEntity(entity);
         }
 

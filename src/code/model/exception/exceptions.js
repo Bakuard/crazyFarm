@@ -49,3 +49,9 @@ module.exports.UnauthorizedException = class UnauthorizedException extends Abstr
         super(userMessageKey, logMessage, reasons);
     }
 }
+
+module.exports.UnknownVegetableType = class UnknownVegetableType extends Error {
+    constructor(logMessage) {
+        super(logMessage);
+    }
+}

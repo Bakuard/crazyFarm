@@ -1,7 +1,6 @@
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
-const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {GrowTimer, growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 const {PotatoDeathSystem} = require('../../../src/code/model/logic/potatoDeath.js');
@@ -10,10 +9,19 @@ const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/compo
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {GardenBedCell} = require('../../../src/code/model/logic/gardenBedCell.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
+const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 
+let fabric = null;
 let manager = null;
 let compGeneratorId = null;
 beforeEach(() => {
+    fabric = new Fabric({
+        potato: {
+            ghost: {
+                timeInMillis: 2000
+            }
+        }
+    });
     compGeneratorId = new ComponentIdGenerator();
     manager = new EntityComponentManager(new EntityManager(), compGeneratorId);
 });
@@ -37,7 +45,7 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new PotatoDeathSystem(manager);
+        let system = new PotatoDeathSystem(manager, fabric);
         system.update('update', worldMock);
         let actual = manager.isAlive(entity);
 
@@ -63,7 +71,7 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new PotatoDeathSystem(manager);
+        let system = new PotatoDeathSystem(manager, fabric);
         system.update('update', worldMock);
         let actual = manager.isAlive(entity);
 
@@ -89,7 +97,7 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new PotatoDeathSystem(manager);
+        let system = new PotatoDeathSystem(manager, fabric);
         system.update('update', worldMock);
         let actual = manager.isAlive(entity);
 
@@ -115,7 +123,7 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new PotatoDeathSystem(manager);
+        let system = new PotatoDeathSystem(manager, fabric);
         system.update('update', worldMock);
         let actual = cell.get(GardenBedCell).entity;
 
@@ -144,7 +152,7 @@ test(`update(groupName, world):
             getEntityComponentManager: () => manager
         };
 
-        let system = new PotatoDeathSystem(manager);
+        let system = new PotatoDeathSystem(manager, fabric);
         system.update('update', worldMock);
 
         expect(entity.hasComponents(GrowTimer)).toBe(false);
