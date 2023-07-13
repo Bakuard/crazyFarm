@@ -74,8 +74,8 @@ module.exports.Fabric = class Fabric {
     thirst(vegetableTypeName) {
         if(vegetableTypeName == 'Potato') {
             return Thirst.of(
-                this.settings.potato.immunity.max, 
-                this.settings.potato.immunity.declineRatePerSeconds
+                this.settings.potato.thirst.max, 
+                this.settings.potato.thirst.declineRatePerSeconds
             );
         } else {
             throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
@@ -85,8 +85,8 @@ module.exports.Fabric = class Fabric {
     satiety(vegetableTypeName) {
         if(vegetableTypeName == 'Potato') {
             return Satiety.of(
-                this.settings.potato.immunity.max, 
-                this.settings.potato.immunity.declineRatePerSeconds
+                this.settings.potato.satiety.max, 
+                this.settings.potato.satiety.declineRatePerSeconds
             );
         } else {
             throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
@@ -97,7 +97,8 @@ module.exports.Fabric = class Fabric {
         if(vegetableTypeName == 'Potato') {
             return Immunity.of(
                 this.settings.potato.immunity.max, 
-                this.settings.potato.immunity.declineRatePerSeconds
+                this.settings.potato.immunity.declineRatePerSeconds,
+                this.settings.potato.immunity.probability
             );
         } else {
             throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);

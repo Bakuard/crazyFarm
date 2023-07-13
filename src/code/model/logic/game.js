@@ -28,7 +28,7 @@ module.exports.Game = class Game {
 
         let initLogicSystem = new InitLogicSystem(fabric);
         let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
-        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager());
+        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager(), fabric);
         let thirst = new ThirstSystem(this.world.getEntityComponentManager());
         let satiety = new SatietySystem(this.world.getEntityComponentManager());
         let immunity = new ImmunitySystem(Math.random, this.world.getEntityComponentManager());
