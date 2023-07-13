@@ -6,6 +6,7 @@ const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
 const {UnknownVegetableType} = require('../exception/exceptions.js');
+const {Wallet} = require('./wallet.js');
 
 const defaultSettings = {
     potato: {
@@ -29,6 +30,18 @@ const defaultSettings = {
             state: growStates.seed,
             intervalsInSeconds: [3, 40, 40, 40, 40]
         }
+    },
+    wallet: {
+        sum: 10
+    },
+    fertilizer: {
+        price: 1
+    },
+    sprayer: {
+        price: 2
+    },
+    seeds: {
+        price: 3
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -90,6 +103,15 @@ module.exports.Fabric = class Fabric {
             throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
         }
     }  
+
+    wallet() {
+        return new Wallet(
+            this.settings.wallet.sum,
+            this.settings.fertilizer.price,
+            this.settings.sprayer.price,
+            this.settings.seeds.price
+        );
+    }
 
 
     setSettings(settings) {

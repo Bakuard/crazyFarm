@@ -2,9 +2,9 @@ let util = require('util');
 
 expect.extend({
     toEqualEntity(actual, entity) {
-        let isPass = actual.equals(entity);
+        let isPass = entity.deepEquals(actual);
         return {
-            message: () => isPass ? 'pass' : `expected=${entity}, actual=${actual}`,
+            message: () => isPass ? 'pass' : `expected=${entity.toDetailString()}\nactual=${actual.toDetailString()}`,
             pass: isPass
         };
     }

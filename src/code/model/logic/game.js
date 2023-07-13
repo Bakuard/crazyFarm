@@ -11,8 +11,8 @@ const {GrowTimerSystem} = require('./growTimer.js');
 const {groups} = require('../gameEngine/gameLoop.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
-const {GardenBedCell} = require('./gardenBedCell.js');
 const {WorldLogger} = require('./worldLogger.js');
+const {InitLogicSystem} = require('./initLogic.js');
 const {Fabric} = require('./fabric.js');
 const {newLogger} = require('../../conf/logConf.js');
 
@@ -24,12 +24,9 @@ module.exports.Game = class Game {
         this.userId = userId;
         this.world = new World(1000);
 
-        let cell = this.world.getEntityComponentManager().createEntity();
-        cell.put(GardenBedCell.of(0, 0));
-        this.world.getEntityComponentManager().bindEntity(cell);
-
         let fabric = Fabric.createWithDefaultSettings();
 
+        let initLogicSystem = new InitLogicSystem(fabric);
         let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
         let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager());
         let thirst = new ThirstSystem(this.world.getEntityComponentManager());
@@ -42,6 +39,7 @@ module.exports.Game = class Game {
         let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);
 
         this.world.getSystemManager().
+            putSystem('InitLogicSystem', initLogicSystem.update.bind(initLogicSystem), groups.start).
             putSystem('ShovelSystem', shovelSystem.update.bind(shovelSystem), groups.update).
             putSystem('SleepingSeedSystem', sleepingSeed.update.bind(sleepingSeed), groups.update).
             putSystem('ThirstSystem', thirst.update.bind(thirst), groups.update).
@@ -65,7 +63,7 @@ module.exports.Game = class Game {
     }
 
     execute(command) {
-        logger.info('userId=%s; game command=%s', this.userId, command);
+        logger.info('userId=%s; execute game command=%s', this.userId, command);
         this.world.getEventManager().writeEvent(command.tool, command);
     }
 

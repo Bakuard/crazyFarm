@@ -1,6 +1,7 @@
 'use strict'
 
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
+const {Wallet} = require('./wallet.js');
 
 class Immunity {
     static of(max, declineRatePerSeconds, probability) {
@@ -26,10 +27,11 @@ module.exports.ImmunitySystem = class ImmunitySystem {
     }
 
     update(groupName, world) {
+        let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
         
-        for(let entity of world.getEntityComponentManager().select(this.filter)) {
+        for(let entity of manager.select(this.filter)) {
             let immunity = entity.get(Immunity);
 
             this.fixedInterval.execute(() => {
@@ -44,9 +46,11 @@ module.exports.ImmunitySystem = class ImmunitySystem {
                     immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
             }
 
-            if(eventManager.readEvent('sprayer', 0)) {
+            let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+            if(eventManager.readEvent('sprayer', 0) && wallet.sum >= wallet.sprayerPrice) {
                 immunity.current = immunity.max;
                 immunity.isSick = false;
+                wallet.sum -= wallet.sprayerPrice;
             }
         }
 

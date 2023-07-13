@@ -1,5 +1,8 @@
 'use strict' 
 
+const util = require('util');
+const equal = require('deep-equal');
+
 module.exports.Entity = class Entity {
     personalId;
     generation;
@@ -100,8 +103,21 @@ module.exports.Entity = class Entity {
             this.generation === otherEntity.generation;
     }
 
+    deepEquals(otherEntity) {
+        return this.equals(otherEntity) &&
+            equal(this.#components, otherEntity.#components) &&
+            equal(this.#tags, otherEntity.#tags);
+    }
+
     toString() {
         return `{personalId=${this.personalId}, generation=${this.generation}}`;
+    }
+
+    toDetailString() {
+        let components = Array.from(Object.values(this.#components)).
+                            map(c => util.formatWithOptions({breakLength: Infinity, compact: true}, '%O', c)).
+                            join(', ');
+        return `{personalId=${this.personalId}, generation=${this.generation}, tags=[${Array.from(this.#tags)}], ${components}}`;
     }
 
 };
