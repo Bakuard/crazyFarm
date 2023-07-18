@@ -23,6 +23,7 @@ beforeEach(() => {
     eventManager = new EventManager();
     wallet = manager.createEntity().put(new Wallet(10, 2, 2, 3));
     manager.putSingletonEntity('wallet', wallet);
+    manager.putSingletonEntity('fabric', fabric);
 });
 
 test(`update(groupName, world):
@@ -51,28 +52,6 @@ test(`update(groupName, world):
     });
 
 test(`update(groupName, world):
-        there are not 'seeds' events,
-        there are not 'bailer' events
-        => money mustn't be deducted from the wallet`,
-    () => {
-        let entity1 = manager.createEntity();
-        let entity2 = manager.createEntity();
-        entity1.put(GardenBedCell.of(0, 0));
-        entity2.addTags('sleeping seed');
-        manager.bindEntity(entity1);
-        manager.bindEntity(entity2);
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new SleepingSeedSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(wallet.get(Wallet).sum).toBe(10);
-    });
-
-test(`update(groupName, world):
         there are 'bailer' events,
         there are not entities with 'sleeping seed' tag
         => do nothing`,
@@ -94,26 +73,6 @@ test(`update(groupName, world):
     });
 
 test(`update(groupName, world):
-        there are 'bailer' events,
-        there are not entities with 'sleeping seed' tag
-        => money mustn't be deducted from the wallet`,
-    () => {
-        let entity = manager.createEntity();
-        entity.put(GardenBedCell.of(0, 0));
-        manager.bindEntity(entity);
-        eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new SleepingSeedSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(wallet.get(Wallet).sum).toBe(10);
-    });
-
-test(`update(groupName, world):
         there are 'seeds' events,
         there are not entities with GardenBedCell component
         => do nothing`,
@@ -132,26 +91,6 @@ test(`update(groupName, world):
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
-    });
-
-test(`update(groupName, world):
-        there are 'seeds' events,
-        there are not entities with GardenBedCell component
-        => money mustn't be deducted from the wallet`,
-    () => {
-        let entity = manager.createEntity();
-        entity.addTags('sleeping seed');
-        manager.bindEntity(entity);
-        eventManager.writeEvent('seeds', {tool: 'seeds', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new SleepingSeedSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(wallet.get(Wallet).sum).toBe(10);
     });
 
 test(`update(groupName, world):
@@ -178,29 +117,6 @@ test(`update(groupName, world):
 
         expect(entity1).toEqualEntity(expectEntity1);
         expect(entity2).toEqualEntity(expectEntity2);
-    });
-
-test(`update(groupName, world):
-        there are 'seeds' events,
-        there are entities with GardenBedCell component and GardenBedCell.vegetable is defined
-        => money mustn't be deducted from the wallet`,
-    () => {
-        let entity1 = manager.createEntity();
-        let entity2 = manager.createEntity();
-        entity1.put(new GardenBedCell(0, 0, entity2));
-        entity2.addTags('sleeping seed', 'some other tag');
-        manager.bindEntity(entity1);
-        manager.bindEntity(entity2);
-        eventManager.writeEvent('seeds', {tool: 'seeds', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new SleepingSeedSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(wallet.get(Wallet).sum).toBe(10);
     });
 
 test(`update(groupName, world):

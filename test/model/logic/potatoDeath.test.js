@@ -24,6 +24,7 @@ beforeEach(() => {
     });
     compGeneratorId = new ComponentIdGenerator();
     manager = new EntityComponentManager(new EntityManager(), compGeneratorId);
+    manager.putSingletonEntity('fabric', fabric);
 });
 
 test(`update(groupName, world):
@@ -131,7 +132,7 @@ test(`update(groupName, world):
     });
 
 test(`update(groupName, world):
-        there are potatos with tags 'Potato' and 'dead'
+        there is potato with tags 'Potato' and 'dead'
         => remove this tags and components Immuntiy, Satiety, Thirst and GrowTimer. Add PotatoGhost component.`,
     () => {
         let cell = manager.createEntity().put(new GardenBedCell(0, 0));

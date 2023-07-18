@@ -13,7 +13,6 @@ const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {WorldLogger} = require('./worldLogger.js');
 const {InitLogicSystem} = require('./initLogic.js');
-const {Fabric} = require('./fabric.js');
 const {newLogger} = require('../../conf/logConf.js');
 
 let logger = newLogger('info', 'game.js');
@@ -24,16 +23,14 @@ module.exports.Game = class Game {
         this.userId = userId;
         this.world = new World(1000);
 
-        let fabric = Fabric.createWithDefaultSettings();
-
-        let initLogicSystem = new InitLogicSystem(fabric);
+        let initLogicSystem = new InitLogicSystem();
         let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
-        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager(), fabric);
+        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager());
         let thirst = new ThirstSystem(this.world.getEntityComponentManager());
         let satiety = new SatietySystem(this.world.getEntityComponentManager());
         let immunity = new ImmunitySystem(Math.random, this.world.getEntityComponentManager());
         let commonDeath = new DeathSystem(this.world.getEntityComponentManager());
-        let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager(), fabric);
+        let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager());
         let grow = new GrowTimerSystem(this.world.getEntityComponentManager());
         let worldLogger = new WorldLogger(this.world.getEntityComponentManager(), userId);
         let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);

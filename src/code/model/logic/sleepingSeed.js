@@ -7,10 +7,9 @@ const {Wallet} = require('./wallet.js');
 
 module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
-    constructor(entityComponentManager, fabric) {
+    constructor(entityComponentManager) {
         this.cellFilter = entityComponentManager.createFilter().all(GardenBedCell);
         this.vegetableFilter = entityComponentManager.createFilter().allTags('sleeping seed');
-        this.fabric = fabric;
     }
 
     update(groupName, world) {
@@ -18,6 +17,7 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
         let buffer = manager.createCommandBuffer();
         let eventManager = world.getEventManager();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+        let fabric = manager.getSingletonEntity('fabric');
 
         if(eventManager.readEvent('seeds', 0)) {
             for(let entity of manager.select(this.cellFilter)) {
@@ -40,10 +40,10 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
             if(eventManager.readEvent('bailer', 0)) {
                 entity.removeTags('sleeping seed').
                     put(
-                        this.fabric.growTimer('Potato'),
-                        this.fabric.thirst('Potato'),
-                        this.fabric.satiety('Potato'),
-                        this.fabric.immunity('Potato')
+                        fabric.growTimer('Potato'),
+                        fabric.thirst('Potato'),
+                        fabric.satiety('Potato'),
+                        fabric.immunity('Potato')
                     );
                 buffer.bindEntity(entity);
             }

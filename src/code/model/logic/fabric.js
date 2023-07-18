@@ -7,6 +7,7 @@ const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
 const {UnknownVegetableType} = require('../exception/exceptions.js');
 const {Wallet} = require('./wallet.js');
+const { VegetablePrice } = require('./vegetablePrice.js');
 
 const defaultSettings = {
     potato: {
@@ -15,33 +16,33 @@ const defaultSettings = {
         },
         immunity: {
             max: 60,
+            alertLevel1: 30,
             declineRatePerSeconds: 1,
             probability: 0.2
         },
         satiety: {
             max: 60,
+            alertLevel1: 30,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 60,
+            alertLevel1: 30,
             declineRatePerSeconds: 1
         },
         growTimer: {
             state: growStates.seed,
             intervalsInSeconds: [3, 40, 40, 40, 40]
+        },
+        price: {
+            coff: 1.5
         }
     },
     wallet: {
-        sum: 10
-    },
-    fertilizer: {
-        price: 1
-    },
-    sprayer: {
-        price: 2
-    },
-    seeds: {
-        price: 3
+        sum: 10,
+        fertilizerPrice: 2,
+        sprayerPrice: 2,
+        seedsPrice: 3
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -60,10 +61,10 @@ module.exports.Fabric = class Fabric {
         return new PotatoGhost(this.settings.potato.ghost.timeInMillis);
     }
 
-    growTimer(vegetableTypeName) {
+    growTimer(vegetableTypeName, growState) {
         if(vegetableTypeName == 'Potato') {
             return GrowTimer.of(
-                this.settings.potato.growTimer.state, 
+                growState ?? this.settings.potato.growTimer.state, 
                 structuredClone(this.settings.potato.growTimer.intervalsInSeconds)
             );
         } else {
@@ -108,10 +109,27 @@ module.exports.Fabric = class Fabric {
     wallet() {
         return new Wallet(
             this.settings.wallet.sum,
-            this.settings.fertilizer.price,
-            this.settings.sprayer.price,
-            this.settings.seeds.price
+            this.settings.wallet.fertilizerPrice,
+            this.settings.wallet.sprayerPrice,
+            this.settings.wallet.seedsPrice
         );
+    }
+
+    vegetablePrice(vegetableTypeName, growState) {
+        let vegetableSetting = null;
+
+        if(vegetableTypeName == 'Potato') vegetableSetting = this.settings.potato;
+        else throw new UnknownVegetableType(`Uknown vegetable type ${vegetableTypeName}`);
+
+        let totalSecondInterval = 0;
+        for(let i = 0; i <= growState.ordinal; i++) {
+            totalSecondInterval += vegetableSetting.growTimer.intervalsInSeconds[i];
+        }
+
+        let price = (totalSecondInterval / vegetableSetting.satiety.alertLevel1 * this.settings.wallet.fertilizerPrice +
+                     totalSecondInterval / vegetableSetting.immunity.alertLevel1 * this.settings.wallet.sprayerPrice +
+                     this.settings.wallet.seedsPrice) * vegetableSetting.price.coff;
+        return new VegetablePrice(vegetableTypeName, growState, Math.ceil(price)); 
     }
 
 
