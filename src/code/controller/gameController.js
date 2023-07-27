@@ -61,7 +61,7 @@ module.exports.GameController = class GameController {
                 req.userId = userId;
                 this.#wsServer.handleUpgrade(req, socket, head, ws => this.#wsServer.emit('connection', ws, req));
             } catch(err) {
-                logger.error(`Faile to connect by websocket. Reason: %s`, err.message);
+                logger.error(`Faile to connect by websocket. %s`, err.stack);
                 socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
                 socket.destroy();
             }

@@ -23,19 +23,20 @@ module.exports.Game = class Game {
     constructor(outputCallback, userId) {
         this.userId = userId;
         this.world = new World(1000);
+        const manager = this.world.getEntityComponentManager();
 
         let initLogicSystem = new InitLogicSystem();
-        let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
-        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager(), Math.random);
-        let thirst = new ThirstSystem(this.world.getEntityComponentManager());
-        let satiety = new SatietySystem(this.world.getEntityComponentManager());
-        let immunity = new ImmunitySystem(Math.random, this.world.getEntityComponentManager());
-        let commonDeath = new DeathSystem(this.world.getEntityComponentManager());
-        let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager());
-        let tomatoDeath = new TomatoDeathSystem(this.world.getEntityComponentManager());
-        let grow = new GrowTimerSystem(this.world.getEntityComponentManager());
-        let worldLogger = new WorldLogger(this.world.getEntityComponentManager(), userId);
-        let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);
+        let shovelSystem = new ShovelSystem(manager);
+        let sleepingSeed = new SleepingSeedSystem(manager, Math.random);
+        let thirst = new ThirstSystem(manager);
+        let satiety = new SatietySystem(manager);
+        let immunity = new ImmunitySystem(Math.random, manager);
+        let commonDeath = new DeathSystem(manager);
+        let potatoDeath = new PotatoDeathSystem(manager);
+        let tomatoDeath = new TomatoDeathSystem(manager);
+        let grow = new GrowTimerSystem(manager);
+        let worldLogger = new WorldLogger(manager, userId);
+        let output = new OutputSystem(manager, outputCallback);
 
         this.world.getSystemManager().
             putSystem('InitLogicSystem', initLogicSystem.update.bind(initLogicSystem), groups.start).
