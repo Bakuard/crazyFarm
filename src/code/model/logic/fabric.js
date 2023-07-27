@@ -5,9 +5,10 @@ const {GrowTimer, growStates} = require('./growTimer.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
-const {UnknownVegetableType} = require('../exception/exceptions.js');
+const {UnknownVegetableType, FailToCreateVegetableMeta} = require('../exception/exceptions.js');
 const {Wallet} = require('./wallet.js');
-const { VegetablePrice } = require('./vegetablePrice.js');
+const {VegetablePrice} = require('./vegetablePrice.js');
+const {VegetableMeta} = require('./vegetableMeta.js');
 
 const defaultSettings = {
     potato: {
@@ -36,6 +37,45 @@ const defaultSettings = {
         },
         price: {
             coff: 1.5
+        },
+        seedProbability: {
+            min: 0.7,
+            max: 1
+        },
+        meta: {
+            typeName: 'Potato'
+        }
+    },
+    tomato: {
+        immunity: {
+            max: 60,
+            alertLevel1: 30,
+            declineRatePerSeconds: 1,
+            probability: 0.2
+        },
+        satiety: {
+            max: 60,
+            alertLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        thirst: {
+            max: 60,
+            alertLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        growTimer: {
+            state: growStates.seed,
+            intervalsInSeconds: [3, 40, 40, 40, 40]
+        },
+        price: {
+            coff: 2
+        },
+        seedProbability: {
+            min: 0,
+            max: 0.7
+        },
+        meta: {
+            typeName: 'Tomato'
         }
     },
     wallet: {
@@ -62,48 +102,56 @@ module.exports.Fabric = class Fabric {
     }
 
     growTimer(vegetableTypeName, growState) {
-        if(vegetableTypeName == 'Potato') {
-            return GrowTimer.of(
-                growState ?? this.settings.potato.growTimer.state, 
-                structuredClone(this.settings.potato.growTimer.intervalsInSeconds)
-            );
-        } else {
-            throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
-        }
+        let vegetableSettings = null;
+
+        if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
+        else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
+        else throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
+
+        return GrowTimer.of(
+            growState ?? vegetableSettings.growTimer.state, 
+            structuredClone(vegetableSettings.growTimer.intervalsInSeconds)
+        );
     }
 
     thirst(vegetableTypeName) {
-        if(vegetableTypeName == 'Potato') {
-            return Thirst.of(
-                this.settings.potato.thirst.max, 
-                this.settings.potato.thirst.declineRatePerSeconds
-            );
-        } else {
-            throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
-        }
+        let vegetableSettings = null;
+
+        if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
+        else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
+        else throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
+
+        return Thirst.of(
+            vegetableSettings.thirst.max, 
+            vegetableSettings.thirst.declineRatePerSeconds
+        );
     }
 
     satiety(vegetableTypeName) {
-        if(vegetableTypeName == 'Potato') {
-            return Satiety.of(
-                this.settings.potato.satiety.max, 
-                this.settings.potato.satiety.declineRatePerSeconds
-            );
-        } else {
-            throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
-        }
+        let vegetableSettings = null;
+
+        if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
+        else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
+        else throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
+
+        return Satiety.of(
+            vegetableSettings.satiety.max, 
+            vegetableSettings.satiety.declineRatePerSeconds
+        );
     }
 
     immunity(vegetableTypeName) {
-        if(vegetableTypeName == 'Potato') {
-            return Immunity.of(
-                this.settings.potato.immunity.max, 
-                this.settings.potato.immunity.declineRatePerSeconds,
-                this.settings.potato.immunity.probability
-            );
-        } else {
-            throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
-        }
+        let vegetableSettings = null;
+
+        if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
+        else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
+        else throw new UnknownVegetableType(`Unknown vegetable type: ${vegetableTypeName}`);
+
+        return Immunity.of(
+            vegetableSettings.immunity.max, 
+            vegetableSettings.immunity.declineRatePerSeconds,
+            vegetableSettings.immunity.probability
+        );
     }  
 
     wallet() {
@@ -119,6 +167,7 @@ module.exports.Fabric = class Fabric {
         let vegetableSetting = null;
 
         if(vegetableTypeName == 'Potato') vegetableSetting = this.settings.potato;
+        else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
         else throw new UnknownVegetableType(`Uknown vegetable type ${vegetableTypeName}`);
 
         let totalSecondInterval = 0;
@@ -130,6 +179,17 @@ module.exports.Fabric = class Fabric {
                      totalSecondInterval / vegetableSetting.immunity.alertLevel1 * this.settings.wallet.sprayerPrice +
                      this.settings.wallet.seedsPrice) * vegetableSetting.price.coff;
         return new VegetablePrice(vegetableTypeName, growState, Math.ceil(price)); 
+    }
+
+    vegetableMeta(randomNumber) {
+        for(let value of Object.values(this.settings)) {
+            if(value.seedProbability && 
+                randomNumber >= value.seedProbability.min &&
+                randomNumber <= value.seedProbability.max) {
+                return new VegetableMeta(value.meta.typeName);
+            }
+        }
+        throw new FailToCreateVegetableMeta(`There are not vegetables for randomNumber: ${randomNumber}`);
     }
 
 

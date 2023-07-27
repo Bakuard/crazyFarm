@@ -55,3 +55,9 @@ module.exports.UnknownVegetableType = class UnknownVegetableType extends Error {
         super(logMessage);
     }
 }
+
+module.exports.FailToCreateVegetableMeta = class FailToCreateVegetableMeta extends Error {
+    constructor(logMessage) {
+        super(logMessage);
+    }
+}

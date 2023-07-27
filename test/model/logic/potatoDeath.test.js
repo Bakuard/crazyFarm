@@ -2,10 +2,10 @@ const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {GrowTimer, growStates} = require('../../../src/code/model/logic/growTimer.js');
-const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
-const {PotatoDeathSystem} = require('../../../src/code/model/logic/potatoDeath.js');
+const {PotatoGhost, PotatoDeathSystem} = require('../../../src/code/model/logic/potatoDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
+const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {GardenBedCell} = require('../../../src/code/model/logic/gardenBedCell.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
@@ -137,6 +137,7 @@ test(`update(groupName, world):
     () => {
         let cell = manager.createEntity().put(new GardenBedCell(0, 0));
         let entity = manager.createEntity().put(
+            new VegetableMeta('Potato'),
             new GardenBedCellLink(cell),
             GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]),
             Immunity.of(60, 1, 0.2),
@@ -163,4 +164,6 @@ test(`update(groupName, world):
         expect(entity.hasTags('Potato')).toBe(false);
         expect(entity.hasTags('dade')).toBe(false);
         expect(entity.hasComponents(PotatoGhost)).toBe(true);
+        expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
+        expect(entity.hasComponents(VegetableMeta)).toBe(true);
     });

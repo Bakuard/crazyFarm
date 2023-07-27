@@ -7,6 +7,7 @@ const {SatietySystem} = require('./satiety.js');
 const {ImmunitySystem} = require('./immunity.js');
 const {DeathSystem} = require('./commonDeath.js');
 const {PotatoDeathSystem} = require('./potatoDeath.js');
+const {TomatoDeathSystem} = require('./tomatoDeath.js');
 const {GrowTimerSystem} = require('./growTimer.js');
 const {groups} = require('../gameEngine/gameLoop.js');
 const {ShovelSystem} = require('./shovel.js');
@@ -25,12 +26,13 @@ module.exports.Game = class Game {
 
         let initLogicSystem = new InitLogicSystem();
         let shovelSystem = new ShovelSystem(this.world.getEntityComponentManager());
-        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager());
+        let sleepingSeed = new SleepingSeedSystem(this.world.getEntityComponentManager(), Math.random);
         let thirst = new ThirstSystem(this.world.getEntityComponentManager());
         let satiety = new SatietySystem(this.world.getEntityComponentManager());
         let immunity = new ImmunitySystem(Math.random, this.world.getEntityComponentManager());
         let commonDeath = new DeathSystem(this.world.getEntityComponentManager());
         let potatoDeath = new PotatoDeathSystem(this.world.getEntityComponentManager());
+        let tomatoDeath = new TomatoDeathSystem(this.world.getEntityComponentManager());
         let grow = new GrowTimerSystem(this.world.getEntityComponentManager());
         let worldLogger = new WorldLogger(this.world.getEntityComponentManager(), userId);
         let output = new OutputSystem(this.world.getEntityComponentManager(), outputCallback);
@@ -44,6 +46,7 @@ module.exports.Game = class Game {
             putSystem('ImmunitySystem', immunity.update.bind(immunity), groups.update).
             putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
+            putSystem('TomatoDeathSystem', tomatoDeath.update.bind(tomatoDeath), groups.update).
             putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
             putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
             putSystem('OutputSystem', output.update.bind(output), groups.update);
