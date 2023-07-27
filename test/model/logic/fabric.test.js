@@ -15,6 +15,34 @@ const setting = {
         },
         price: {
             coff: 1.5
+        },
+        seedProbability: {
+            min: 0.8,
+            max: 1
+        },
+        meta: {
+            typeName: 'Potato'
+        }
+    },
+    tomato: {
+        satiety: {
+            alertLevel1: 10
+        },
+        immunity: {
+            alertLevel1: 10
+        },
+        growTimer: {
+            intervalsInSeconds: [3, 40, 40, 40, 40]
+        },
+        price: {
+            coff: 1.5
+        },
+        seedProbability: {
+            min: 0,
+            max: 0.8
+        },
+        meta: {
+            typeName: 'Tomato'
         }
     },
     wallet: {
@@ -86,4 +114,15 @@ test(`vegetablePrice(vegetableTypeName, growState):
         let price = fabric.vegetablePrice('Potato', growStates.adult).price;
 
         expect(price).toBe(109);
+    });
+
+test(`vegetableMeta(randomNumber):
+        randomNumber match for Potato
+        => returned vegetableName.typeName must be 'Potato'`,
+    () => {
+        let fabric = new Fabric(setting);
+
+        let vegetableMeta = fabric.vegetableMeta(0.81);
+
+        expect(vegetableMeta.typeName).toBe('Potato');
     });

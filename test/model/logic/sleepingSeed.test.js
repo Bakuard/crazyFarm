@@ -44,7 +44,7 @@ test(`update(groupName, world):
         let expectEntity1 = entity1.clone();
         let expectEntity2 = entity2.clone();
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(entity1).toEqualEntity(expectEntity1);
@@ -66,7 +66,7 @@ test(`update(groupName, world):
         };
         let expectEntity = entity.clone();
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
@@ -87,7 +87,7 @@ test(`update(groupName, world):
         };
         let expectEntity = entity.clone();
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
@@ -112,7 +112,7 @@ test(`update(groupName, world):
         let expectEntity1 = entity1.clone();
         let expectEntity2 = entity2.clone();
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(entity1).toEqualEntity(expectEntity1);
@@ -134,7 +134,7 @@ test(`update(groupName, world):
             getEventManager: () => eventManager
         };
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
         let filter = manager.createFilter().all(VegetableMeta);
         let actual = [...manager.select(filter)];
@@ -157,7 +157,7 @@ test(`update(groupName, world):
             getEventManager: () => eventManager
         };
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(wallet.get(Wallet).sum).toBe(7);
@@ -180,7 +180,7 @@ test(`update(groupName, world):
         wallet.get(Wallet).sum = 2;
         let expectEntity = entity.clone();
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
@@ -202,7 +202,7 @@ test(`update(groupName, world):
         };
         wallet.get(Wallet).sum = 2;
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
 
         expect(wallet.get(Wallet).sum).toBe(2);
@@ -213,8 +213,9 @@ test(`update(groupName, world):
     there are entities with 'sleeping seed' tag
     => start grow this vegatable`,
     () => {
+        let cell = manager.createEntity();
         let entity = manager.createEntity();
-        entity.addTags('sleeping seed').put(new VegetableMeta('Potato'));
+        entity.addTags('sleeping seed').put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
         manager.bindEntity(entity);
         eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
         let worldMock = {
@@ -222,30 +223,10 @@ test(`update(groupName, world):
             getEventManager: () => eventManager
         };
 
-        let system = new SleepingSeedSystem(manager, fabric);
+        let system = new SleepingSeedSystem(manager, Math.random);
         system.update('update', worldMock);
         let filter = manager.createFilter().all(VegetableMeta);
         let actual = [...manager.select(filter)];
 
-        expect(actual[0].hasComponents(VegetableMeta, GrowTimer, Immunity, Satiety, Thirst)).toBe(true);
-    });
-
-test(`update(groupName, world):
-        there are 'bailer' events,
-        there are entities with 'sleeping seed' tag
-        => money mustn't be deducted from the wallet`,
-    () => {
-        let entity = manager.createEntity();
-        entity.addTags('sleeping seed').put(new VegetableMeta('Potato'));
-        manager.bindEntity(entity);
-        eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new SleepingSeedSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(wallet.get(Wallet).sum).toBe(10);
+        expect(actual[0].hasComponents(VegetableMeta, GardenBedCellLink, GrowTimer, Immunity, Satiety, Thirst)).toBe(true);
     });

@@ -3,7 +3,6 @@
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
-const {PotatoGhost} = require('./potatoDeath.js');
 const {Wallet} = require('./wallet.js');
 const {GrowTimer} = require('./growTimer.js');
 
@@ -21,7 +20,7 @@ module.exports.ShovelSystem = class ShovelSystem {
 
         if(eventManager.readEvent('shovel', 0)) {
             for(let vegetable of manager.select(this.filter)) {
-                if(vegetable.hasComponents(VegetableMeta, GrowTimer) && !vegetable.hasComponents(PotatoGhost)) {
+                if(vegetable.hasComponents(VegetableMeta, GrowTimer)) {
                     let cell = vegetable.get(GardenBedCellLink).gardenBedCell;
                     
                     cell.get(GardenBedCell).entity = null;

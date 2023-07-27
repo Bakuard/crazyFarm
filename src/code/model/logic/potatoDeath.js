@@ -1,6 +1,5 @@
 'use strict'
 
-const {FixedInterval} = require('../gameEngine/gameLoop.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
 const {Thirst} = require('./thirst.js');
@@ -17,7 +16,6 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
-        this.fixedInterval = new FixedInterval(1000);
         this.deadFilter = entityComponentManager.createFilter().allTags('Potato', 'dead');
         this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
     }

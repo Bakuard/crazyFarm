@@ -7,9 +7,10 @@ const {Wallet} = require('./wallet.js');
 
 module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
-    constructor(entityComponentManager) {
+    constructor(entityComponentManager, randomGenerator) {
         this.cellFilter = entityComponentManager.createFilter().all(GardenBedCell);
         this.vegetableFilter = entityComponentManager.createFilter().allTags('sleeping seed');
+        this.randomGenerator = randomGenerator;
     }
 
     update(groupName, world) {
@@ -25,7 +26,10 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
                 if(cell && !cell.entity && wallet.sum >= wallet.seedsPrice) {
                     let vegetable = buffer.createEntity();
-                    vegetable.put(new VegetableMeta('Potato'), new GardenBedCellLink(entity)).
+                    vegetable.put(
+                            fabric.vegetableMeta(this.randomGenerator()), 
+                            new GardenBedCellLink(entity)
+                        ).
                         addTags('sleeping seed');
                     cell.entity = vegetable;
                     wallet.sum -= wallet.seedsPrice;
@@ -38,12 +42,13 @@ module.exports.SleepingSeedSystem = class SleepingSeedSystem {
 
         for(let entity of manager.select(this.vegetableFilter)) {
             if(eventManager.readEvent('bailer', 0)) {
+                let meta = entity.get(VegetableMeta);
                 entity.removeTags('sleeping seed').
                     put(
-                        fabric.growTimer('Potato'),
-                        fabric.thirst('Potato'),
-                        fabric.satiety('Potato'),
-                        fabric.immunity('Potato')
+                        fabric.growTimer(meta.typeName),
+                        fabric.thirst(meta.typeName),
+                        fabric.satiety(meta.typeName),
+                        fabric.immunity(meta.typeName)
                     );
                 buffer.bindEntity(entity);
             }

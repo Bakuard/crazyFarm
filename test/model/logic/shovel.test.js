@@ -6,7 +6,6 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
-const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {GrowTimer, growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
@@ -170,12 +169,12 @@ test(`update(groupName, world):
 
 test(`update(groupName, world):
         there is 'shovel' event,
-        gardenBedCell contains potatoGhost
+        gardenBedCell doesn't contain VegetableMeta or GrowTimer
         => don't remove vegetable from gardenCell`,
     () => {
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let ghost = manager.createEntity().addTags('sleeping seed').
-                        put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
+                        put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
         cell.get(GardenBedCell).entity = ghost;
         manager.bindEntity(cell);
         manager.bindEntity(ghost);
@@ -194,12 +193,12 @@ test(`update(groupName, world):
 
 test(`update(groupName, world):
         there is 'shovel' event,
-        gardenBedCell contains potatoGhost
+        gardenBedCell doesn't contain VegetableMeta or GrowTimer
         => don't remove vegetable entity`,
     () => {
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
         let ghost = manager.createEntity().addTags('sleeping seed').
-                        put(new VegetableMeta('Potato'), new PotatoGhost(5000), new GardenBedCellLink(cell));
+                        put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
         cell.get(GardenBedCell).entity = ghost;
         manager.bindEntity(cell);
         manager.bindEntity(ghost);
