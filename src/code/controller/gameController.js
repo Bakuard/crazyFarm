@@ -12,8 +12,9 @@ module.exports.GameController = class GameController {
     #jwsService;
     #wsServer;
     #intervalIdForPing;
+    #userRepository;
 
-    constructor(jwsService, wsServer) {
+    constructor(jwsService, wsServer, userRepository) {
         this.#jwsService = jwsService;
         this.#wsServer = wsServer;
         this.#intervalIdForPing = setInterval(() => {
@@ -26,6 +27,7 @@ module.exports.GameController = class GameController {
                 clientSocket.ping();
             });
         }, process.env.WEBSOCKET_PING_TIMEOUT_IN_MS);
+        this.#userRepository = userRepository;
     }
 
     async getJwtForConnection(req, res, next) {
@@ -35,7 +37,7 @@ module.exports.GameController = class GameController {
     }
 
     startNewGame(clientSocket, req) {
-        let game = new Game(data => clientSocket.send(JSON.stringify(new dto.GardenBedResponse(data), null, 4)), req.userId);
+        let game = new Game(data => clientSocket.send(JSON.stringify(new dto.GardenBedResponse(data), null, 4)), req.user);
 
         clientSocket.on('pong', () => clientSocket.isAlive = true);
         clientSocket.on('message', data => game.execute(JSON.parse(data)));
@@ -45,7 +47,7 @@ module.exports.GameController = class GameController {
             game.stop();
         });
 
-        clientSocket.userId = req.userId;
+        clientSocket.userId = req.user._id;
         clientSocket.isAlive = true;
         
         game.start();
@@ -57,9 +59,13 @@ module.exports.GameController = class GameController {
             let url = new URL(req.url, 'ws://mockDomain:12000');
             let jws = url.searchParams.get('token');
             try {
+                let wsServer = this.#wsServer;
                 let userId = this.#jwsService.parseJws(jws, 'websocket');
-                req.userId = userId;
-                this.#wsServer.handleUpgrade(req, socket, head, ws => this.#wsServer.emit('connection', ws, req));
+                this.#userRepository.findById(userId).
+                    then(user => {
+                        req.user = user;
+                        wsServer.handleUpgrade(req, socket, head, ws => this.#wsServer.emit('connection', ws, req))
+                    });
             } catch(err) {
                 logger.error(`Faile to connect by websocket. %s`, err.stack);
                 socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');

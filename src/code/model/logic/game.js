@@ -20,8 +20,9 @@ let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, userId) {
-        this.userId = userId;
+    constructor(outputCallback, user) {
+        console.log(JSON.stringify(user, null, 4));
+        this.user = user;
         this.world = new World(1000);
         const manager = this.world.getEntityComponentManager();
 
@@ -35,7 +36,7 @@ module.exports.Game = class Game {
         let potatoDeath = new PotatoDeathSystem(manager);
         let tomatoDeath = new TomatoDeathSystem(manager);
         let grow = new GrowTimerSystem(manager);
-        let worldLogger = new WorldLogger(manager, userId);
+        let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(manager, outputCallback);
 
         this.world.getSystemManager().
@@ -54,17 +55,17 @@ module.exports.Game = class Game {
     }
 
     start() {
-        logger.info('userId=%s; start game', this.userId);
+        logger.info('userId=%s; start game', this.user._id);
         this.world.getGameLoop().start();
     }
 
     stop() {
-        logger.info('userId=%s: stop game', this.userId);
+        logger.info('userId=%s: stop game', this.user._id);
         this.world.getGameLoop().stop();
     }
 
     execute(command) {
-        logger.info('userId=%s; execute game command=%s', this.userId, command);
+        logger.info('userId=%s; execute game command=%s', this.user._id, command);
         this.world.getEventManager().writeEvent(command.tool, command);
     }
 
