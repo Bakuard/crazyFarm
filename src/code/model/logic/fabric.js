@@ -79,7 +79,7 @@ const defaultSettings = {
         }
     },
     wallet: {
-        sum: 10,
+        sum: 20,
         fertilizerPrice: 2,
         sprayerPrice: 2,
         seedsPrice: 3

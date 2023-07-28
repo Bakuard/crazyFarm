@@ -10,6 +10,7 @@ const {Immunity} = require('../model/logic/immunity.js');
 const {GrowTimer, growStates} = require('../model/logic/growTimer.js');
 const {PotatoGhost} = require('../model/logic/potatoDeath.js');
 const {GardenBedCell} = require('../model/logic/gardenBedCell.js');
+const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 
 class UserResponse {
     constructor({_id, loggin, email}) {
@@ -56,12 +57,12 @@ module.exports.JwsWebsocketConnectionResponse = JwsWebsocketConnectionResponse;
 
 class VegetableResponse {
     constructor(vegetable) {
-        this.type = 'potato';
+        this.type = vegetable.get(VegetableMeta).typeName;
         this.needs = [];
 
         if(vegetable.hasTags('sleeping seed')) {
             this.stage = growStates.seed.ordinal;
-        } else if(vegetable.hasComponents(PotatoGhost)) {
+        } else if(vegetable.hasComponents(PotatoGhost) || vegetable.hasTags('explosion')) {
             this.stage = growStates.allValues.length;
         } else {
             this.stage = vegetable.get(GrowTimer).growState.ordinal;
@@ -78,16 +79,19 @@ class GardenBedCellResponse {
         let vegetable = cell.get(GardenBedCell).entity;
 
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.get(PotatoGhost));
+        this.isBlocked = Boolean(vegetable?.get(PotatoGhost) || vegetable?.hasTags('explosion'));
         this.name = 'central';
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
-class GardenBedResponse {
-    constructor(entities) {
+class GameResponse {
+    constructor(entities, wallet) {
+        this.player = {
+            cash: wallet.sum
+        };
         this.containers = entities.map(entity => new GardenBedCellResponse(entity));
     }
 }
-module.exports.GardenBedResponse = GardenBedResponse;
+module.exports.GameResponse = GameResponse;

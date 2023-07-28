@@ -17,7 +17,7 @@ module.exports.InitLogicSystem = class InitLogicSystem {
         manager.bindEntity(cell);
 
         let wallet = manager.createEntity();
-        wallet.put(this.fabric.wallet());
+        wallet.put(fabric.wallet());
         manager.putSingletonEntity('wallet', wallet);
     }
 
