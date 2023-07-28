@@ -86,9 +86,12 @@ class GardenBedCellResponse {
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
-class GardenBedResponse {
-    constructor(entities) {
+class GameResponse {
+    constructor(entities, wallet) {
+        this.player = {
+            cash: wallet.sum
+        };
         this.containers = entities.map(entity => new GardenBedCellResponse(entity));
     }
 }
-module.exports.GardenBedResponse = GardenBedResponse;
+module.exports.GameResponse = GameResponse;

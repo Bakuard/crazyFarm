@@ -21,7 +21,6 @@ let logger = newLogger('info', 'game.js');
 module.exports.Game = class Game {
 
     constructor(outputCallback, user) {
-        console.log(JSON.stringify(user, null, 4));
         this.user = user;
         this.world = new World(1000);
         const manager = this.world.getEntityComponentManager();
