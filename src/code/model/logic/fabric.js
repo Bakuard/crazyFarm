@@ -164,20 +164,20 @@ module.exports.Fabric = class Fabric {
     }
 
     vegetablePrice(vegetableTypeName, growState) {
-        let vegetableSetting = null;
+        let vegetableSettings = null;
 
-        if(vegetableTypeName == 'Potato') vegetableSetting = this.settings.potato;
+        if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
         else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
         else throw new UnknownVegetableType(`Uknown vegetable type ${vegetableTypeName}`);
 
         let totalSecondInterval = 0;
         for(let i = 0; i <= growState.ordinal; i++) {
-            totalSecondInterval += vegetableSetting.growTimer.intervalsInSeconds[i];
+            totalSecondInterval += vegetableSettings.growTimer.intervalsInSeconds[i];
         }
 
-        let price = (totalSecondInterval / vegetableSetting.satiety.alertLevel1 * this.settings.wallet.fertilizerPrice +
-                     totalSecondInterval / vegetableSetting.immunity.alertLevel1 * this.settings.wallet.sprayerPrice +
-                     this.settings.wallet.seedsPrice) * vegetableSetting.price.coff;
+        let price = (totalSecondInterval / vegetableSettings.satiety.alertLevel1 * this.settings.wallet.fertilizerPrice +
+                     totalSecondInterval / vegetableSettings.immunity.alertLevel1 * this.settings.wallet.sprayerPrice +
+                     this.settings.wallet.seedsPrice) * vegetableSettings.price.coff;
         return new VegetablePrice(vegetableTypeName, growState, Math.ceil(price)); 
     }
 
