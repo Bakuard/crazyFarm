@@ -7,11 +7,7 @@ let growStates = {
     youth: Object.freeze({ordinal: 3, name: 'youth'}),
     adult: Object.freeze({ordinal: 4, name: 'adult'})
 };
-growStates.allValues = Object.freeze([growStates.seed, 
-    growStates.sprout, 
-    growStates.child, 
-    growStates.youth, 
-    growStates.adult]);
+growStates.allValues = Object.freeze(Object.values(growStates));
 growStates = Object.freeze(growStates);
 module.exports.growStates = growStates;
 

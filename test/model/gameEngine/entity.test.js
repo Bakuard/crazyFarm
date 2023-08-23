@@ -97,7 +97,7 @@ test(`clone:
 
         let actual = entity.clone();
 
-        expect(actual).toEqual(entity);
+        expect(actual).toEqualEntity(entity);
     });
 
 test(`clone:
@@ -109,7 +109,7 @@ test(`clone:
 
         let actual = entity.clone();
 
-        expect(actual).toEqual(entity);
+        expect(actual).toEqualEntity(entity);
     });
 
 test(`addTags:
