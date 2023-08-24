@@ -57,7 +57,7 @@ module.exports.JwsWebsocketConnectionResponse = JwsWebsocketConnectionResponse;
 
 class VegetableResponse {
     constructor(vegetable) {
-        this.type = vegetable.get(VegetableMeta).typeName;
+        this.type = vegetable.get(VegetableMeta).typeName.toLowerCase();
         this.needs = [];
 
         if(vegetable.hasTags('sleeping seed')) {
