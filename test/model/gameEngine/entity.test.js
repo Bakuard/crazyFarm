@@ -97,7 +97,7 @@ test(`clone:
 
         let actual = entity.clone();
 
-        expect(actual).toEqual(entity);
+        expect(actual).toEqualEntity(entity);
     });
 
 test(`clone:
@@ -109,7 +109,7 @@ test(`clone:
 
         let actual = entity.clone();
 
-        expect(actual).toEqual(entity);
+        expect(actual).toEqualEntity(entity);
     });
 
 test(`addTags:
@@ -238,4 +238,140 @@ test(`hasComponents:
         let actual = entity.hasComponents(D, E);
 
         expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    entities haven't any components,
+    entities haven't any tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return true`,
+    () => {
+        let entity1 = new Entity(100, 10);
+        let entity2 = new Entity(100, 10);
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(true);
+    });
+
+test(`deepEquals:
+    entities haven't any components,
+    entities haven't any tags,
+    entities indexes is equal,
+    entities generations is not equal
+    => return false`,
+    () => {
+        let entity1 = new Entity(100, 10);
+        let entity2 = new Entity(100, 11);
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    entities haven't any components,
+    entities haven't any tags,
+    entities indexes is not equal,
+    entities generations is equal
+    => return false`,
+    () => {
+        let entity1 = new Entity(100, 10);
+        let entity2 = new Entity(101, 10);
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    entities have the same components with equal states,
+    entities haven't any tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return true`,
+    () => {
+        let entity1 = new Entity(100, 10).put(new A(0, 1), new B(), new C(), new D());
+        let entity2 = new Entity(100, 10).put(new A(0, 1), new B(), new C(), new D());
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(true);
+    });
+
+test(`deepEquals:
+    entities have the same components with different states,
+    entities haven't any tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return false`,
+    () => {
+        let entity1 = new Entity(100, 10).put(new A(0, 10), new B(), new C(), new D());
+        let entity2 = new Entity(100, 10).put(new A(0, 1), new B(), new C(), new D());
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    entities have the different components,
+    entities haven't any tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return false`,
+    () => {
+        let entity1 = new Entity(100, 10).put(new B(), new C(), new D(), new E());
+        let entity2 = new Entity(100, 10).put(new A(0, 1), new B(), new C(), new D());
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    entities haven't any components,
+    entities have the same tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return true`,
+    () => {
+        let entity1 = new Entity(100, 10).addTags('a', 'b', 'c', 'd');
+        let entity2 = new Entity(100, 10).addTags('a', 'b', 'c', 'd');
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(true);
+    });
+
+test(`deepEquals:
+    entities haven't any components,
+    entities have different tags,
+    entities indexes is equal,
+    entities generations is equal
+    => return false`,
+    () => {
+        let entity1 = new Entity(100, 10).addTags('a', 'b', 'c', 'd');
+        let entity2 = new Entity(100, 10).addTags('b', 'c', 'd', 'e');
+
+        let actual = entity1.deepEquals(entity2);
+
+        expect(actual).toBe(false);
+    });
+
+test(`deepEquals:
+    compared entity is clone
+    => return true`,
+    () => {
+        let entity = new Entity(100, 10).
+                        addTags('a', 'b', 'c', 'd').
+                        put(new A(0, 1), new B(), new C(), new D());
+
+        global.debug = true;
+        let clone = entity.clone();
+        let actual = entity.deepEquals(clone);
+        global.debug = false;
+
+        expect(actual).toBe(true);
     });

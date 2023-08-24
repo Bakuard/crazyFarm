@@ -18,7 +18,7 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity = buffer.create();
+            let entity = buffer.createEntity();
             let actual = manager.isAlive(entity);
 
             expect(actual).toBe(true);
@@ -32,7 +32,7 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity = buffer.create();
+            let entity = buffer.createEntity();
             manager.flush(buffer);
             let actual = manager.isAlive(entity);
 
@@ -49,14 +49,14 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity1 = buffer.create();
-            let entity2 = buffer.create();
-            let entity3 = buffer.create();
-            let entity4 = buffer.create();
-            buffer.bind(entity1);
-            buffer.bind(entity2);
-            buffer.bind(entity3);
-            buffer.bind(entity4);
+            let entity1 = buffer.createEntity();
+            let entity2 = buffer.createEntity();
+            let entity3 = buffer.createEntity();
+            let entity4 = buffer.createEntity();
+            buffer.bindEntity(entity1);
+            buffer.bindEntity(entity2);
+            buffer.bindEntity(entity3);
+            buffer.bindEntity(entity4);
             let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
@@ -74,14 +74,14 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity1 = buffer.create();
-            let entity2 = buffer.create();
-            let entity3 = buffer.create();
-            let entity4 = buffer.create();
-            buffer.bind(entity1);
-            buffer.bind(entity2);
-            buffer.bind(entity3);
-            buffer.bind(entity4);
+            let entity1 = buffer.createEntity();
+            let entity2 = buffer.createEntity();
+            let entity3 = buffer.createEntity();
+            let entity4 = buffer.createEntity();
+            buffer.bindEntity(entity1);
+            buffer.bindEntity(entity2);
+            buffer.bindEntity(entity3);
+            buffer.bindEntity(entity4);
             manager.flush(buffer);
             let filter = manager.createFilter();
             let generator = manager.select(filter);
@@ -100,14 +100,14 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity1 = buffer.create().put(new A(), new B(), new C());
-            let entity2 = buffer.create().put(new A(), new B(), new D());
-            let entity3 = buffer.create().put(new A(), new D(), new E());
-            let entity4 = buffer.create().put(new B(), new C(), new D());
-            buffer.bind(entity1);
-            buffer.bind(entity2);
-            buffer.bind(entity3);
-            buffer.bind(entity4);
+            let entity1 = buffer.createEntity().put(new A(), new B(), new C());
+            let entity2 = buffer.createEntity().put(new A(), new B(), new D());
+            let entity3 = buffer.createEntity().put(new A(), new D(), new E());
+            let entity4 = buffer.createEntity().put(new B(), new C(), new D());
+            buffer.bindEntity(entity1);
+            buffer.bindEntity(entity2);
+            buffer.bindEntity(entity3);
+            buffer.bindEntity(entity4);
             let filter = manager.createFilter();
             let generator = manager.select(filter);
             let actual = [...generator];
@@ -125,14 +125,14 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity1 = buffer.create().put(new A(), new B(), new C());
-            let entity2 = buffer.create().put(new A(), new B(), new D());
-            let entity3 = buffer.create().put(new A(), new D(), new E());
-            let entity4 = buffer.create().put(new B(), new C(), new D());
-            buffer.bind(entity1);
-            buffer.bind(entity2);
-            buffer.bind(entity3);
-            buffer.bind(entity4);
+            let entity1 = buffer.createEntity().put(new A(), new B(), new C());
+            let entity2 = buffer.createEntity().put(new A(), new B(), new D());
+            let entity3 = buffer.createEntity().put(new A(), new D(), new E());
+            let entity4 = buffer.createEntity().put(new B(), new C(), new D());
+            buffer.bindEntity(entity1);
+            buffer.bindEntity(entity2);
+            buffer.bindEntity(entity3);
+            buffer.bindEntity(entity4);
             manager.flush(buffer);
             let filter = manager.createFilter();
             let generator = manager.select(filter);
@@ -150,10 +150,10 @@ test(`CommandBuffer:
             let manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
 
             let buffer = manager.createCommandBuffer();
-            let entity1 = buffer.create();
-            let entity2 = buffer.create();
-            let entity3 = buffer.create();
-            let entity4 = buffer.create();
+            let entity1 = buffer.createEntity();
+            let entity2 = buffer.createEntity();
+            let entity3 = buffer.createEntity();
+            let entity4 = buffer.createEntity();
             manager.flush(buffer);
             let filter = manager.createFilter();
             let generator = manager.select(filter);
@@ -179,10 +179,10 @@ test(`CommandBuffer:
             manager.bindEntity(entity4);
 
             let buffer = manager.createCommandBuffer();
-            buffer.bind(entity1.set(new D(), new E()));
-            buffer.bind(entity2.set(new D(), new E()));
-            buffer.bind(entity3.set(new D(), new E()));
-            buffer.bind(entity4.set(new D(), new E()));
+            buffer.bindEntity(entity1.set(new D(), new E()));
+            buffer.bindEntity(entity2.set(new D(), new E()));
+            buffer.bindEntity(entity3.set(new D(), new E()));
+            buffer.bindEntity(entity4.set(new D(), new E()));
             manager.flush(buffer);
             let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
@@ -208,10 +208,10 @@ test(`CommandBuffer:
             manager.bindEntity(entity4);
 
             let buffer = manager.createCommandBuffer();
-            buffer.bind(entity1.set(new D(), new E()));
-            buffer.bind(entity2.set(new D(), new E()));
-            buffer.bind(entity3.set(new D(), new E()));
-            buffer.bind(entity4.set(new D(), new E()));
+            buffer.bindEntity(entity1.set(new D(), new E()));
+            buffer.bindEntity(entity2.set(new D(), new E()));
+            buffer.bindEntity(entity3.set(new D(), new E()));
+            buffer.bindEntity(entity4.set(new D(), new E()));
             let filter = manager.createFilter().all(D, E);
             let generator = manager.select(filter);
             let actual = [...generator];
@@ -228,7 +228,7 @@ test(`CommandBuffer:
             let entity = manager.createEntity();
 
             let buffer = manager.createCommandBuffer();  
-            buffer.remove(entity);
+            buffer.removeEntity(entity);
             let actual = manager.isAlive(entity);
 
             expect(actual).toBe(true);
@@ -243,7 +243,7 @@ test(`CommandBuffer:
             let entity = manager.createEntity();
 
             let buffer = manager.createCommandBuffer();  
-            buffer.remove(entity);
+            buffer.removeEntity(entity);
             manager.flush(buffer);
             let actual = manager.isAlive(entity);
 

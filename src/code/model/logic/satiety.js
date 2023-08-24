@@ -1,5 +1,7 @@
 'use strict'
 
+const {Wallet} = require('./wallet.js');
+
 class Satiety {
     static of(max, declineRatePerSeconds) {
         return new Satiety(max, max, declineRatePerSeconds);
@@ -20,15 +22,18 @@ module.exports.SatietySystem = class SatietySystem {
     }
 
     update(groupName, world) {
+        let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
         
-        for(let entity of world.getEntityComponentManager().select(this.filter)) {
+        for(let entity of manager.select(this.filter)) {
             let satiety = entity.get(Satiety);
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
 
-            if(eventManager.readEvent('fertilizer', 0)) {
+            let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+            if(eventManager.readEvent('fertilizer', 0) && wallet.sum >= wallet.fertilizerPrice) {
                 satiety.current = satiety.max;
+                wallet.sum -= wallet.fertilizerPrice;
             }
         }
 

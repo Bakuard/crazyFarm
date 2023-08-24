@@ -5,9 +5,9 @@ module.exports.GardenBedCell = class GardenBedCell {
         return new GardenBedCell(positionX, positionY, null);
     }
 
-    constructor(positionX, positionY, vegetable) {
+    constructor(positionX, positionY, entity) {
         this.positionX = positionX;
         this.positionY = positionY;
-        this.vegetable = vegetable;
+        this.entity = entity;
     }
 };

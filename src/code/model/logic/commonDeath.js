@@ -4,11 +4,8 @@ const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
-const {PotatoGhost} = require('./potatoDeath.js');
-const {GrowTimer} = require('./growTimer.js');
 
 module.exports.DeathSystem = class DeathSystem {
-    liveFilter;
     constructor(entityComponentManager) {
         this.liveFilter = entityComponentManager.createFilter().all(Thirst, Satiety, Immunity, VegetableMeta);
     }
@@ -24,10 +21,7 @@ module.exports.DeathSystem = class DeathSystem {
             let immunity = entity.get(Immunity);
 
             if(thirst.current <= 0 || satiety.current <= 0 || immunity.current <= 0) {
-                if(vegetableMeta.typeName == 'Potato') {
-                    buffer.bind(entity.remove(Thirst, Satiety, Immunity, GrowTimer).
-                        put(new PotatoGhost(10000)));
-                }
+                buffer.bindEntity(entity.addTags(vegetableMeta.typeName, 'dead'));
             }
         }
 

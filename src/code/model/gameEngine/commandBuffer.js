@@ -12,25 +12,25 @@ module.exports.CommandBuffer = class CommandBuffer {
         this.#entityManager = entityManager;
     }
 
-    create() {
+    createEntity() {
         return this.#entityManager.create();
     }
 
-    bind(entityClone) {
+    bindEntity(entityClone) {
         this.#commandsQueue.push({
             type: 'bind',
             entity: entityClone
         });
     }
 
-    remove(entity) {
+    removeEntity(entity) {
         this.#commandsQueue.push({
             type: 'remove',
             entity: entity
         });
     }
 
-    clear() {
+    clearCommands() {
         this.#commandsQueue.length = 0;
     }
 

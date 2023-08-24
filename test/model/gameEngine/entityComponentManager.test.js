@@ -1,6 +1,5 @@
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
-const {Entity} = require('../../../src/code/model/gameEngine/entity.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
 let A, B, C, D, E = null;

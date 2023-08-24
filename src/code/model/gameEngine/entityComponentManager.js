@@ -26,6 +26,14 @@ class Archetype {
         }
     }
 
+    size() {
+        return this.entities.length;
+    }
+
+    get(index) {
+        return this.entities[index];
+    }
+
     [Symbol.iterator]() {
         return {
             currentIndex: 0,
@@ -127,12 +135,14 @@ module.exports.EntityComponentManager = class EntityComponentManager {
     #arhytypes;
     #archytypesByEntityId;
     #componentsIdGenerator;
+    #singletonEntities;
 
     constructor(entityManager, componentsIdGenerator) {
         this.#entityManager = entityManager;
         this.#componentsIdGenerator = componentsIdGenerator;
         this.#arhytypes = [];
         this.#archytypesByEntityId = [];
+        this.#singletonEntities = {};
     }
 
     createEntity() {
@@ -173,6 +183,14 @@ module.exports.EntityComponentManager = class EntityComponentManager {
                 }
             }
         }
+    }
+
+    putSingletonEntity(name, entity) {
+        this.#singletonEntities[name] = entity;
+    }
+
+    getSingletonEntity(name) {
+        return this.#singletonEntities[name];
     }
 
     createCommandBuffer() {

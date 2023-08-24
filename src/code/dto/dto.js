@@ -4,13 +4,13 @@ const http = require('http');
 const format = require('date-format');
 const exceptions = require('../model/exception/exceptions.js');
 const {i18next} = require('../conf/i18nConf.js');
-const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
 const {GrowTimer, growStates} = require('../model/logic/growTimer.js');
 const {PotatoGhost} = require('../model/logic/potatoDeath.js');
 const {GardenBedCell} = require('../model/logic/gardenBedCell.js');
+const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 
 class UserResponse {
     constructor({_id, loggin, email}) {
@@ -26,16 +26,18 @@ class ExceptionResponse {
         this.timeStamp = format.asString('yyyy-MM-dd hh:mm:ss:SSS', new Date());
         this.httpErrorCode = httpErrorCode;
         this.httpStatus = http.STATUS_CODES[httpErrorCode];
-        if(err instanceof exceptions.ValidationException) {
-            this.reasons = err.userMessageKeys.map(key => i18next.t(key, {lng}));
-        } else if(err instanceof exceptions.AbstractDomainException) {
-            this.reasons = [i18next.t(err.userMessageKey, {lng})];
-            let otherReasons = err.reasons.map(e => i18next.t(e.userMessageKey, {lng}));
-            if(otherReasons?.length > 0) this.reasons.concat(otherReasons);
-        } else {
+        this.reasons = [];
+        if(err instanceof exceptions.AbstractDomainException) {
+            let stack = [err];
+            while(stack.length > 0) {
+                let currentErr = stack.pop();
+                if(currentErr.userMessageKeys) this.reasons.push(...currentErr.userMessageKeys.map(key => i18next.t(key, {lng})));
+                if(currentErr.reasons) stack.push(...currentErr.reasons);
+            }
+        }
+        if(this.reasons.length == 0) {
             this.reasons = [i18next.t('unexpectedException', {lng})];
         }
-        
     }
 }
 module.exports.ExceptionResponse = ExceptionResponse;
@@ -57,12 +59,12 @@ module.exports.JwsWebsocketConnectionResponse = JwsWebsocketConnectionResponse;
 
 class VegetableResponse {
     constructor(vegetable) {
-        this.type = 'potato';
+        this.type = vegetable.get(VegetableMeta).typeName.toLowerCase();
         this.needs = [];
 
         if(vegetable.hasTags('sleeping seed')) {
             this.stage = growStates.seed.ordinal;
-        } else if(vegetable.hasComponents(PotatoGhost)) {
+        } else if(vegetable.hasComponents(PotatoGhost) || vegetable.hasTags('explosion')) {
             this.stage = growStates.allValues.length;
         } else {
             this.stage = vegetable.get(GrowTimer).growState.ordinal;
@@ -76,19 +78,22 @@ module.exports.VegetableResponse = VegetableResponse;
 
 class GardenBedCellResponse {
     constructor(cell) {
-        let vegetable = cell.get(GardenBedCell).vegetable;
+        let vegetable = cell.get(GardenBedCell).entity;
 
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.get(PotatoGhost));
+        this.isBlocked = Boolean(vegetable?.get(PotatoGhost) || vegetable?.hasTags('explosion'));
         this.name = 'central';
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
-class GardenBedResponse {
-    constructor(entities) {
+class GameResponse {
+    constructor(entities, wallet) {
+        this.player = {
+            cash: wallet.sum
+        };
         this.containers = entities.map(entity => new GardenBedCellResponse(entity));
     }
 }
-module.exports.GardenBedResponse = GardenBedResponse;
+module.exports.GameResponse = GameResponse;

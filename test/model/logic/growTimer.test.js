@@ -1,6 +1,4 @@
-const {GrowTimer} = require('../../../src/code/model/logic/growTimer.js');
-const {GrowTimerSystem} = require('../../../src/code/model/logic/growTimer.js');
-const {growStates} = require('../../../src/code/model/logic/growTimer.js');
+const {GrowTimer, growStates, GrowTimerSystem} = require('../../../src/code/model/logic/growTimer.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');

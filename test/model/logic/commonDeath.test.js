@@ -2,7 +2,6 @@ const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
-const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
 const {DeathSystem} = require('../../../src/code/model/logic/commonDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
@@ -18,7 +17,7 @@ test(`update(groupName, world):
         thirst > 0,
         immunity > 0,
         method was called many times
-        => entity mustn't die`,
+        => don't add tags with values 'dead' and vegetableMeta.typeName`,
     () => {
         let entity = manager.createEntity().put(
             new Thirst(10, 1, 1),
@@ -33,7 +32,7 @@ test(`update(groupName, world):
 
         let system = new DeathSystem(manager);
         for(let i = 0; i < 100; i++) system.update('update', worldMock);
-        let filter = manager.createFilter().all(PotatoGhost);
+        let filter = manager.createFilter().allTags('dead', 'Potato');
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -44,7 +43,7 @@ test(`update(groupName, world):
     satiety = 0,
     thirst > 0,
     immunity > 0
-    => entity must die`,
+    => add tags with values 'dead' and vegetableMeta.typeName`,
     () => {
         let entity = manager.createEntity().put(
             new Thirst(10, 1, 1),
@@ -59,7 +58,7 @@ test(`update(groupName, world):
 
         let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = manager.createFilter().all(PotatoGhost);
+        let filter = manager.createFilter().allTags('dead', 'Potato');
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -70,7 +69,7 @@ test(`update(groupName, world):
     satiety > 0,
     thirst = 0,
     immunity > 0
-    => entity must die`,
+    => add tags with values 'dead' and vegetableMeta.typeName`,
     () => {
         let entity = manager.createEntity().put(
             new Thirst(10, 0, 1),
@@ -85,7 +84,7 @@ test(`update(groupName, world):
 
         let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = manager.createFilter().all(PotatoGhost);
+        let filter = manager.createFilter().allTags('dead', 'Potato');
         let generator = manager.select(filter);
         let actual = [...generator];
 
@@ -96,7 +95,7 @@ test(`update(groupName, world):
     satiety > 0,
     thirst > 0,
     immunity = 0
-    => entity must die`,
+    => add tags with values 'dead' and vegetableMeta.typeName`,
     () => {
         let entity = manager.createEntity().put(
             new Thirst(10, 1, 1),
@@ -111,7 +110,7 @@ test(`update(groupName, world):
 
         let system = new DeathSystem(manager);
         system.update('update', worldMock);
-        let filter = manager.createFilter().all(PotatoGhost);
+        let filter = manager.createFilter().allTags('dead', 'Potato');
         let generator = manager.select(filter);
         let actual = [...generator];
 
