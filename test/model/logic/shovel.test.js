@@ -7,7 +7,7 @@ const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
-const {GrowTimer, growStates} = require('../../../src/code/model/logic/growTimer.js');
+const {growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
 
 let fabric = null;

@@ -26,15 +26,28 @@ module.exports.ShovelSystem = class ShovelSystem {
                     cell.get(GardenBedCell).entity = null;
                     buffer.removeEntity(vegetable);
 
-                    wallet.get(Wallet).sum += fabric.vegetablePrice(
-                        vegetable.get(VegetableMeta).typeName, 
+                    wallet.get(Wallet).sum += this.#calculatePrice(
+                        fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
                         vegetable.get(GrowTimer).growState
-                    ).price;
+                    );
                 }
             }
         }
 
         manager.flush(buffer);
         eventManager.clearEventQueue('shovel');
+    }
+
+    #calculatePrice(vegetablePrizeFactor, growState) {
+        let totalSecondInterval = 0;
+        for(let i = 0; i <= growState.ordinal; i++) {
+            totalSecondInterval += vegetablePrizeFactor.intervalsInSeconds[i];
+        }
+
+        let price = (totalSecondInterval / vegetablePrizeFactor.satietyAlertLevel * vegetablePrizeFactor.fertilizerPrice +
+                     totalSecondInterval / vegetablePrizeFactor.immunityAlertLevel * vegetablePrizeFactor.sprayerPrice +
+                     vegetablePrizeFactor.seedsPrice) * vegetablePrizeFactor.priceCoff;
+        
+        return Math.ceil(price); 
     }
 };

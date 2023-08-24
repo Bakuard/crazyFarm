@@ -198,6 +198,20 @@ module.exports.Fabric = class Fabric {
         return new VegetablePrice(vegetableTypeName, growState, Math.ceil(price)); 
     }
 
+    vegetablePrizeFactor(vegetableTypeName) {
+        let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
+
+        return {
+            satietyAlertLevel: vegetableSettings.satiety.alertLevel1,
+            fertilizerPrice: this.settings.wallet.fertilizerPrice,
+            immunityAlertLevel: vegetableSettings.immunity.alertLevel1,
+            sprayerPrice: this.settings.wallet.sprayerPrice,
+            seedsPrice: this.settings.wallet.seedsPrice,
+            priceCoff: vegetableSettings.price.coff,
+            intervalsInSeconds: structuredClone(vegetableSettings.growTimer.intervalsInSeconds)
+        };
+    }
+
     vegetableMeta(randomNumber) {
         for(let value of Object.values(this.settings)) {
             if(value.seedProbability && 
