@@ -26,16 +26,18 @@ class ExceptionResponse {
         this.timeStamp = format.asString('yyyy-MM-dd hh:mm:ss:SSS', new Date());
         this.httpErrorCode = httpErrorCode;
         this.httpStatus = http.STATUS_CODES[httpErrorCode];
-        if(err instanceof exceptions.ValidationException) {
-            this.reasons = err.userMessageKeys.map(key => i18next.t(key, {lng}));
-        } else if(err instanceof exceptions.AbstractDomainException) {
-            this.reasons = [i18next.t(err.userMessageKey, {lng})];
-            let otherReasons = err.reasons.map(e => i18next.t(e.userMessageKey, {lng}));
-            if(otherReasons?.length > 0) this.reasons.concat(otherReasons);
-        } else {
+        this.reasons = [];
+        if(err instanceof exceptions.AbstractDomainException) {
+            let stack = [err];
+            while(stack.length > 0) {
+                let currentErr = stack.pop();
+                if(currentErr.userMessageKeys) this.reasons.push(...currentErr.userMessageKeys.map(key => i18next.t(key, {lng})));
+                if(currentErr.reasons) stack.push(...currentErr.reasons);
+            }
+        }
+        if(this.reasons.length == 0) {
             this.reasons = [i18next.t('unexpectedException', {lng})];
         }
-        
     }
 }
 module.exports.ExceptionResponse = ExceptionResponse;

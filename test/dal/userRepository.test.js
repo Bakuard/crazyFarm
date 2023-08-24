@@ -29,3 +29,18 @@ test(`userRepository.add(user):
             await userRepository.add(notUniqueUser);
         }).rejects.toThrow(DuplicateUserException);
     });
+
+test(`userRepository.assertUnique(user):
+        user.loggin is null,
+        user.email is null
+        => doesn't throw any exception`,
+    async () => {
+        let userRepository = new UserRepository();
+        let nullUser = User.createNewUser({
+            loggin: null, 
+            email: null, 
+            password: 'password'
+        });
+
+        return userRepository.add(nullUser).catch(e => expect(e).toBeNull());
+    });
