@@ -36,9 +36,13 @@ module.exports.UserController = class UserController {
     async registrationFirstStep(req, res, next) {
         logger.info('registrationFirstStep(): register new user {loggin: %s, email: %s}', req.body.loggin, req.body.email);
 
+        await exceptions.tryExecuteAll(
+            () => validator.checkNewUser(req.body),
+            async () => this.#userRepository.assertUnique(req.body)
+        );
         validator.checkNewUser(req.body);
+        await this.#userRepository.assertUnique(req.body);
         let user = User.createNewUser(req.body); 
-        await this.#userRepository.assertUnique(user);
         let jws = this.#jwsService.generateJws(user, 'registration', ms(process.env.JWS_REGISTER_LIFETIME_DAYS));
         await mailService.sendMailForRegistration(user.email, jws, req.language);
         res.send(i18next.t('register.firstStep', {lng: req.language}));

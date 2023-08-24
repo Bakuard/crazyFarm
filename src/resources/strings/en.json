@@ -5,7 +5,7 @@
         "link": "complete registration"
     },
     "unexpectedException": "Unexpected Exception",
-    "Unauthorized": "Login to the application or register again.",
+    "Unauthorized": "Login to the application or register.",
     "User": {
         "logginOrEmail": {
             "notUnique": "User with such loggin or email already exists."
