@@ -1,13 +1,11 @@
 'use strict'
 
 const {PotatoGhost} = require('./potatoDeath.js');
-const {GrowTimer, growStates} = require('./growTimer.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
 const {UnknownVegetableType, FailToCreateVegetableMeta} = require('../exception/exceptions.js');
 const {Wallet} = require('./wallet.js');
-const {VegetablePrice} = require('./vegetablePrice.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
 
@@ -32,16 +30,12 @@ const defaultSettings = {
             alertLevel1: 30,
             declineRatePerSeconds: 1
         },
-        growTimer: {
-            state: growStates.seed,
-            intervalsInSeconds: [3, 40, 40, 40, 40]
-        },
         price: {
             coff: 1.5
         },
         seedProbability: {
-            min: 0.7,
-            max: 1
+            min: 0,
+            max: 0.7
         },
         meta: {
             typeName: 'Potato'
@@ -82,16 +76,12 @@ const defaultSettings = {
             alertLevel1: 30,
             declineRatePerSeconds: 1
         },
-        growTimer: {
-            state: growStates.seed,
-            intervalsInSeconds: [3, 40, 40, 40, 40]
-        },
         price: {
             coff: 2
         },
         seedProbability: {
-            min: 0,
-            max: 0.7
+            min: 0.7,
+            max: 1
         },
         meta: {
             typeName: 'Tomato'
@@ -138,15 +128,6 @@ module.exports.Fabric = class Fabric {
         return new PotatoGhost(this.settings.potato.ghost.timeInMillis);
     }
 
-    growTimer(vegetableTypeName, growState) {
-        let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
-
-        return GrowTimer.of(
-            growState ?? vegetableSettings.growTimer.state, 
-            structuredClone(vegetableSettings.growTimer.intervalsInSeconds)
-        );
-    }
-
     thirst(vegetableTypeName) {
         let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
 
@@ -184,18 +165,23 @@ module.exports.Fabric = class Fabric {
         );
     }
 
-    vegetablePrice(vegetableTypeName, growState) {
+    vegetablePrizeFactor(vegetableTypeName) {
         let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
 
-        let totalSecondInterval = 0;
-        for(let i = 0; i <= growState.ordinal; i++) {
-            totalSecondInterval += vegetableSettings.growTimer.intervalsInSeconds[i];
-        }
-
-        let price = (totalSecondInterval / vegetableSettings.satiety.alertLevel1 * this.settings.wallet.fertilizerPrice +
-                     totalSecondInterval / vegetableSettings.immunity.alertLevel1 * this.settings.wallet.sprayerPrice +
-                     this.settings.wallet.seedsPrice) * vegetableSettings.price.coff;
-        return new VegetablePrice(vegetableTypeName, growState, Math.ceil(price)); 
+        return {
+            satietyAlertLevel: vegetableSettings.satiety.alertLevel1,
+            fertilizerPrice: this.settings.wallet.fertilizerPrice,
+            immunityAlertLevel: vegetableSettings.immunity.alertLevel1,
+            sprayerPrice: this.settings.wallet.sprayerPrice,
+            seedsPrice: this.settings.wallet.seedsPrice,
+            priceCoff: vegetableSettings.price.coff,
+            growIntervals: [
+                vegetableSettings.vegetableState.seedDetail.intervalInSecond,
+                vegetableSettings.vegetableState.sproutDetail.intervalInSecond,
+                vegetableSettings.vegetableState.chidlDetail.intervalInSecond,
+                vegetableSettings.vegetableState.youthDetail.intervalInSecond
+            ]
+        };
     }
 
     vegetableMeta(randomNumber) {

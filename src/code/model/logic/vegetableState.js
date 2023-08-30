@@ -75,6 +75,7 @@ module.exports.GrowSystem = class GrowSystem {
                 );
                 entity.get(VegetableState).history.push(lifeCycleStates.seed);
                 buffer.bindEntity(entity);
+                eventManager.clearEventQueue('bailer');
             }
         }
 

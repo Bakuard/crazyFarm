@@ -5,7 +5,8 @@ const {GardenBedCell} = require('./gardenBedCell.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
-const {GrowTimer} = require('./growTimer.js');
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
+const {VegetableMeta} = require('./vegetableMeta.js');
 
 class PotatoGhost {
     constructor(timeInMillis) {
@@ -16,7 +17,7 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().allTags('Potato', 'dead');
+        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta);
         this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
     }
 
@@ -26,10 +27,12 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         let fabric = manager.getSingletonEntity('fabric');
 
         for(let entity of manager.select(this.deadFilter)) {
-            entity.remove(GrowTimer, Immunity, Satiety, Thirst).
-                removeTags('Potato', 'dead').
-                put(fabric.potatoGhost());
-            buffer.bindEntity(entity);
+            let meta = entity.get(VegetableMeta);
+            let state = entity.get(VegetableState);
+            if(meta.typeName == 'Potato' && state.history.at(-1) == lifeCycleStates.death) {
+                entity.remove(Immunity, Satiety, Thirst).put(fabric.potatoGhost());
+                buffer.bindEntity(entity);
+            }
         }
 
         let elapsedTime = world.getGameLoop().getElapsedTime();

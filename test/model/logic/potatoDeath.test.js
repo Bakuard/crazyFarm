@@ -1,7 +1,6 @@
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
-const {GrowTimer, growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {PotatoGhost, PotatoDeathSystem} = require('../../../src/code/model/logic/potatoDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
@@ -10,11 +9,13 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {GardenBedCell} = require('../../../src/code/model/logic/gardenBedCell.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
+const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 
 let fabric = null;
 let manager = null;
 let compGeneratorId = null;
-beforeEach(() => {
+let worldMock = null;
+function beforeEachTest() {
     fabric = new Fabric({
         potato: {
             ghost: {
@@ -25,145 +26,101 @@ beforeEach(() => {
     compGeneratorId = new ComponentIdGenerator();
     manager = new EntityComponentManager(new EntityManager(), compGeneratorId);
     manager.putSingletonEntity('fabric', fabric);
-});
 
-test(`update(groupName, world):
-        elapsed time = potatoGhost.timeInMillis
-        => isAlive(entity) must return false`,
-    () => {
-        let cell = manager.createEntity().put(new GardenBedCell(0, 0));
-        let entity = manager.createEntity().put(
-            new PotatoGhost(2000),
-            new GardenBedCellLink(cell)
-        );
-        cell.get(GardenBedCell).entity = entity;
-        manager.bindEntity(entity);
-        manager.bindEntity(cell);
-        let worldMock = {
-            getGameLoop: () => {
-                return { getElapsedTime: () => 2000 }
-            },
-            getEntityComponentManager: () => manager
-        };
+    worldMock = {
+        elapsedTime: 1000,
+        getGameLoop: function() {
+            const et = this.elapsedTime;
+            return {
+                getElapsedTime: () => et
+            }
+        },
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
+    };
+};
 
-        let system = new PotatoDeathSystem(manager, fabric);
-        system.update('update', worldMock);
-        let actual = manager.isAlive(entity);
+describe.each([
+    {elapsedTime: 100, ghostDurationInMillis: 100, isAlive: false, isCellEmpty: true},
+    {elapsedTime: 101, ghostDurationInMillis: 100, isAlive: false, isCellEmpty: true},
+    {elapsedTime: 99, ghostDurationInMillis: 100, isAlive: true, isCellEmpty: false}
+])(`update(groupName, world):`,
+    ({elapsedTime, ghostDurationInMillis, isAlive, isCellEmpty}) => {
+        beforeEach(beforeEachTest);
 
-        expect(actual).toBe(false);
-    });
+        test(`elapsedTime ${elapsedTime}, 
+              ghostDurationInMillis ${ghostDurationInMillis}
+              => isAlive ${isAlive}`,
+        () => {
+            let cell = manager.createEntity().put(new GardenBedCell(0, 0));
+            let entity = manager.createEntity().put(
+                new PotatoGhost(ghostDurationInMillis),
+                new GardenBedCellLink(cell)
+            );
+            cell.get(GardenBedCell).entity = entity;
+            manager.bindEntity(entity);
+            manager.bindEntity(cell);
+            worldMock.elapsedTime = elapsedTime;
 
-test(`update(groupName, world):
-    elapsed time > potatoGhost.timeInMillis
-    => isAlive(entity) must return false`,
-    () => {
-        let cell = manager.createEntity().put(new GardenBedCell(0, 0));
-        let entity = manager.createEntity().put(
-            new PotatoGhost(2000),
-            new GardenBedCellLink(cell)
-        );
-        cell.get(GardenBedCell).entity = entity;
-        manager.bindEntity(entity);
-        manager.bindEntity(cell);
-        let worldMock = {
-            getGameLoop: () => {
-                return { getElapsedTime: () => 2001 }
-            },
-            getEntityComponentManager: () => manager
-        };
+            let system = new PotatoDeathSystem(manager, fabric);
+            system.update('update', worldMock);
 
-        let system = new PotatoDeathSystem(manager, fabric);
-        system.update('update', worldMock);
-        let actual = manager.isAlive(entity);
+            expect(manager.isAlive(entity)).toBe(isAlive);
+            expect(cell.get(GardenBedCell).entity === null).toBe(isCellEmpty);
+        });
+    }
+);
 
-        expect(actual).toBe(false);
-    });
+describe.each([
+    {state: lifeCycleStates.seed, hasGrowComps: true, hasGhostComp: false},
+    {state: lifeCycleStates.cell, hasGrowComps: true, hasGhostComp: false},
+    {state: lifeCycleStates.sprout, hasGrowComps: true, hasGhostComp: false},
+    {state: lifeCycleStates.youth, hasGrowComps: true, hasGhostComp: false},
+    {state: lifeCycleStates.adult, hasGrowComps: true, hasGhostComp: false},
+    {state: lifeCycleStates.death, hasGrowComps: false, hasGhostComp: true}
+])(`update(groupName, world):`,
+    ({state, hasGrowComps, hasGhostComp}) => {
+        beforeEach(beforeEachTest);
 
-test(`update(groupName, world):
-    elapsed time < potatoGhost.timeInMillis
-    => isAlive(entity) must return true`,
-    () => {
-        let cell = manager.createEntity().put(new GardenBedCell(0, 0));
-        let entity = manager.createEntity().put(
-            new PotatoGhost(2000),
-            new GardenBedCellLink(cell)
-        );
-        cell.get(GardenBedCell).entity = entity;
-        manager.bindEntity(entity);
-        manager.bindEntity(cell);
-        let worldMock = {
-            getGameLoop: () => {
-                return { getElapsedTime: () => 1999 }
-            },
-            getEntityComponentManager: () => manager
-        };
+        test(`state ${state}
+              => hasGrowComps ${hasGrowComps},
+                 hasGhostComp ${hasGhostComp}`,
+        () => {
+            let cell = manager.createEntity().put(new GardenBedCell(0, 0));
+            let entity = manager.createEntity().put(
+                new VegetableMeta('Potato'),
+                new GardenBedCellLink(cell),
+                vegetableState(state),
+                Immunity.of(60, 1, 0.2),
+                Satiety.of(60, 1),
+                Thirst.of(60, 1)
+            );
+            cell.get(GardenBedCell).entity = entity;
+            manager.bindEntity(entity);
+            manager.bindEntity(cell);
 
-        let system = new PotatoDeathSystem(manager, fabric);
-        system.update('update', worldMock);
-        let actual = manager.isAlive(entity);
+            let system = new PotatoDeathSystem(manager, fabric);
+            system.update('update', worldMock);
 
-        expect(actual).toBe(true);
-    });
+            expect(entity.hasComponents(Immunity)).toBe(hasGrowComps);
+            expect(entity.hasComponents(Satiety)).toBe(hasGrowComps);
+            expect(entity.hasComponents(Thirst)).toBe(hasGrowComps);
+            expect(entity.hasComponents(PotatoGhost)).toBe(hasGhostComp);
+            expect(entity.hasComponents(VegetableState)).toBe(true);
+            expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
+            expect(entity.hasComponents(VegetableMeta)).toBe(true);
+        });
+    }
+);
 
-test(`update(groupName, world):
-        potatoGhost was deleted
-        => clear gardenBedCell`,
-    () => {
-        let cell = manager.createEntity().put(new GardenBedCell(0, 0));
-        let entity = manager.createEntity().put(
-            new PotatoGhost(2000),
-            new GardenBedCellLink(cell)
-        );
-        cell.get(GardenBedCell).entity = entity;
-        manager.bindEntity(entity);
-        manager.bindEntity(cell);
-        let worldMock = {
-            getGameLoop: () => {
-                    return { getElapsedTime: () => 2001 }
-            },
-            getEntityComponentManager: () => manager
-        };
+function vegetableState(state) {
+    let result = VegetableState.of(
+        StateDetail.of(10, lifeCycleStates.seed),
+        StateDetail.of(10, lifeCycleStates.sprout),
+        StateDetail.of(10, lifeCycleStates.child),
+        StateDetail.of(10, lifeCycleStates.youth)
+    );
+    result.history.push(state);
 
-        let system = new PotatoDeathSystem(manager, fabric);
-        system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).entity;
-
-        expect(actual).toBeNull();
-    });
-
-test(`update(groupName, world):
-        there is potato with tags 'Potato' and 'dead'
-        => remove this tags and components Immuntiy, Satiety, Thirst and GrowTimer. Add PotatoGhost component.`,
-    () => {
-        let cell = manager.createEntity().put(new GardenBedCell(0, 0));
-        let entity = manager.createEntity().put(
-            new VegetableMeta('Potato'),
-            new GardenBedCellLink(cell),
-            GrowTimer.of(growStates.seed, [10, 20, 20, 30, 30]),
-            Immunity.of(60, 1, 0.2),
-            Satiety.of(60, 1),
-            Thirst.of(60, 1)
-        ).addTags('Potato', 'dead');
-        cell.get(GardenBedCell).entity = entity;
-        manager.bindEntity(entity);
-        manager.bindEntity(cell);
-        let worldMock = {
-            getGameLoop: () => {
-                    return { getElapsedTime: () => 1999 }
-            },
-            getEntityComponentManager: () => manager
-        };
-
-        let system = new PotatoDeathSystem(manager, fabric);
-        system.update('update', worldMock);
-
-        expect(entity.hasComponents(GrowTimer)).toBe(false);
-        expect(entity.hasComponents(Immunity)).toBe(false);
-        expect(entity.hasComponents(Satiety)).toBe(false);
-        expect(entity.hasComponents(Thirst)).toBe(false);
-        expect(entity.hasTags('Potato')).toBe(false);
-        expect(entity.hasTags('dade')).toBe(false);
-        expect(entity.hasComponents(PotatoGhost)).toBe(true);
-        expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
-        expect(entity.hasComponents(VegetableMeta)).toBe(true);
-    });
+    return result;
+}

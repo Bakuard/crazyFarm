@@ -1,4 +1,4 @@
-const {VegetableState, GrowSystem, lifeCycleStates} = require('../../../src/code/model/logic/vegetableState.js');
+const {VegetableState, GrowSystem, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
@@ -31,24 +31,6 @@ function beforeEachSetting() {
                 max: 60,
                 alertLevel1: 30,
                 declineRatePerSeconds: 1
-            },
-            vegetableState: {
-                seedDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'seed'
-                },
-                sproutDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'sprout'
-                },
-                chidlDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'child'
-                },
-                youthDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'youth'
-                }
             }
         }
     });
@@ -71,110 +53,63 @@ function beforeEachSetting() {
 };
 beforeEach(beforeEachSetting);
 
-test(`update(groupName, world):
-        vegetables state is 'sleepigSeed',
-        there is not 'bailer' event
-        => doesn't change state of VegetableState component`,
-    () => {
-        let entity = manager.createEntity();
-        entity.put(fabric.vegetableState('Potato'));
-        manager.bindEntity(entity);
-
-        let system = new GrowSystem(manager);
-        system.update('udpate', worldMock);
-
-        expect(entity.get(VegetableState).history.at(-1)).toBe(lifeCycleStates.sleepingSeed);
-    });
-
-test(`update(groupName, world):
-        vegetables state is 'sleepigSeed',
-        there is 'bailer' event
-        => change state of VegetableState component,
-           add Immunity, Satiety and Thirst components to entity`,
-    () => {
-        let entity = manager.createEntity();
-        entity.put(fabric.vegetableState('Potato')).put(new VegetableMeta('Potato'));
-        manager.bindEntity(entity);
-        eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
-
-        let system = new GrowSystem(manager);
-        system.update('udpate', worldMock);
-
-        expect(entity.get(VegetableState).history.at(-1)).toBe(lifeCycleStates.seed);
-        expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(true);
-    });
-
 describe.each([
-    {state: lifeCycleStates.adult},
-    {state: lifeCycleStates.death}
-])(`update(groupName, world): state doesn't change over time`,
-    ({state}) => {
-        beforeEachSetting();
+    {hasBailerEvent: true, hasGrowcomps: true, nextState: lifeCycleStates.seed},
+    {hasBailerEvent: false, hasGrowcomps: false, nextState: lifeCycleStates.sleepingSeed}
+])(`update(groupName, world): vegetables state is 'sleepigSeed`,
+    ({hasBailerEvent, hasGrowcomps, nextState}) => {
+        beforeEach(beforeEachSetting);
 
-        test(`vegetables state is '${state.name}'
-                => doesn't change state of VegetableState component`,
+        test(`vegetables state is 'sleepingSeed',
+              hasBailerEvent ${hasBailerEvent}
+              => nextState'${nextState.name}'`,
         () => {
             let entity = manager.createEntity();
-            let vegetableState = fabric.vegetableState('Potato');
-            vegetableState.history.push(state);
-            entity.put(vegetableState);
+            entity.put(vegetableState(lifeCycleStates.sleepingSeed, 1), new VegetableMeta('Potato'));
             manager.bindEntity(entity);
+            if(hasBailerEvent) eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
     
             let system = new GrowSystem(manager);
             system.update('udpate', worldMock);
     
-            expect(entity.get(VegetableState).history.at(-1)).toBe(state);
+            expect(entity.get(VegetableState).history.at(-1)).toBe(nextState);
+            expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(hasGrowcomps);
         });
     }
 );
 
 describe.each([
-    {state: lifeCycleStates.seed},
-    {state: lifeCycleStates.sprout},
-    {state: lifeCycleStates.child},
-    {state: lifeCycleStates.youth}
-])(`update(groupName, world): not enough time to change state`,
-    ({state}) => {
-        beforeEachSetting();
+    {state: lifeCycleStates.seed, nextState: lifeCycleStates.seed, intervalInSeconds: 1, elapsedTime: 999},
+    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 999},
+    {state: lifeCycleStates.child, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 999},
+    {state: lifeCycleStates.youth, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 999},
+
+    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 1000},
+    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 1000},
+    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 1000},
+    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1000},
+
+    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 1001},
+    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 1001},
+    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 1001},
+    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1001},
+
+    {state: lifeCycleStates.adult, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1000000},
+    {state: lifeCycleStates.death, nextState: lifeCycleStates.death, intervalInSeconds: 1, elapsedTime: 1000000}
+])(`update(groupName, world):`,
+    ({state, nextState, intervalInSeconds, elapsedTime}) => {
+        beforeEach(beforeEachSetting);
 
         test(`vegetables state is '${state.name}',
-              vegetableStateComp.currentTimeInMillis + elapsedTime < vegetableStateComp.intervalInSeconds
-              => doesn't change state of VegetableState component`,
+              intervalInSeconds ${intervalInSeconds},
+              elapsedTime ${elapsedTime},
+              currentState ${state}
+              => nextState'${nextState.name}'`,
         () => {
             let entity = manager.createEntity();
-            let vegetableState = fabric.vegetableState('Potato');
-            vegetableState.history.push(state);
-            entity.put(vegetableState);
+            entity.put(vegetableState(state, intervalInSeconds));
             manager.bindEntity(entity);
-            worldMock.elapsedTime = 9999;
-    
-            let system = new GrowSystem(manager);
-            system.update('udpate', worldMock);
-    
-            expect(entity.get(VegetableState).history.at(-1)).toBe(state);
-        });
-    }
-);
-
-describe.each([
-    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout},
-    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child},
-    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth},
-    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult}
-])(`update(groupName, world): enough time to change state`,
-    ({state, nextState}) => {
-        beforeEachSetting();
-
-        test(`vegetables state is '${state.name}',
-              vegetableStateComp.currentTimeInMillis + elapsedTime = vegetableStateComp.intervalInSeconds
-              => change state '${state.name}' to '${nextState.name}'`,
-        () => {
-            let entity = manager.createEntity();
-            let vegetableState = fabric.vegetableState('Potato');
-            vegetableState.history.push(state);
-            entity.put(vegetableState);
-            manager.bindEntity(entity);
-            worldMock.elapsedTime = 10000;
+            worldMock.elapsedTime = elapsedTime;
     
             let system = new GrowSystem(manager);
             system.update('udpate', worldMock);
@@ -184,30 +119,14 @@ describe.each([
     }
 );
 
-describe.each([
-    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout},
-    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child},
-    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth},
-    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult}
-])(`update(groupName, world): enough time to change state`,
-    ({state, nextState}) => {
-        beforeEachSetting();
+function vegetableState(state, intervalInSeconds) {
+    let result = VegetableState.of(
+        StateDetail.of(intervalInSeconds, lifeCycleStates.seed),
+        StateDetail.of(intervalInSeconds, lifeCycleStates.sprout),
+        StateDetail.of(intervalInSeconds, lifeCycleStates.child),
+        StateDetail.of(intervalInSeconds, lifeCycleStates.youth)
+    );
+    result.history.push(state);
 
-        test(`vegetables state is '${state.name}',
-              vegetableStateComp.currentTimeInMillis + elapsedTime > vegetableStateComp.intervalInSeconds
-              => change state '${state.name}' to '${nextState.name}'`,
-        () => {
-            let entity = manager.createEntity();
-            let vegetableState = fabric.vegetableState('Potato');
-            vegetableState.history.push(state);
-            entity.put(vegetableState);
-            manager.bindEntity(entity);
-            worldMock.elapsedTime = 10001;
-    
-            let system = new GrowSystem(manager);
-            system.update('udpate', worldMock);
-    
-            expect(entity.get(VegetableState).history.at(-1)).toBe(nextState);
-        });
-    }
-);
+    return result;
+}

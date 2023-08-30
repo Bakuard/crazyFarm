@@ -1,5 +1,7 @@
 'use strict'
 
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
+
 class Thirst {
     static of(max, declineRatePerSeconds) {
         return new Thirst(max, max, declineRatePerSeconds);
@@ -16,7 +18,7 @@ module.exports.Thirst = Thirst;
 module.exports.ThirstSystem = class ThirstSystem {
     filter;
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Thirst);
+        this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
     }
 
     update(groupName, world) {
@@ -29,6 +31,10 @@ module.exports.ThirstSystem = class ThirstSystem {
 
             if(eventManager.readEvent('bailer', 0)) {
                 thirst.current = thirst.max;
+            }
+
+            if(thirst.current == 0) {
+                entity.get(VegetableState).history.push(lifeCycleStates.death);
             }
         }
 
