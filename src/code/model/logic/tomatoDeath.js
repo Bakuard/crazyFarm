@@ -5,11 +5,12 @@ const {GardenBedCell} = require('./gardenBedCell.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
-const {GrowTimer} = require('./growTimer.js');
+const {VegetableState} = require('./vegetableState.js');
+const {VegetableMeta} = require('./vegetableMeta.js');
 
 module.exports.TomatoDeathSystem = class TomatoDeathSystem {
     constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().allTags('Tomato', 'dead');
+        this.deadFilter = entityComponentManager.createFilter().all(VegetableMeta, VegetableState);
         this.explosionFilter = entityComponentManager.createFilter().allTags('explosion');
     }
 
@@ -18,10 +19,12 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         let buffer = manager.createCommandBuffer();
 
         for(let entity of manager.select(this.deadFilter)) {
-            entity.remove(GrowTimer, Immunity, Satiety, Thirst).
-                removeTags('Tomato', 'dead').
-                addTags('explosion');
-            buffer.bindEntity(entity);
+            let meta = entity.get(VegetableMeta);
+            let state = entity.get(VegetableState);
+            if(meta.typeName == 'Tomato' && state.history.at(-1) == lifeCycleStates.death) {
+                entity.remove(Immunity, Satiety, Thirst).addTags('explosion');
+                buffer.bindEntity(entity);
+            }
         }
 
         for(let entity of manager.select(this.explosionFilter)) {

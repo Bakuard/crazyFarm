@@ -3,7 +3,6 @@
 const {VegetableMeta} = require('./vegetableMeta');
 const {newLogger} = require('../../conf/logConf.js');
 const {Wallet} = require('./wallet.js');
-const util = require('util');
 
 let logger = newLogger('info', 'worldLogger.js');
 

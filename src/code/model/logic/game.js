@@ -1,17 +1,16 @@
 'use strict'
 
 const {World} = require('../gameEngine/world.js');
-const {SleepingSeedSystem} = require('./sleepingSeed.js');
+const {PlantNewVegetableSystem} = require('./plantNewVegetable.js');
 const {ThirstSystem} = require('./thirst.js');
 const {SatietySystem} = require('./satiety.js');
 const {ImmunitySystem} = require('./immunity.js');
-const {DeathSystem} = require('./commonDeath.js');
 const {PotatoDeathSystem} = require('./potatoDeath.js');
 const {TomatoDeathSystem} = require('./tomatoDeath.js');
-const {GrowTimerSystem} = require('./growTimer.js');
 const {groups} = require('../gameEngine/gameLoop.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
+const {GrowSystem} = require('./vegetableState.js');
 const {WorldLogger} = require('./worldLogger.js');
 const {InitLogicSystem} = require('./initLogic.js');
 const {newLogger} = require('../../conf/logConf.js');
@@ -25,30 +24,28 @@ module.exports.Game = class Game {
         this.world = new World(1000);
         const manager = this.world.getEntityComponentManager();
 
-        let initLogicSystem = new InitLogicSystem();
-        let shovelSystem = new ShovelSystem(manager);
-        let sleepingSeed = new SleepingSeedSystem(manager, Math.random);
+        let initLogic = new InitLogicSystem();
+        let shovel = new ShovelSystem(manager);
+        let plantNewVegetableSystem = new PlantNewVegetableSystem(manager, Math.random);
         let thirst = new ThirstSystem(manager);
         let satiety = new SatietySystem(manager);
-        let immunity = new ImmunitySystem(Math.random, manager);
-        let commonDeath = new DeathSystem(manager);
+        let immunity = new ImmunitySystem(manager, Math.random);
         let potatoDeath = new PotatoDeathSystem(manager);
         let tomatoDeath = new TomatoDeathSystem(manager);
-        let grow = new GrowTimerSystem(manager);
+        let grow = new GrowSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(manager, outputCallback);
 
         this.world.getSystemManager().
-            putSystem('InitLogicSystem', initLogicSystem.update.bind(initLogicSystem), groups.start).
-            putSystem('ShovelSystem', shovelSystem.update.bind(shovelSystem), groups.update).
-            putSystem('SleepingSeedSystem', sleepingSeed.update.bind(sleepingSeed), groups.update).
+            putSystem('InitLogicSystem', initLogic.update.bind(initLogic), groups.start).
+            putSystem('ShovelSystem', shovel.update.bind(shovel), groups.update).
+            putSystem('PlantNewVegetableSystem', plantNewVegetableSystem.update.bind(plantNewVegetableSystem), groups.update).
+            putSystem('GrowSystem', grow.update.bind(grow), groups.update).
             putSystem('ThirstSystem', thirst.update.bind(thirst), groups.update).
             putSystem('SatietySystem', satiety.update.bind(satiety), groups.update).
             putSystem('ImmunitySystem', immunity.update.bind(immunity), groups.update).
-            putSystem('DeathSystem', commonDeath.update.bind(commonDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('TomatoDeathSystem', tomatoDeath.update.bind(tomatoDeath), groups.update).
-            putSystem('GrowTimerSystem', grow.update.bind(grow), groups.update).
             putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
             putSystem('OutputSystem', output.update.bind(output), groups.update);
     }

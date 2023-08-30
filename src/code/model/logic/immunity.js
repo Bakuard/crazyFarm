@@ -2,6 +2,7 @@
 
 const {FixedInterval} = require('../gameEngine/gameLoop.js');
 const {Wallet} = require('./wallet.js');
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Immunity {
     static of(max, declineRatePerSeconds, probability) {
@@ -20,10 +21,10 @@ module.exports.Immunity = Immunity;
 
 module.exports.ImmunitySystem = class ImmunitySystem {
     filter;
-    constructor(randomGenerator, entityComponentManager) {
+    constructor(entityComponentManager, randomGenerator) {
         this.randomGenerator = randomGenerator;
         this.fixedInterval = new FixedInterval(1000);
-        this.filter = entityComponentManager.createFilter().all(Immunity);
+        this.filter = entityComponentManager.createFilter().all(Immunity, VegetableState);
     }
 
     update(groupName, world) {
@@ -51,6 +52,10 @@ module.exports.ImmunitySystem = class ImmunitySystem {
                 immunity.current = immunity.max;
                 immunity.isSick = false;
                 wallet.sum -= wallet.sprayerPrice;
+            }
+
+            if(immunity.current == 0) {
+                entity.get(VegetableState).history.push(lifeCycleStates.death);
             }
         }
 

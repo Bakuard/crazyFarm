@@ -7,10 +7,10 @@ const {i18next} = require('../conf/i18nConf.js');
 const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
-const {GrowTimer, growStates} = require('../model/logic/growTimer.js');
 const {PotatoGhost} = require('../model/logic/potatoDeath.js');
 const {GardenBedCell} = require('../model/logic/gardenBedCell.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
+const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
 
 class UserResponse {
     constructor({_id, loggin, email}) {
@@ -61,13 +61,8 @@ class VegetableResponse {
     constructor(vegetable) {
         this.type = vegetable.get(VegetableMeta).typeName.toLowerCase();
         this.needs = [];
-
-        if(vegetable.hasTags('sleeping seed')) {
-            this.stage = growStates.seed.ordinal;
-        } else if(vegetable.hasComponents(PotatoGhost) || vegetable.hasTags('explosion')) {
-            this.stage = growStates.allValues.length;
-        } else {
-            this.stage = vegetable.get(GrowTimer).growState.ordinal;
+        this.stage = Math.max(0, vegetable.get(VegetableState).history.at(-1).ordinal - 1);
+        if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
             if(vegetable.get(Thirst).current < 30) this.needs.push('THIRST');
             if(vegetable.get(Satiety).current < 30) this.needs.push('HUNGER');
             if(vegetable.get(Immunity).current < 30) this.needs.push('SICKNESS');

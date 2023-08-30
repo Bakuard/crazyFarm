@@ -18,20 +18,20 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         let fabric = manager.getSingletonEntity('fabric');
 
         if(eventManager.readEvent('seeds', 0)) {
-            for(let entity of manager.select(this.cellFilter)) {
-                let cell = entity.get(GardenBedCell);
+            for(let entityWithCellComp of manager.select(this.cellFilter)) {
+                let cell = entityWithCellComp.get(GardenBedCell);
                 
                 if(cell && !cell.entity && wallet.sum >= wallet.seedsPrice) {
                     let vegetable = buffer.createEntity();
                     let metaComp = fabric.vegetableMeta(this.randomGenerator());
-                    let cellLinkComp = new GardenBedCellLink(entity);
+                    let cellLinkComp = new GardenBedCellLink(entityWithCellComp);
                     let vegetableState = fabric.vegetableState(metaComp.typeName);
                     vegetable.put(metaComp, cellLinkComp, vegetableState);
                     cell.entity = vegetable;
                     wallet.sum -= wallet.seedsPrice;
 
                     buffer.bindEntity(vegetable);
-                    buffer.bindEntity(entity);
+                    buffer.bindEntity(entityWithCellComp);
                 }
             }
         }
