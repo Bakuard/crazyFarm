@@ -1,6 +1,7 @@
 'use strict'
 
 const {Wallet} = require('./wallet.js');
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Satiety {
     static of(max, declineRatePerSeconds) {
@@ -18,7 +19,7 @@ module.exports.Satiety = Satiety;
 module.exports.SatietySystem = class SatietySystem {
     filter;
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Satiety);
+        this.filter = entityComponentManager.createFilter().all(Satiety, VegetableState);
     }
 
     update(groupName, world) {
@@ -34,6 +35,10 @@ module.exports.SatietySystem = class SatietySystem {
             if(eventManager.readEvent('fertilizer', 0) && wallet.sum >= wallet.fertilizerPrice) {
                 satiety.current = satiety.max;
                 wallet.sum -= wallet.fertilizerPrice;
+            }
+            
+            if(satiety.current == 0) {
+                entity.get(VegetableState).history.push(lifeCycleStates.death);
             }
         }
 

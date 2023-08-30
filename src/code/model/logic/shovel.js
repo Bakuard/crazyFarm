@@ -4,11 +4,11 @@ const {VegetableMeta} = require('./vegetableMeta.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {GardenBedCell} = require('./gardenBedCell.js');
 const {Wallet} = require('./wallet.js');
-const {GrowTimer} = require('./growTimer.js');
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(VegetableMeta);
+        this.filter = entityComponentManager.createFilter().all(VegetableState, GardenBedCellLink, VegetableMeta);
     }
 
     update(groupName, world) {
@@ -20,7 +20,7 @@ module.exports.ShovelSystem = class ShovelSystem {
 
         if(eventManager.readEvent('shovel', 0)) {
             for(let vegetable of manager.select(this.filter)) {
-                if(vegetable.hasComponents(VegetableMeta, GrowTimer)) {
+                if(vegetable.get(VegetableState).history.at(-1) != lifeCycleStates.death) {
                     let cell = vegetable.get(GardenBedCellLink).gardenBedCell;
                     
                     cell.get(GardenBedCell).entity = null;
@@ -28,7 +28,7 @@ module.exports.ShovelSystem = class ShovelSystem {
 
                     wallet.get(Wallet).sum += this.#calculatePrice(
                         fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
-                        vegetable.get(GrowTimer).growState
+                        vegetable.get(VegetableState).history.at(-1)
                     );
                 }
             }
@@ -38,15 +38,19 @@ module.exports.ShovelSystem = class ShovelSystem {
         eventManager.clearEventQueue('shovel');
     }
 
-    #calculatePrice(vegetablePrizeFactor, growState) {
-        let totalSecondInterval = 0;
-        for(let i = 0; i <= growState.ordinal; i++) {
-            totalSecondInterval += vegetablePrizeFactor.intervalsInSeconds[i];
-        }
+    #calculatePrice(vegetablePrizeFactor, lifeCycleState) {
+        let price = 0;
 
-        let price = (totalSecondInterval / vegetablePrizeFactor.satietyAlertLevel * vegetablePrizeFactor.fertilizerPrice +
-                     totalSecondInterval / vegetablePrizeFactor.immunityAlertLevel * vegetablePrizeFactor.sprayerPrice +
-                     vegetablePrizeFactor.seedsPrice) * vegetablePrizeFactor.priceCoff;
+        if(lifeCycleState.ordinal >= lifeCycleStates.child.ordinal && lifeCycleState.ordinal <= lifeCycleStates.adult.ordinal) {
+            let totalSecondInterval = 0;
+            for(let i = 0; i < lifeCycleState.ordinal - 1; i++) {
+                totalSecondInterval += vegetablePrizeFactor.growIntervals[i];
+            }
+
+            price = (totalSecondInterval / vegetablePrizeFactor.satietyAlertLevel * vegetablePrizeFactor.fertilizerPrice +
+                        totalSecondInterval / vegetablePrizeFactor.immunityAlertLevel * vegetablePrizeFactor.sprayerPrice +
+                        vegetablePrizeFactor.seedsPrice) * vegetablePrizeFactor.priceCoff;
+        }
         
         return Math.ceil(price); 
     }

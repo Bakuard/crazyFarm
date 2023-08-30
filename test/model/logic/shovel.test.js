@@ -7,211 +7,168 @@ const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
-const {growStates} = require('../../../src/code/model/logic/growTimer.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
+const {lifeCycleStates} = require('../../../src/code/model/logic/vegetableState.js');
 
 let fabric = null;
 let manager = null;
 let eventManager = null;
 let wallet = null;
-beforeEach(() => {
+let worldMock = null;
+function beforeEachTest() {
     fabric = new Fabric({
         potato: {
             satiety: {
-                alertLevel1: 10
+                alertLevel1: 30
             },
             immunity: {
-                alertLevel1: 10
-            },
-            growTimer: {
-                state: growStates.seed,
-                intervalsInSeconds: [3, 40, 40, 40, 40]
+                alertLevel1: 30
             },
             price: {
                 coff: 1.5
+            },
+            vegetableState: {
+                seedDetail: {
+                    intervalInSecond: 3,
+                    lifeCyleState: 'seed'
+                },
+                sproutDetail: {
+                    intervalInSecond: 40,
+                    lifeCyleState: 'sprout'
+                },
+                chidlDetail: {
+                    intervalInSecond: 40,
+                    lifeCyleState: 'child'
+                },
+                youthDetail: {
+                    intervalInSecond: 40,
+                    lifeCyleState: 'youth'
+                }
             }
         },
         wallet: {
             sum: 10,
             fertilizerPrice: 2,
             sprayerPrice: 2,
-            seedsPrice: 7
+            seedsPrice: 3
         }
     });
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    eventManager = new EventManager();
     wallet = manager.createEntity().put(fabric.wallet());
-
     manager.putSingletonEntity('wallet', wallet);
     manager.putSingletonEntity('fabric', fabric);
-});
+
+    eventManager = new EventManager();
+
+    worldMock = {
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
+    };
+};
+beforeEach(beforeEachTest);
 
 test(`update(groupName, world):
         there are not 'shovel' events
-        => do nothing`,
+        => doesn't change cell,
+           doesn't add money`,
     () => {
         let entity = manager.createEntity();
         entity.put(GardenBedCell.of(0, 0));
         manager.bindEntity(entity);
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
         let expectEntity = entity.clone();
 
         let system = new ShovelSystem(manager);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
+        expect(wallet.get(Wallet).sum).toEqual(10);
     });
 
 test(`update(groupName, world):
         there is 'shovel' event,
         gardenBedCell is empty
-        => do nothing`,
+        => doesn't change cell,
+           doesn't add money`,
     () => {
         let entity = manager.createEntity();
         entity.put(GardenBedCell.of(0, 0));
         manager.bindEntity(entity);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
         let expectEntity = entity.clone();
 
         let system = new ShovelSystem(manager);
         system.update('update', worldMock);
 
         expect(entity).toEqualEntity(expectEntity);
+        expect(wallet.get(Wallet).sum).toEqual(10);
     });
 
 test(`update(groupName, world):
         there is 'shovel' event,
-        gardenBedCell is not empty
-        => remove vegetable`,
+        gardenBedCell is not empty,
+        vegetable state == 'death'
+        => doesn't change cell,
+           doesn't add money,
+           isAlive(vegetable) must return true`,
     () => {
         let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        let vegetable = manager.createEntity().put(
-            new VegetableMeta('Potato'), 
-            new GardenBedCellLink(cell),
-            fabric.growTimer('Potato')
-        );
+        let vegetable = createVegetable(cell, lifeCycleStates.death);
         cell.get(GardenBedCell).entity = vegetable;
         manager.bindEntity(cell);
         manager.bindEntity(vegetable);
         eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
+        let expectEntity = cell.clone();
 
         let system = new ShovelSystem(manager);
         system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).entity;
 
-        expect(actual).toBeNull();
+        expect(cell).toEqualEntity(expectEntity);
+        expect(wallet.get(Wallet).sum).toEqual(10);
+        expect(manager.isAlive(vegetable)).toBe(true);
     });
 
-test(`update(groupName, world):
-        there is 'shovel' event,
-        gardenBedCell is not empty
-        => isAlive(vegetable) must return false`,
-    () => {
-        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        let vegetable = manager.createEntity().put(
-            new VegetableMeta('Potato'), 
-            new GardenBedCellLink(cell),
-            fabric.growTimer('Potato')
-        );
-        cell.get(GardenBedCell).entity = vegetable;
-        manager.bindEntity(cell);
-        manager.bindEntity(vegetable);
-        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
+describe.each([
+    {state: lifeCycleStates.sleepingSeed, money: 10},
+    {state: lifeCycleStates.seed, money: 10},
+    {state: lifeCycleStates.sprout, money: 10},
+    {state: lifeCycleStates.child, money: 24},
+    {state: lifeCycleStates.youth, money: 32},
+    {state: lifeCycleStates.adult, money: 40}
+])(`update(groupName, world): there is 'shovel' event, gardenBedCell is not empty`,
+    ({state, money}) => {
+        beforeEachTest();
 
-        let system = new ShovelSystem(manager);
-        system.update('update', worldMock);
-        let actual = manager.isAlive(vegetable);
+        test(`vegetable state == '${state.name}'
+                => remove vegetable,
+                cell must be empty,
+                add money = ${money},
+                isAlive(vegetable) must return false`,
+        () => {
+            let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
+            let vegetable = createVegetable(cell, state);
+            cell.get(GardenBedCell).entity = vegetable;
+            manager.bindEntity(cell);
+            manager.bindEntity(vegetable);
+            eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
 
-        expect(actual).toBe(false);
-    });
+            let system = new ShovelSystem(manager);
+            system.update('update', worldMock);
+            let vegetables = [...manager.select(manager.createFilter().all(VegetableMeta))];
 
-test(`update(groupName, world):
-        there is 'shovel' event,
-        gardenBedCell is not empty
-        => add money to wallet`,
-    () => {
-        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        let vegetable = manager.createEntity().put(
-            new VegetableMeta('Potato'), 
-            new GardenBedCellLink(cell),
-            fabric.growTimer('Potato', growStates.sprout)
-        );
-        cell.get(GardenBedCell).entity = vegetable;
-        manager.bindEntity(cell);
-        manager.bindEntity(vegetable);
-        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
+            expect(vegetables.length).toBe(0);
+            expect(cell.get(GardenBedCell).entity).toBeNull();
+            expect(wallet.get(Wallet).sum).toBe(money);
+            expect(manager.isAlive(vegetable)).toBe(false);
+        });
+    }
+);
 
-        let system = new ShovelSystem(manager);
-        system.update('update', worldMock);
-        let actual = wallet.get(Wallet).sum;
-
-        expect(actual).toBe(47);
-    });
-
-test(`update(groupName, world):
-        there is 'shovel' event,
-        gardenBedCell doesn't contain VegetableMeta or GrowTimer
-        => don't remove vegetable from gardenCell`,
-    () => {
-        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        let ghost = manager.createEntity().addTags('sleeping seed').
-                        put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).entity = ghost;
-        manager.bindEntity(cell);
-        manager.bindEntity(ghost);
-        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new ShovelSystem(manager);
-        system.update('update', worldMock);
-        let actual = cell.get(GardenBedCell).entity;
-
-        expect(actual).toBe(ghost);
-    });
-
-test(`update(groupName, world):
-        there is 'shovel' event,
-        gardenBedCell doesn't contain VegetableMeta or GrowTimer
-        => don't remove vegetable entity`,
-    () => {
-        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        let ghost = manager.createEntity().addTags('sleeping seed').
-                        put(new VegetableMeta('Potato'), new GardenBedCellLink(cell));
-        cell.get(GardenBedCell).entity = ghost;
-        manager.bindEntity(cell);
-        manager.bindEntity(ghost);
-        eventManager.writeEvent('shovel', {tool: 'shovel', cell: 'center'});
-        let worldMock = {
-            getEntityComponentManager: () => manager,
-            getEventManager: () => eventManager
-        };
-
-        let system = new ShovelSystem(manager);
-        system.update('update', worldMock);
-        let actual = manager.isAlive(ghost);
-
-        expect(actual).toBe(true);
-    });
-
+function createVegetable(cell, state) {
+    let stateComp = fabric.vegetableState('Potato');
+    stateComp.history.push(state);
+    return manager.createEntity().put(
+        new VegetableMeta('Potato'), 
+        new GardenBedCellLink(cell),
+        stateComp
+    );
+}
