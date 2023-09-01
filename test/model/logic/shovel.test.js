@@ -141,7 +141,7 @@ describe.each([
         test(`vegetable state == '${state.name}'
                 => remove vegetable,
                 cell must be empty,
-                add money = ${money},
+                wallet.sum = ${money},
                 isAlive(vegetable) must return false`,
         () => {
             let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
