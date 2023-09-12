@@ -8,6 +8,7 @@ const {UnknownVegetableType, FailToCreateVegetableMeta} = require('../exception/
 const {Wallet} = require('./wallet.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
+const {Grid} = require('./store/grid.js');
 
 const defaultSettings = {
     potato: {
@@ -110,6 +111,10 @@ const defaultSettings = {
         fertilizerPrice: 2,
         sprayerPrice: 2,
         seedsPrice: 3
+    },
+    grid: {
+        width: 4,
+        height: 3
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -215,6 +220,13 @@ module.exports.Fabric = class Fabric {
                 vegetableSettings.vegetableState.youthDetail.intervalInSecond,
                 lifeCycleStates.findByName(vegetableSettings.vegetableState.youthDetail.lifeCyleState)
             )
+        );
+    }
+
+    grid() {
+        return new Grid(
+            this.settings.grid.width,
+            this.settings.grid.height
         );
     }
 

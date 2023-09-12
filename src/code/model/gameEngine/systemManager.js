@@ -21,6 +21,14 @@ module.exports.SystemManager = class SystemManager {
         return this;
     }
 
+    removeSystem(name) {
+        delete this.#systems[name];
+        for(let groupName of Object.keys(this.#groups)) {
+            this.#groups[groupName] = this.#groups[groupName].filter(systemName => systemName != name);
+        }
+        return this;
+    }
+
     updateGroup(groupName) {
         this.#groups[groupName]?.
             forEach(systemName => this.#systems[systemName](groupName, this.#world));

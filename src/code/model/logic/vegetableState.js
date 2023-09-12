@@ -19,13 +19,13 @@ lifeCycleStates = Object.freeze(lifeCycleStates);
 module.exports.lifeCycleStates = lifeCycleStates;
 
 class VegetableState {
-    static of(seedDetail, sproutDetail, chidlDetail, youthDetail) {
-        return new VegetableState([lifeCycleStates.sleepingSeed], seedDetail, sproutDetail, chidlDetail, youthDetail);
+    static of(seedDetail, sproutDetail, childDetail, youthDetail) {
+        return new VegetableState([lifeCycleStates.sleepingSeed], seedDetail, sproutDetail, childDetail, youthDetail);
     }
 
-    constructor(history, seedDetail, sproutDetail, chidlDetail, youthDetail) {
+    constructor(history, seedDetail, sproutDetail, childDetail, youthDetail) {
         this.history = history;
-        this.stateDetails = [seedDetail, sproutDetail, chidlDetail, youthDetail];
+        this.stateDetails = [seedDetail, sproutDetail, childDetail, youthDetail];
     }
 };
 module.exports.VegetableState = VegetableState;

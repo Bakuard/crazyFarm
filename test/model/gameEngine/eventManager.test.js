@@ -3,18 +3,6 @@
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 test(`writeEvent(name, event) and readEvent(name, index):
-        there are not events with this name
-        => readEvent(name, index) must return this event by index 0`,
-    () => {
-        let eventManager = new EventManager();
-
-        eventManager.writeEvent('event', {key: 'value'});
-        let actual = eventManager.readEvent('event', 0);
-
-        expect(actual).toEqual({key: 'value'});
-    });
-
-test(`writeEvent(name, event) and readEvent(name, index):
         there are events with this name
         => readEvent(name, index) must return correct event for each index`,
     () => {
@@ -32,84 +20,82 @@ test(`writeEvent(name, event) and readEvent(name, index):
         expect(actual3).toEqual({key: 'value3'});
     });
 
-test(`readEvent(name, index):
-        index = 0,
-        there are not events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
+describe.each([
+    {event: {key: 'some key'}, writableEventName: 'event', readableEventName: 'event', expected: {key: 'some key'}},
+    {event: {key: 'some key'}, writableEventName: 'event', readableEventName: 'other event', expected: null}
+])(`readEvent(name, index)::`,
+    ({event, writableEventName, readableEventName, expected}) => {
+        test(`event ${event}, writableEventName '${writableEventName}', readableEventName '${readableEventName}'
+                => expected return result ${expected}`,
+        () => {
+            let eventManager = new EventManager();
+            eventManager.writeEvent(writableEventName, event);
 
-        eventManager.writeEvent('event', {key: 'value'});
-        let actual = eventManager.readEvent('unknown event', 0);
+            let actual = eventManager.readEvent(readableEventName, 0);
 
-        expect(actual).toBe(null);
-    });
+            expect(actual).toEqual(expected);
+        });
+    }
+);
 
-test(`readEvent(name, index):
-        index > 0,
-        there are not events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
+describe.each([
+    {index: -1, eventsNumber: 3, expected: null},
+    {index: 3, eventsNumber: 3, expected: null},
+    {index: 4, eventsNumber: 3, expected: null},
 
-        eventManager.writeEvent('event', {key: 'value'});
-        let actual = eventManager.readEvent('unknown event', 1);
+    {index: -1, eventsNumber: 0, expected: null},
+    {index: 0, eventsNumber: 0, expected: null},
+    {index: 1, eventsNumber: 0, expected: null}
+])(`readEvent(name, index):`,
+    ({index, eventsNumber, expected}) => {
+        test(`index ${index}, eventsNumber ${eventsNumber}
+                => expected return result ${expected}`,
+        () => {
+            let eventManager = new EventManager();
+            for(let i = 0; i < eventsNumber; i++) {
+                eventManager.writeEvent('event', {key: i});
+            }
 
-        expect(actual).toBe(null);
-    });
+            let actual = eventManager.readEvent('event', index);
 
-test(`readEvent(name, index):
-        index < 0,
-        there are not events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
+            expect(actual).toEqual(expected);
+        });
+    }
+);
 
-        eventManager.writeEvent('event', {key: 'value'});
-        let actual = eventManager.readEvent('unknown event', -1);
+describe.each([
+    {writableEventName: 'event',  readableEventName: 'event', expected: [0, 10, 20, 30, 40]},
+    {writableEventName: 'event',  readableEventName: 'other event', expected: []}
+])(`forEachEvent(name, callback):`,
+    ({writableEventName, readableEventName, expected}) => {
+        test(`writableEventName '${writableEventName}', readableEventName '${readableEventName}'
+                => expected return result [${expected}]`,
+        () => {
+            let eventManager = new EventManager();
+            eventManager.writeEvent(writableEventName, ...expected);
 
-        expect(actual).toBe(null);
-    });
+            let actual = [];
+            eventManager.forEachEvent(readableEventName, (event, index) => actual.push(event));
 
-test(`readEvent(name, index):
-        index < 0,
-        there are events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
+            expect(actual).toEqual(expected);
+        });
+    }
+);
 
-        eventManager.writeEvent('event', {key: 'value'});
-        let actual = eventManager.readEvent('event', -1);
+describe.each([
+    {writableEventName: 'event',  writableEvents: [0, 10, 20, 30, 40], readableEventName: 'event', expected: 5},
+    {writableEventName: 'event',  writableEvents: [0, 10, 20, 30, 40], readableEventName: 'other event', expected: 0}
+])(`eventsNumber(name, callback):`,
+    ({writableEventName, writableEvents, readableEventName, expected}) => {
+        test(`writableEventName '${writableEventName}', writableEvents [${writableEvents}], readableEventName '${readableEventName}'
+                => expected return result ${expected}`,
+        () => {
+            let eventManager = new EventManager();
+            eventManager.writeEvent(writableEventName, ...writableEvents);
 
-        expect(actual).toBe(null);
-    });
+            let actual = eventManager.eventsNumber(readableEventName);
 
-test(`readEvent(name, index):
-        index = events number with such name,
-        there are events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
-
-        eventManager.writeEvent('event', {key: 'value1'});
-        eventManager.writeEvent('event', {key: 'value2'});
-        eventManager.writeEvent('event', {key: 'value3'});
-        let actual = eventManager.readEvent('event', 3);
-
-        expect(actual).toBe(null);
-    });
-
-test(`readEvent(name, index):
-        index > events number with such name,
-        there are events with such name
-        => return null`,
-    () => {
-        let eventManager = new EventManager();
-
-        eventManager.writeEvent('event', {key: 'value1'});
-        eventManager.writeEvent('event', {key: 'value2'});
-        eventManager.writeEvent('event', {key: 'value3'});
-        let actual = eventManager.readEvent('event', 4);
-
-        expect(actual).toBe(null);
-    });
+            expect(actual).toEqual(expected);
+        });
+    }
+);

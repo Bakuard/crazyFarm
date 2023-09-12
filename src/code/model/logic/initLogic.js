@@ -1,23 +1,22 @@
 'use strict'
 
-const {GardenBedCell} = require('./gardenBedCell.js');
 const {Fabric} = require('./fabric.js');
 
 module.exports.InitLogicSystem = class InitLogicSystem {
 
-    constructor() {}
+    constructor(settings) {
+        this.settings = settings;
+    }
 
     update(groupName, world) {
-        let fabric = Fabric.createWithDefaultSettings();
         let manager = world.getEntityComponentManager();
 
+        let fabric = this.settings ? new Fabric(this.settings) : Fabric.createWithDefaultSettings();
+        let grid = fabric.grid();
+        let wallet = manager.createEntity().put(fabric.wallet());
+
         manager.putSingletonEntity('fabric', fabric);
-
-        let cell = manager.createEntity().put(GardenBedCell.of(0, 0));
-        manager.bindEntity(cell);
-
-        let wallet = manager.createEntity();
-        wallet.put(fabric.wallet());
+        manager.putSingletonEntity('grid', grid);
         manager.putSingletonEntity('wallet', wallet);
     }
 

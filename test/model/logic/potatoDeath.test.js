@@ -6,15 +6,16 @@ const {EntityComponentManager} = require('../../../src/code/model/gameEngine/ent
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
-const {GardenBedCell} = require('../../../src/code/model/logic/gardenBedCell.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
+const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 
 let fabric = null;
 let manager = null;
 let compGeneratorId = null;
 let worldMock = null;
+let grid = null;
 function beforeEachTest() {
     fabric = new Fabric({
         potato: {
@@ -25,7 +26,9 @@ function beforeEachTest() {
     });
     compGeneratorId = new ComponentIdGenerator();
     manager = new EntityComponentManager(new EntityManager(), compGeneratorId);
+    grid = new Grid(4, 3);
     manager.putSingletonEntity('fabric', fabric);
+    manager.putSingletonEntity('grid', grid);
 
     worldMock = {
         elapsedTime: 1000,
@@ -52,21 +55,19 @@ describe.each([
               ghostDurationInMillis ${ghostDurationInMillis}
               => isAlive ${isAlive}`,
         () => {
-            let cell = manager.createEntity().put(new GardenBedCell(0, 0));
             let entity = manager.createEntity().put(
                 new PotatoGhost(ghostDurationInMillis),
-                new GardenBedCellLink(cell)
+                new GardenBedCellLink(0, 0)
             );
-            cell.get(GardenBedCell).entity = entity;
             manager.bindEntity(entity);
-            manager.bindEntity(cell);
+            grid.write(0, 0, entity);
             worldMock.elapsedTime = elapsedTime;
 
             let system = new PotatoDeathSystem(manager, fabric);
             system.update('update', worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
-            expect(cell.get(GardenBedCell).entity === null).toBe(isCellEmpty);
+            expect(grid.get(0, 0) === null).toBe(isCellEmpty);
         });
     }
 );
@@ -86,18 +87,16 @@ describe.each([
               => hasGrowComps ${hasGrowComps},
                  hasGhostComp ${hasGhostComp}`,
         () => {
-            let cell = manager.createEntity().put(new GardenBedCell(0, 0));
             let entity = manager.createEntity().put(
                 new VegetableMeta('Potato'),
-                new GardenBedCellLink(cell),
+                new GardenBedCellLink(0, 0),
                 vegetableState(state),
                 Immunity.of(60, 1, 0.2),
                 Satiety.of(60, 1),
                 Thirst.of(60, 1)
             );
-            cell.get(GardenBedCell).entity = entity;
             manager.bindEntity(entity);
-            manager.bindEntity(cell);
+            grid.write(0, 0, entity);
 
             let system = new PotatoDeathSystem(manager, fabric);
             system.update('update', worldMock);

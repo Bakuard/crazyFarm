@@ -40,7 +40,7 @@ describe.each([
               => expected return result ${expectResult}`,
         () => {
             let grid = new Grid(gridWidth, gridHeight);
-            grid.forEach((currentX, currentY) => grid.write(currentX, currentY, currentX + '|' + currentY));
+            grid.fill((currentX, currentY) => currentX + '|' + currentY);
 
             let actual = grid.getNeigboursFor(x, y).map(cell => cell.value);
 
@@ -48,3 +48,16 @@ describe.each([
         });
     }
 );
+
+
+test(`clone(itemCloner) and equal(otherGrid, itemComparator):
+        => cloned grid must be equal to original`,
+() => {
+    let grid = new Grid(10, 5);
+    grid.fill((x, y) => { return {x, y}});
+
+    let copy = grid.clone(item => { return {x: item.x, y: item.y}});
+    let actual = grid.equals(copy, (a, b) => a.x == b.x && a.y == b.y);
+
+    expect(actual).toBe(true);
+});

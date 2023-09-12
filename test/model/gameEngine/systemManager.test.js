@@ -52,7 +52,7 @@ test(`putSystem(name, updateMethod, ...groups):
     });
 
 test(`updateMethod(groupName):
-        there se not group with this name
+        there is not group with this name
         => do nothing`,
     () => {
         let worldMock = {};
@@ -63,4 +63,51 @@ test(`updateMethod(groupName):
         systemManager.updateGroup('group2');
 
         expect(system).toHaveBeenCalledTimes(0);
+    });
+
+test(`removeSystem(name):
+        there is not system with this name
+        => don't change system manager state`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+        let system1 = jest.fn(() => {});
+        let system2 = jest.fn(() => {});
+        let system3 = jest.fn(() => {});
+        systemManager.putSystem('system1', system1, 'group1', 'group2', 'group3');
+        systemManager.putSystem('system2', system2, 'group1', 'group2');
+        systemManager.putSystem('system3', system3, 'group1');
+
+        systemManager.removeSystem('unknown system');
+        systemManager.updateGroup('group1');
+        systemManager.updateGroup('group2');
+        systemManager.updateGroup('group3');
+
+        expect(system1).toHaveBeenCalledTimes(3);
+        expect(system2).toHaveBeenCalledTimes(2);
+        expect(system3).toHaveBeenCalledTimes(1);
+    });
+
+test(`removeSystem(name):
+        there is system with this name
+        => remove this system,
+           don't change other systems`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+        let system1 = jest.fn(() => {});
+        let system2 = jest.fn(() => {});
+        let system3 = jest.fn(() => {});
+        systemManager.putSystem('system1', system1, 'group1', 'group2', 'group3');
+        systemManager.putSystem('system2', system2, 'group1', 'group2');
+        systemManager.putSystem('system3', system3, 'group1');
+
+        systemManager.removeSystem('system2');
+        systemManager.updateGroup('group1');
+        systemManager.updateGroup('group2');
+        systemManager.updateGroup('group3');
+
+        expect(system1).toHaveBeenCalledTimes(3);
+        expect(system2).toHaveBeenCalledTimes(0);
+        expect(system3).toHaveBeenCalledTimes(1);
     });

@@ -21,7 +21,7 @@ module.exports.Grid = class Grid {
     }
 
     remove(x, y) {
-        this.#data[x + this.#width * y] = null;
+        this.write(x, y, null);
     }
 
     width() {
@@ -30,6 +30,14 @@ module.exports.Grid = class Grid {
 
     height() {
         return this.#height;
+    }
+
+    fill(callback) {
+        for(let x = 0; x < this.#width; x++) {
+            for(let y = 0; y < this.#height; y++) {
+                this.write(x, y, callback(x, y));
+            }
+        }
     }
 
     getNeigboursFor(x, y) {
@@ -63,4 +71,19 @@ module.exports.Grid = class Grid {
             }
         }
     }
+
+    clone(itemCloner) {
+        let grid = new Grid(this.#width, this.#height);
+        this.forEach((x, y, value) => grid.write(x, y, itemCloner(value)));
+        return grid;
+    }
+
+    equals(otherGrid, itemComparator) {
+        let result = otherGrid.#width == this.#width && otherGrid.#height == this.#height;
+        for(let i = 0; i < this.#data.length && result; i++) {
+            result = itemComparator(this.#data[i], otherGrid.#data[i]);
+        }
+        return result;
+    }
+
 };

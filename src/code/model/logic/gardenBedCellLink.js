@@ -1,7 +1,8 @@
 'use strict'
 
 module.exports.GardenBedCellLink = class GardenBedCellLink {
-    constructor(gardenBedCell) {
-        this.gardenBedCell = gardenBedCell;
+    constructor(cellX, cellY) {
+        this.cellX = cellX;
+        this.cellY = cellY;
     }
 };
