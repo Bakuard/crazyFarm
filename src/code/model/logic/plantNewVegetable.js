@@ -1,12 +1,10 @@
 'use strict'
 
-const {GardenBedCell} = require('./gardenBedCell.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {Wallet} = require('./wallet.js');
 
 module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
-    constructor(entityComponentManager, randomGenerator) {
-        this.cellFilter = entityComponentManager.createFilter().all(GardenBedCell);
+    constructor(randomGenerator) {
         this.randomGenerator = randomGenerator;
     }
 
@@ -16,25 +14,21 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         let eventManager = world.getEventManager();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);
         let fabric = manager.getSingletonEntity('fabric');
+        let grid = manager.getSingletonEntity('grid');
 
-        if(eventManager.readEvent('seeds', 0)) {
-            for(let entityWithCellComp of manager.select(this.cellFilter)) {
-                let cell = entityWithCellComp.get(GardenBedCell);
-                
-                if(cell && !cell.entity && wallet.sum >= wallet.seedsPrice) {
-                    let vegetable = buffer.createEntity();
-                    let metaComp = fabric.vegetableMeta(this.randomGenerator());
-                    let cellLinkComp = new GardenBedCellLink(entityWithCellComp);
-                    let vegetableState = fabric.vegetableState(metaComp.typeName);
-                    vegetable.put(metaComp, cellLinkComp, vegetableState);
-                    cell.entity = vegetable;
-                    wallet.sum -= wallet.seedsPrice;
+        eventManager.forEachEvent('seeds', (event, index) => { 
+            if(!grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice) {
+                let vegetable = buffer.createEntity();
+                let metaComp = fabric.vegetableMeta(this.randomGenerator());
+                let cellLinkComp = new GardenBedCellLink(event.cellX, event.cellY);
+                let vegetableState = fabric.vegetableState(metaComp.typeName);
+                vegetable.put(metaComp, cellLinkComp, vegetableState);
+                grid.write(event.cellX, event.cellY, vegetable);
+                wallet.sum -= wallet.seedsPrice;
 
-                    buffer.bindEntity(vegetable);
-                    buffer.bindEntity(entityWithCellComp);
-                }
+                buffer.bindEntity(vegetable);
             }
-        }
+        });
 
         manager.flush(buffer);
         eventManager.clearEventQueue('seeds');

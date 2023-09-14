@@ -1,7 +1,7 @@
 'use strict'
 
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
-const {GardenBedCell} = require('./gardenBedCell.js');
+const {Grid} = require('./store/grid.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
@@ -25,6 +25,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         let manager = world.getEntityComponentManager();
         let buffer = manager.createCommandBuffer();
         let fabric = manager.getSingletonEntity('fabric');
+        let grid = manager.getSingletonEntity('grid');
 
         for(let entity of manager.select(this.deadFilter)) {
             let meta = entity.get(VegetableMeta);
@@ -41,8 +42,8 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
 
             potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
             if(potatoGhost.timeInMillis == 0) {
-                let cell = entity.get(GardenBedCellLink).gardenBedCell;
-                cell.get(GardenBedCell).entity = null;
+                let cellLink = entity.get(GardenBedCellLink);
+                grid.remove(cellLink.cellX, cellLink.cellY);
                 buffer.removeEntity(entity);
             }
         }

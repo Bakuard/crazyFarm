@@ -5,16 +5,17 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
-const {GardenBedCell} = require('../../../src/code/model/logic/gardenBedCell.js');
 const {VegetableState} = require('../../../src/code/model/logic/vegetableState.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
+const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 
 let fabric = null;
 let manager = null;
 let eventManager = null;
 let wallet = null;
-beforeEach(() => {
+let grid = null;
+function beforeEachTest() {
     fabric = new Fabric({
         potato: {
             seedProbability: {
@@ -78,9 +79,11 @@ beforeEach(() => {
         }
     });
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    manager.putSingletonEntity('fabric', fabric);
     wallet = manager.createEntity().put(fabric.wallet());
+    grid = new Grid(4, 3);
+    manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('wallet', wallet);
+    manager.putSingletonEntity('grid', grid);
 
     eventManager = new EventManager();
     
@@ -95,86 +98,80 @@ beforeEach(() => {
             }
         },
     };
-});
+};
 
-test(`update(groupName, world):
-        there are not 'seeds' events
-        => don't plant new vegetables,
-           don't spend money`,
-    () => {
-        let entity = manager.createEntity();
-        entity.put(GardenBedCell.of(0, 0));
-        manager.bindEntity(entity);
-        let expected = entity.clone();
+function p(x, y) {
+    return {x, y, toString() {return `{x: ${this.x}, y: ${this.y}}`}};
+}
 
-        let system = new PlantNewVegetableSystem(manager, () => 0.1);
-        system.update('update', worldMock);
+function createVegetable(x, y) {
+    let metaComp = new VegetableMeta('Potato');
+    let cellLinkComp = new GardenBedCellLink(x, y);
+    let vegetableState = fabric.vegetableState(metaComp.typeName);
+    let vegetable = manager.createEntity().put(metaComp, cellLinkComp, vegetableState);
+    manager.bindEntity(vegetable);
+    return vegetable;
+}
 
-        expect(entity).toEqualEntity(expected);
-        expect(wallet.get(Wallet).sum).toEqual(20);
-    });
+describe.each([
+    {seedsEventsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
+    notEmptyCellsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
+    money: 20, 
+    seedsPrice: 2, 
+    expectedNewVegetablesCoordinates: [], 
+    expectedMoney: 20},
 
-test(`update(groupName, world):
-        there are 'seeds' events,
-        there are not entities with GardenBedCell component
-        => don't plant new vegetables,
-           don't spend money`,
-    () => {
-        let entity = manager.createEntity();
-        manager.bindEntity(entity);
-        eventManager.writeEvent('seeds', {tool: 'seeds', cell: 'center'});
+    {seedsEventsCoordinates: [],
+    notEmptyCellsCoordinates: [],
+    money: 20, 
+    seedsPrice: 2, 
+    expectedNewVegetablesCoordinates: [], 
+    expectedMoney: 20},
 
-        let system = new PlantNewVegetableSystem(manager, () => 0.1);
-        system.update('update', worldMock);
-        let actual = [...manager.select(manager.createFilter().all(VegetableMeta))];
+    {seedsEventsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
+    notEmptyCellsCoordinates: [],
+    money: 20, 
+    seedsPrice: 21, 
+    expectedNewVegetablesCoordinates: [], 
+    expectedMoney: 20},
 
-        expect(actual).toHaveLength(0);
-        expect(wallet.get(Wallet).sum).toEqual(20);
-    });
+    {seedsEventsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
+    notEmptyCellsCoordinates: [],
+    money: 20, 
+    seedsPrice: 2, 
+    expectedNewVegetablesCoordinates: [p(0, 0), p(1, 1), p(3, 2)], 
+    expectedMoney: 14}
+])(`update(groupName, world):`,
+    ({seedsEventsCoordinates, notEmptyCellsCoordinates, money, seedsPrice, expectedNewVegetablesCoordinates, expectedMoney}) => {
+        beforeEach(beforeEachTest);
 
-test(`update(groupName, world):
-        there are 'seeds' events,
-        there are not entities with empty GardenBedCell component
-        => don't plant new vegetables,
-           don't spend money`,
-    () => {
-        let entity = manager.createEntity();
-        let entity2 = manager.createEntity();
-        entity.put(new GardenBedCell(0, 0, entity2));
-        manager.bindEntity(entity);
-        manager.bindEntity(entity2);
-        eventManager.writeEvent('seeds', {tool: 'seeds', cell: 'center'});
-        let expected = entity.clone();
+        test(`seedsEventsCoordinates [${seedsEventsCoordinates}],
+              notEmptyCellsCoordinates [${notEmptyCellsCoordinates}],
+              money ${money},
+              seedPrice ${seedsPrice}
+              => expected new vegetables coordinates: ${expectedNewVegetablesCoordinates},
+                 expectedMoney: ${expectedMoney},
+                 not empty cells mustn't be changed,
+                 grid cell has link to new vegetable,
+                 new vegetable must have VegetableMeta, GardenBedCellLink and VegetableState components`,
+        () => {
+            seedsEventsCoordinates.forEach(pos => eventManager.writeEvent('seeds', {tool: 'seeds', cellX: pos.x, cellY: pos.y}));
+            notEmptyCellsCoordinates.forEach(pos => grid.write(pos.x, pos.y, createVegetable(pos.x, pos.y)));
+            wallet.get(Wallet).sum = money;
+            wallet.get(Wallet).seedsPrice = seedsPrice;
+            let gridClone = grid.clone(entity => entity);
 
-        let system = new PlantNewVegetableSystem(manager, () => 0.1);
-        system.update('update', worldMock);
-        let actual = [...manager.select(manager.createFilter().all(VegetableMeta))];
+            let system = new PlantNewVegetableSystem(() => 0.1);
+            system.update('update', worldMock);
 
-        expect(actual).toHaveLength(0);
-        expect(entity).toEqualEntity(expected);
-        expect(wallet.get(Wallet).sum).toEqual(20);
-    });
-
-test(`update(groupName, world):
-        there are 'seeds' events,
-        there are entities with empty GardenBedCell component
-        => plant new vegetables,
-           spend money,
-           GardenBedCell componen has link to new vegetable,
-           new vegetable must have VegetableMeta, GardenBedCellLink and VegetableState components`,
-    () => {
-        let entity = manager.createEntity();
-        entity.put(GardenBedCell.of(0, 0));
-        manager.bindEntity(entity);
-        eventManager.writeEvent('seeds', {tool: 'seeds', cell: 'center'});
-
-        let system = new PlantNewVegetableSystem(manager, () => 0.1);
-        system.update('update', worldMock);
-        let actual = [...manager.select(manager.createFilter().all(VegetableMeta))];
-
-        expect(actual).toHaveLength(1);
-        expect(actual[0].hasComponents(VegetableMeta, GardenBedCellLink, VegetableState)).toBe(true);
-        expect(entity.get(GardenBedCell).entity).toBe(actual[0]);
-        expect(wallet.get(Wallet).sum).toEqual(17);
-    });
-
+            expectedNewVegetablesCoordinates.forEach(pos => {
+                expect(grid.get(pos.x, pos.y)).not.toBe(gridClone.get(pos.x, pos.y));
+                expect(grid.get(pos.x, pos.y).hasComponents(VegetableMeta, GardenBedCellLink, VegetableState)).toBe(true);
+            });
+            expect(wallet.get(Wallet).sum).toEqual(expectedMoney);
+            notEmptyCellsCoordinates.forEach(pos => {
+                expect(grid.get(pos.x, pos.y)).toBe(gridClone.get(pos.x, pos.y));
+            });
+        });
+    }
+);

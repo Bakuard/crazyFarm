@@ -1,18 +1,17 @@
 'use strict'
 
-const {GardenBedCell} = require('./gardenBedCell.js');
 const {Wallet} = require('./wallet.js');
+const dto = require('../../dto/dto.js');
 
 module.exports.OutputSystem = class OutputSystem {
-    constructor(entityComponentManager, callback) {
-        this.filter = entityComponentManager.createFilter().all(GardenBedCell);
+    constructor(callback) {
         this.callback = callback;
     }
 
     update(groupName, world) {
         let manager = world.getEntityComponentManager();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);
-        let entities = [...manager.select(this.filter)];
-        this.callback(entities, wallet);
+        let grid = manager.getSingletonEntity('grid');
+        this.callback(new dto.GameResponse(grid, wallet));
     }
 };
