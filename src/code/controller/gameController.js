@@ -38,8 +38,9 @@ module.exports.GameController = class GameController {
 
     startNewGame(clientSocket, req) {
         let game = new Game(
-            (entities, wallet) => clientSocket.send(JSON.stringify(new dto.GameResponse(entities, wallet), null, 4)), 
-            req.user
+            (gameResponse) => clientSocket.send(JSON.stringify(gameResponse, null, 4)), 
+            req.user,
+            Math.random
         );
 
         clientSocket.on('pong', () => clientSocket.isAlive = true);

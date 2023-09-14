@@ -54,14 +54,13 @@ function beforeEachSetting() {
 beforeEach(beforeEachSetting);
 
 describe.each([
-    {hasBailerEvent: true, hasGrowcomps: true, nextState: lifeCycleStates.seed},
-    {hasBailerEvent: false, hasGrowcomps: false, nextState: lifeCycleStates.sleepingSeed}
-])(`update(groupName, world): vegetables state is 'sleepigSeed`,
-    ({hasBailerEvent, hasGrowcomps, nextState}) => {
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.seed},
+    {hasBailerEvent: false, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed}
+])(`update(groupName, world): vegetables currentState is 'sleepigSeed`,
+    ({hasBailerEvent, hasGrowComps, nextState}) => {
         beforeEach(beforeEachSetting);
 
-        test(`vegetables state is 'sleepingSeed',
-              hasBailerEvent ${hasBailerEvent}
+        test(`hasBailerEvent ${hasBailerEvent}
               => nextState'${nextState.name}'`,
         () => {
             let entity = manager.createEntity();
@@ -73,41 +72,41 @@ describe.each([
             system.update('udpate', worldMock);
     
             expect(entity.get(VegetableState).history.at(-1)).toBe(nextState);
-            expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(hasGrowcomps);
+            expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(hasGrowComps);
         });
     }
 );
 
 describe.each([
-    {state: lifeCycleStates.seed, nextState: lifeCycleStates.seed, intervalInSeconds: 1, elapsedTime: 999},
-    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 999},
-    {state: lifeCycleStates.child, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 999},
-    {state: lifeCycleStates.youth, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 999},
+    {currentState: lifeCycleStates.seed, nextState: lifeCycleStates.seed, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 2999},
+    {currentState: lifeCycleStates.sprout, nextState: lifeCycleStates.sprout, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 39999},
+    {currentState: lifeCycleStates.child, nextState: lifeCycleStates.child, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 39999},
+    {currentState: lifeCycleStates.youth, nextState: lifeCycleStates.youth, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 39999},
 
-    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 1000},
-    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 1000},
-    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 1000},
-    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1000},
+    {currentState: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 3000},
+    {currentState: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40000},
+    {currentState: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40000},
+    {currentState: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40000},
 
-    {state: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalInSeconds: 1, elapsedTime: 1001},
-    {state: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalInSeconds: 1, elapsedTime: 1001},
-    {state: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalInSeconds: 1, elapsedTime: 1001},
-    {state: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1001},
+    {currentState: lifeCycleStates.seed, nextState: lifeCycleStates.sprout, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 3001},
+    {currentState: lifeCycleStates.sprout, nextState: lifeCycleStates.child, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40001},
+    {currentState: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40001},
+    {currentState: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40001},
 
-    {state: lifeCycleStates.adult, nextState: lifeCycleStates.adult, intervalInSeconds: 1, elapsedTime: 1000000},
-    {state: lifeCycleStates.death, nextState: lifeCycleStates.death, intervalInSeconds: 1, elapsedTime: 1000000}
+    {currentState: lifeCycleStates.adult, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 1000000},
+    {currentState: lifeCycleStates.death, nextState: lifeCycleStates.death, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 1000000}
 ])(`update(groupName, world):`,
-    ({state, nextState, intervalInSeconds, elapsedTime}) => {
+    ({currentState, nextState, intervalsInSeconds, elapsedTime}) => {
         beforeEach(beforeEachSetting);
 
-        test(`vegetables state is '${state.name}',
-              intervalInSeconds ${intervalInSeconds},
-              elapsedTime ${elapsedTime},
-              currentState ${state}
+        test(`vegetables currentState is '${currentState.name}',
+              intervalsInSeconds [${intervalsInSeconds}],
+              currentState '${currentState.name}',
+              elapsedTime ${elapsedTime}
               => nextState'${nextState.name}'`,
         () => {
             let entity = manager.createEntity();
-            entity.put(vegetableState(state, intervalInSeconds));
+            entity.put(vegetableState(currentState, ...intervalsInSeconds));
             manager.bindEntity(entity);
             worldMock.elapsedTime = elapsedTime;
     
@@ -119,14 +118,14 @@ describe.each([
     }
 );
 
-function vegetableState(state, intervalInSeconds) {
+function vegetableState(currentState, ...intervalsInSeconds) {
     let result = VegetableState.of(
-        StateDetail.of(intervalInSeconds, lifeCycleStates.seed),
-        StateDetail.of(intervalInSeconds, lifeCycleStates.sprout),
-        StateDetail.of(intervalInSeconds, lifeCycleStates.child),
-        StateDetail.of(intervalInSeconds, lifeCycleStates.youth)
+        StateDetail.of(intervalsInSeconds[0], lifeCycleStates.seed),
+        StateDetail.of(intervalsInSeconds[1], lifeCycleStates.sprout),
+        StateDetail.of(intervalsInSeconds[2], lifeCycleStates.child),
+        StateDetail.of(intervalsInSeconds[3], lifeCycleStates.youth)
     );
-    result.history.push(state);
+    result.history.push(currentState);
 
     return result;
 }

@@ -14,27 +14,28 @@ const {GrowSystem} = require('./vegetableState.js');
 const {WorldLogger} = require('./worldLogger.js');
 const {InitLogicSystem} = require('./initLogic.js');
 const {newLogger} = require('../../conf/logConf.js');
+const {CommandRequest} = require('../../dto/dto.js');
 
 let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user) {
+    constructor(outputCallback, user, randomGenerator, settings) {
         this.user = user;
         this.world = new World(1000);
         const manager = this.world.getEntityComponentManager();
 
-        let initLogic = new InitLogicSystem();
+        let initLogic = new InitLogicSystem(settings);
         let shovel = new ShovelSystem(manager);
-        let plantNewVegetableSystem = new PlantNewVegetableSystem(manager, Math.random);
+        let plantNewVegetableSystem = new PlantNewVegetableSystem(randomGenerator);
         let thirst = new ThirstSystem(manager);
         let satiety = new SatietySystem(manager);
-        let immunity = new ImmunitySystem(manager, Math.random);
+        let immunity = new ImmunitySystem(manager, randomGenerator);
         let potatoDeath = new PotatoDeathSystem(manager);
         let tomatoDeath = new TomatoDeathSystem(manager);
         let grow = new GrowSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
-        let output = new OutputSystem(manager, outputCallback);
+        let output = new OutputSystem(outputCallback);
 
         this.world.getSystemManager().
             putSystem('InitLogicSystem', initLogic.update.bind(initLogic), groups.start).
@@ -62,7 +63,7 @@ module.exports.Game = class Game {
 
     execute(command) {
         logger.info('userId=%s; execute game command=%s', this.user._id, command);
-        this.world.getEventManager().writeEvent(command.tool, command);
+        this.world.getEventManager().writeEvent(command.tool, new CommandRequest(command));
     }
 
 };

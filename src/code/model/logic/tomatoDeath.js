@@ -1,11 +1,10 @@
 'use strict'
 
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
-const {GardenBedCell} = require('./gardenBedCell.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
-const {VegetableState} = require('./vegetableState.js');
+const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 
 module.exports.TomatoDeathSystem = class TomatoDeathSystem {
@@ -17,6 +16,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
     update(groupName, world) {
         let manager = world.getEntityComponentManager();
         let buffer = manager.createCommandBuffer();
+        let grid = manager.getSingletonEntity('grid');
 
         for(let entity of manager.select(this.deadFilter)) {
             let meta = entity.get(VegetableMeta);
@@ -28,8 +28,8 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         }
 
         for(let entity of manager.select(this.explosionFilter)) {
-            let cell = entity.get(GardenBedCellLink).gardenBedCell;
-            cell.get(GardenBedCell).entity = null;
+            let cellLink = entity.get(GardenBedCellLink);
+            grid.remove(cellLink.cellX, cellLink.cellY);
             buffer.removeEntity(entity);
         }
 

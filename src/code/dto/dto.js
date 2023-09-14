@@ -8,7 +8,6 @@ const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
 const {PotatoGhost} = require('../model/logic/potatoDeath.js');
-const {GardenBedCell} = require('../model/logic/gardenBedCell.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
 
@@ -72,23 +71,32 @@ class VegetableResponse {
 module.exports.VegetableResponse = VegetableResponse;
 
 class GardenBedCellResponse {
-    constructor(cell) {
-        let vegetable = cell.get(GardenBedCell).entity;
-
+    constructor(x, y, vegetable) {
         this.isEmpty = !vegetable;
         this.isBlocked = Boolean(vegetable?.get(PotatoGhost) || vegetable?.hasTags('explosion'));
-        this.name = 'central';
+        this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
 class GameResponse {
-    constructor(entities, wallet) {
+    constructor(grid, wallet) {
         this.player = {
             cash: wallet.sum
         };
-        this.containers = entities.map(entity => new GardenBedCellResponse(entity));
+        this.containers = [];
+        grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value)));
     }
 }
 module.exports.GameResponse = GameResponse;
+
+class CommandRequest {
+    constructor(command) {
+        this.tool = command.tool;
+        let coordinates = command.cell.split('-');
+        this.cellX = Number(coordinates[0]);
+        this.cellY = Number(coordinates[1]);
+    }
+}
+module.exports.CommandRequest = CommandRequest;
