@@ -1,6 +1,22 @@
 const {Entity} = require('../../../src/code/model/gameEngine/entity.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 
+function createEntities(entityCreator, ...ids) {
+    let entities = [];
+    for(let i of ids) entities.push(entityCreator(i));
+    return entities;
+}
+
+function createEntitiesWithManager(manager, number) {
+    let entities = [];
+    for(let i = 0; i < number; i++) entities.push(manager.create());
+    return entities;
+}
+
+function removeEntitiesWithManager(manager, allEntities, ...removedEntitiyIds) {
+    for(let entityId of removedEntitiyIds) manager.remove(allEntities[entityId]);
+}
+
 test(`create():
         all entities id have never been used
         => return entities with 0 generation`,
@@ -130,3 +146,97 @@ test(`remove(entity):
 
             expect(newEntity.generation).toBe(entity.generation + 1);
         });
+
+test(`snapshot():
+        manager is empty
+        => return empty snapshot`,
+    () => {
+        let manager = new EntityManager();
+        
+        let snapshot = manager.snapshot();
+
+        expect(snapshot).toEqual({
+            liveEntities: [],
+            deadEntities: []
+        });
+    });
+
+test(`snapshot():
+        there are live entities,
+        there are not dead entities
+        => return empty snapshot`,
+    () => {
+        let manager = new EntityManager();
+        createEntitiesWithManager(manager, 10);
+        
+        let snapshot = manager.snapshot();
+
+        expect(snapshot).toEqual({
+            liveEntities: createEntities(i => new Entity(i, 0), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+            deadEntities: []
+        });
+    });
+    
+test(`snapshot():
+        there are live entities,
+        there are dead entities
+        => return empty snapshot`,
+    () => {
+        let manager = new EntityManager();
+        let ents = createEntitiesWithManager(manager, 10);
+        removeEntitiesWithManager(manager, ents, 0, 3, 4);
+        
+        let snapshot = manager.snapshot();
+
+        expect(snapshot).toEqual({
+            liveEntities: createEntities(i => new Entity(i, 0), 1, 2, 5, 6, 7, 8, 9),
+            deadEntities: createEntities(i => new Entity(i, 1), 0, 3, 4)
+        });
+    });
+
+test(`restore():
+        empty snapshot
+        => create empty manager`,
+    () => {
+        let snapshot = {
+            liveEntities: [],
+            deadEntities: []
+        }
+
+        let manager = EntityManager.restore(snapshot);
+        let actual = createEntitiesWithManager(manager, 10);
+
+        expect(actual).toEqual(createEntities(i => new Entity(i, 0), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+    });
+
+test(`restore():
+        there are live entities,
+        there are not dead entities
+        => create empty manager`,
+    () => {
+        let snapshot = {
+            liveEntities: createEntities(i => new Entity(i, 0), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+            deadEntities: []
+        }
+
+        let manager = EntityManager.restore(snapshot);
+        let actual = createEntitiesWithManager(manager, 10);
+
+        expect(actual).toEqual(createEntities(i => new Entity(i, 0), 10, 11, 12, 13, 14, 15, 16, 17, 18, 19));
+    });
+
+test(`restore():
+        there are live entities,
+        there are dead entities
+        => create empty manager`,
+    () => {
+        let snapshot = {
+            liveEntities: createEntities(i => new Entity(i, 0), 1, 2, 5, 6, 7, 8, 9),
+            deadEntities: createEntities(i => new Entity(i, 1), 0, 3, 4)
+        }
+
+        let manager = EntityManager.restore(snapshot);
+        let actual = createEntitiesWithManager(manager, 5);
+
+        expect(actual).toEqual([new Entity(0, 1), new Entity(3, 1), new Entity(4, 1), new Entity(10, 0), new Entity(11, 0)]);
+    });
