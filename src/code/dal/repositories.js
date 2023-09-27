@@ -69,3 +69,19 @@ module.exports.UserRepository = class UserRepository {
     }
 
 }
+
+module.exports.GameRepository = class GameRepository {
+
+    constructor() {}
+
+    async save(fullGameState) {
+        const db = mongo.db(process.env.MONGO_DB_NAME);
+        const collection = db.collection('games');
+        await collection.insertOne(fullGameState);
+    }
+
+    async load(userId) {
+
+    }
+
+};

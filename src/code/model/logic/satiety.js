@@ -17,7 +17,6 @@ class Satiety {
 module.exports.Satiety = Satiety;
 
 module.exports.SatietySystem = class SatietySystem {
-    filter;
     constructor(entityComponentManager) {
         this.filter = entityComponentManager.createFilter().all(Satiety, VegetableState);
     }

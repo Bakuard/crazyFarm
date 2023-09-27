@@ -1,7 +1,6 @@
 'use strict'
 
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
-const {Grid} = require('./store/grid.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');

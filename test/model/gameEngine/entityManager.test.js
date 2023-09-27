@@ -202,8 +202,9 @@ test(`restore():
             liveEntities: [],
             deadEntities: []
         }
+        let manager = new EntityManager();
 
-        let manager = EntityManager.restore(snapshot);
+        manager.restore(snapshot);
         let actual = createEntitiesWithManager(manager, 10);
 
         expect(actual).toEqual(createEntities(i => new Entity(i, 0), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
@@ -218,8 +219,9 @@ test(`restore():
             liveEntities: createEntities(i => new Entity(i, 0), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
             deadEntities: []
         }
+        let manager = new EntityManager();
 
-        let manager = EntityManager.restore(snapshot);
+        manager.restore(snapshot);
         let actual = createEntitiesWithManager(manager, 10);
 
         expect(actual).toEqual(createEntities(i => new Entity(i, 0), 10, 11, 12, 13, 14, 15, 16, 17, 18, 19));
@@ -234,8 +236,9 @@ test(`restore():
             liveEntities: createEntities(i => new Entity(i, 0), 1, 2, 5, 6, 7, 8, 9),
             deadEntities: createEntities(i => new Entity(i, 1), 0, 3, 4)
         }
+        let manager = new EntityManager();
 
-        let manager = EntityManager.restore(snapshot);
+        manager.restore(snapshot);
         let actual = createEntitiesWithManager(manager, 5);
 
         expect(actual).toEqual([new Entity(0, 1), new Entity(3, 1), new Entity(4, 1), new Entity(10, 0), new Entity(11, 0)]);

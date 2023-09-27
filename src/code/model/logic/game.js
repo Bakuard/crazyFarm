@@ -12,21 +12,25 @@ const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {GrowSystem} = require('./vegetableState.js');
 const {WorldLogger} = require('./worldLogger.js');
-const {InitLogicSystem} = require('./initLogic.js');
+const {InitSystem} = require('./init.js');
+const {LoadGameSystem} = require('./loadGame.js');
 const {newLogger} = require('../../conf/logConf.js');
 const {CommandRequest} = require('../../dto/dto.js');
+const {SaveGameSystem} = require('./saveGame.js');
 
 let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user, randomGenerator, settings) {
+    constructor(outputCallback, user, randomGenerator, gameRepository, settings) {
         this.user = user;
+        this.gameRepository = gameRepository;
         this.world = new World(1000);
         const manager = this.world.getEntityComponentManager();
 
-        let initLogic = new InitLogicSystem(settings);
-        let shovel = new ShovelSystem(manager);
+        let initLogic = new InitSystem(settings);
+        let loadGame = new LoadGameSystem(user._id);
+        let shovel = new ShovelSystem();
         let plantNewVegetableSystem = new PlantNewVegetableSystem(randomGenerator);
         let thirst = new ThirstSystem(manager);
         let satiety = new SatietySystem(manager);
@@ -36,9 +40,11 @@ module.exports.Game = class Game {
         let grow = new GrowSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(outputCallback);
+        let saveGame = new SaveGameSystem(user._id, gameRepository);
 
         this.world.getSystemManager().
-            putSystem('InitLogicSystem', initLogic.update.bind(initLogic), groups.start).
+            putSystem('InitSystem', initLogic.update.bind(initLogic), groups.start).
+            putSystem('LoadGameSystem', loadGame.update.bind(loadGame), groups.start).
             putSystem('ShovelSystem', shovel.update.bind(shovel), groups.update).
             putSystem('PlantNewVegetableSystem', plantNewVegetableSystem.update.bind(plantNewVegetableSystem), groups.update).
             putSystem('GrowSystem', grow.update.bind(grow), groups.update).
@@ -48,12 +54,17 @@ module.exports.Game = class Game {
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('TomatoDeathSystem', tomatoDeath.update.bind(tomatoDeath), groups.update).
             putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
-            putSystem('OutputSystem', output.update.bind(output), groups.update);
+            putSystem('OutputSystem', output.update.bind(output), groups.update).
+            putSystem('SaveGameSystem', saveGame.update.bind(saveGame), groups.stop);
     }
 
     start() {
         logger.info('userId=%s; start game', this.user._id);
-        this.world.getGameLoop().start();
+        this.gameRepository.load(this.user._id).
+            then(fullGameState => {
+                this.world.getEntityComponentManager().putSingletonEntity('fullGameState', fullGameState);
+                this.world.getGameLoop().start();
+            });
     }
 
     stop() {

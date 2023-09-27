@@ -13,8 +13,9 @@ module.exports.GameController = class GameController {
     #wsServer;
     #intervalIdForPing;
     #userRepository;
+    #gameRepository;
 
-    constructor(jwsService, wsServer, userRepository) {
+    constructor(jwsService, wsServer, userRepository, gameRepository) {
         this.#jwsService = jwsService;
         this.#wsServer = wsServer;
         this.#intervalIdForPing = setInterval(() => {
@@ -28,6 +29,7 @@ module.exports.GameController = class GameController {
             });
         }, process.env.WEBSOCKET_PING_TIMEOUT_IN_MS);
         this.#userRepository = userRepository;
+        this.#gameRepository = gameRepository;
     }
 
     async getJwtForConnection(req, res, next) {
@@ -40,7 +42,8 @@ module.exports.GameController = class GameController {
         let game = new Game(
             (gameResponse) => clientSocket.send(JSON.stringify(gameResponse, null, 4)), 
             req.user,
-            Math.random
+            Math.random,
+            this.#gameRepository
         );
 
         clientSocket.on('pong', () => clientSocket.isAlive = true);

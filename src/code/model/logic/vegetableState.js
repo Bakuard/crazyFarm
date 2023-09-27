@@ -12,6 +12,9 @@ let lifeCycleStates = {
     death: Object.freeze({ordinal: 6, name: 'death'}),
     findByName: function(stateName) {
         return this.allValues.find(state => state.name == stateName)
+    },
+    slice(from, to) {
+        return Object.values(this).filter(state => state.ordinal >= from.ordinal && state.ordinal <= to.ordinal);
     }
 };
 lifeCycleStates.allValues = Object.freeze(Object.values(lifeCycleStates));
@@ -20,12 +23,12 @@ module.exports.lifeCycleStates = lifeCycleStates;
 
 class VegetableState {
     static of(seedDetail, sproutDetail, childDetail, youthDetail) {
-        return new VegetableState([lifeCycleStates.sleepingSeed], seedDetail, sproutDetail, childDetail, youthDetail);
+        return new VegetableState([lifeCycleStates.sleepingSeed], [seedDetail, sproutDetail, childDetail, youthDetail]);
     }
 
-    constructor(history, seedDetail, sproutDetail, childDetail, youthDetail) {
+    constructor(history, stateDetails) {
         this.history = history;
-        this.stateDetails = [seedDetail, sproutDetail, childDetail, youthDetail];
+        this.stateDetails = stateDetails;
     }
 };
 module.exports.VegetableState = VegetableState;
