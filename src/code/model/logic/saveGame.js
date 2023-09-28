@@ -22,7 +22,8 @@ module.exports.SaveGameSystem = class SaveGameSystem {
             liveEntities: snapshot.liveEntities.map(mapEntity),
             deadEntities: snapshot.deadEntities.map(mapEntity),
             wallet,
-            userId
+            userId,
+            timestamp: Date.now()
         };
         
         this.gameRepository.save(fullGameState).then(() => logger.info('Save game for user %s', userId));

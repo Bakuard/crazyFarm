@@ -26,7 +26,11 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 }
 
 describe(`grow vegetable to 'adult' state`, () => {
-    beforeAll(() => {
+    beforeAll(async () => {
+        const db = mongo.db('games');
+        const collection = db.collection('games');
+        await collection.deleteMany({});
+        
         jest.useFakeTimers();
 
         game = new Game(
@@ -41,7 +45,7 @@ describe(`grow vegetable to 'adult' state`, () => {
         systemManager.removeSystem('WorldLogger');
         systemManager.updateGroup = jest.fn(systemManager.updateGroup); 
     
-        game.start();
+        await game.start();
     });
 
     describe.each([

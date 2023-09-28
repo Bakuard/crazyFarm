@@ -58,13 +58,12 @@ module.exports.Game = class Game {
             putSystem('SaveGameSystem', saveGame.update.bind(saveGame), groups.stop);
     }
 
-    start() {
-        logger.info('userId=%s; start game', this.user._id);
-        this.gameRepository.load(this.user._id).
-            then(fullGameState => {
-                this.world.getEntityComponentManager().putSingletonEntity('fullGameState', fullGameState);
-                this.world.getGameLoop().start();
-            });
+    async start() {
+        logger.info('userId=%s: start game', this.user._id);
+
+        let fullGameState = await this.gameRepository.load(this.user._id);
+        this.world.getEntityComponentManager().putSingletonEntity('fullGameState', fullGameState);
+        this.world.getGameLoop().start();
     }
 
     stop() {

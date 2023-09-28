@@ -77,11 +77,16 @@ module.exports.GameRepository = class GameRepository {
     async save(fullGameState) {
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
+        collection.deleteOne({userId: fullGameState.userId});
         await collection.insertOne(fullGameState);
     }
 
     async load(userId) {
+        const db = mongo.db(process.env.MONGO_DB_NAME);
+        const collection = db.collection('games');
+        const result = await collection.findOne({userId: userId});
 
+        return result;
     }
 
 };
