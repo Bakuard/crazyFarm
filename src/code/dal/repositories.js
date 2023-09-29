@@ -7,10 +7,13 @@ const exceptions = require('../model/exception/exceptions.js');
 
 module.exports.UserRepository = class UserRepository {
 
-    constructor() {}
+    constructor(dbConnector) {
+        this.dbConnector = dbConnector;
+    }
 
     async add(user) {
         try {
+            const mongo = await this.dbConnector.getConnection();
             const db = mongo.db(process.env.MONGO_DB_NAME);
             const collection = db.collection('users');
             await collection.insertOne(user);
@@ -26,6 +29,7 @@ module.exports.UserRepository = class UserRepository {
     }
 
     async findById(userId) {
+        const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('users');
         const userDto = await collection.findOne({_id: new ObjectID(userId)});
@@ -36,6 +40,7 @@ module.exports.UserRepository = class UserRepository {
     }
 
     async findByLoggin(loggin) {
+        const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('users');
         const userDto = await collection.findOne({loggin: loggin});
@@ -57,6 +62,7 @@ module.exports.UserRepository = class UserRepository {
     }
 
     async assertUnique(user) {
+        const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('users');
         let duplicate = await collection.findOne({$or: [{loggin: user.loggin}, {email: user.email}]});
@@ -72,9 +78,12 @@ module.exports.UserRepository = class UserRepository {
 
 module.exports.GameRepository = class GameRepository {
 
-    constructor() {}
+    constructor(dbConnector) {
+        this.dbConnector = dbConnector;
+    }
 
     async save(fullGameState) {
+        const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
         collection.deleteOne({userId: fullGameState.userId});
@@ -82,6 +91,7 @@ module.exports.GameRepository = class GameRepository {
     }
 
     async load(userId) {
+        const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
         const result = await collection.findOne({userId: userId});

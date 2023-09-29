@@ -1,16 +1,27 @@
 'use strict'
 
-const MongoClient = require('mongodb').MongoClient;
+const {MongoClient} = require('mongodb');
 const {newLogger} = require('../conf/logConf.js');
 
 const logger = newLogger('info', 'databaseConnector.js');
 
-const mongo = new MongoClient(process.env.MONGO_URL);
-mongo.connect().then(res => logger.info('connect to mongodb'));
-process.on('SIGTERM', async function() {
-    await mongo.close();
-    logger.info('close connection to mongodb');
-    process.exit(0);
-});
+module.exports.DBConnector = class DBConnector {
+    constructor() {}
 
-module.exports.mongo = mongo;
+    async getConnection() {
+        if(!this.mongo) {
+            const mongo = new MongoClient(process.env.MONGO_URL);
+            await mongo.connect();
+            logger.info('connect to mongodb');
+
+            process.on('SIGTERM', async function() {
+                await mongo.close();
+                logger.info('close connection to mongodb');
+                process.exit(0);
+            });
+
+            this.mongo = mongo;
+        }
+        return this.mongo;
+    }
+};

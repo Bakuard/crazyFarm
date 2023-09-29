@@ -1,3 +1,4 @@
+const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
@@ -27,6 +28,8 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 
 describe(`grow vegetable to 'adult' state`, () => {
     beforeAll(async () => {
+        const dbConnector = new DBConnector();
+        const mongo = await dbConnector.getConnection();
         const db = mongo.db('games');
         const collection = db.collection('games');
         await collection.deleteMany({});
@@ -35,15 +38,13 @@ describe(`grow vegetable to 'adult' state`, () => {
 
         game = new Game(
             (GameResponse) => outputData = GameResponse, 
-            {_id: 'some user id'}, 
+            {_id: '123'}, 
             () => randomGeneratorRetrunedValue,
-            new GameRepository(),
+            new GameRepository(dbConnector),
             settings
         );
     
-        systemManager = game.world.getSystemManager();
-        systemManager.removeSystem('WorldLogger');
-        systemManager.updateGroup = jest.fn(systemManager.updateGroup); 
+        game.world.getSystemManager().removeSystem('WorldLogger');
     
         await game.start();
     });

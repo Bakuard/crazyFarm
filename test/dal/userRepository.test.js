@@ -1,10 +1,17 @@
-const {mongo} = require('../../src/code/dal/dataBaseConnector.js');
+const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {UserRepository} = require('../../src/code/dal/repositories.js');
 const {User} = require('../../src/code/model/auth/User.js');
 const {DuplicateUserException} = require('../../src/code/model/exception/exceptions.js');
 
+let dbConnector = null;
+let db = null;
+beforeAll(async () => {
+    dbConnector = new DBConnector();
+    const mongo = await dbConnector.getConnection();
+    db = mongo.db(process.env.MONGO_DB_NAME);
+});
+
 beforeEach(async () => {
-    const db = mongo.db(process.env.MONGO_DB_NAME);
     const collection = db.collection('users');
     await collection.deleteMany({});
 });
@@ -13,7 +20,7 @@ test(`userRepository.add(user):
        user with such loggin already exists
        => exception`,
     () => {
-        let userRepository = new UserRepository();
+        let userRepository = new UserRepository(dbConnector);
         userRepository.add(User.createNewUser({
             loggin: 'user1', 
             email: 'user1@mail.com', 
@@ -35,7 +42,7 @@ test(`userRepository.assertUnique(user):
         user.email is null
         => doesn't throw any exception`,
     async () => {
-        let userRepository = new UserRepository();
+        let userRepository = new UserRepository(dbConnector);
         let nullUser = User.createNewUser({
             loggin: null, 
             email: null, 
