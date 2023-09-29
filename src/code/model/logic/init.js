@@ -2,7 +2,7 @@
 
 const {Fabric} = require('./fabric.js');
 
-module.exports.InitLogicSystem = class InitLogicSystem {
+module.exports.InitSystem = class InitSystem {
 
     constructor(settings) {
         this.settings = settings;

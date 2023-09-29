@@ -99,3 +99,25 @@ describe.each([
         });
     }
 );
+
+describe.each([
+    {eventNames: [], eventsByName: {}, expected: []},
+    {eventNames: ['e1', 'e2', 'e3'], eventsByName: {e1: [1, 2, 3], e2: [10, 20, 30], e3: [100, 200, 300]}, 
+     expected: [{e1: 1}, {e1: 2}, {e1: 3}, {e2: 10}, {e2: 20}, {e2: 30}, {e3: 100}, {e3: 200}, {e3: 300}]},
+    {eventNames: ['e1'], eventsByName: {e1: [0, 1, 2, 3, 4, 5]},
+     expected: [{e1: 0}, {e1: 1}, {e1: 2}, {e1: 3}, {e1: 4}, {e1: 5}]}
+])(`forEach(callback):`,
+    ({eventNames, eventsByName, expected}) => {
+        test(`eventNames [${eventNames}], eventsByName ${JSON.stringify(eventsByName)}
+              => expected [${expected}]`,
+        () => {
+            let eventManager = new EventManager();
+            eventNames.forEach(eventName => eventManager.writeEvent(eventName, ...eventsByName[eventName]));
+
+            let actual = [];
+            eventManager.forEach((eventName, event) => actual.push({[eventName]: event}));
+
+            expect(actual).toEqual(expected);
+        });
+    }
+);

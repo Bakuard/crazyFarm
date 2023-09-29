@@ -5,7 +5,7 @@ const {Wallet} = require('./wallet.js');
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
-    constructor(entityComponentManager) {
+    constructor() {
         
     }
 

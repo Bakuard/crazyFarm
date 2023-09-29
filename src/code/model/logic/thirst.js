@@ -16,7 +16,6 @@ class Thirst {
 module.exports.Thirst = Thirst;
 
 module.exports.ThirstSystem = class ThirstSystem {
-    filter;
     constructor(entityComponentManager) {
         this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
     }

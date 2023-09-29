@@ -26,12 +26,24 @@ module.exports.EventManager = class EventManager {
         }
     }
 
+    forEach(callback) {
+        for(let [eventName, events] of Object.entries(this.#events)) {
+            for(let event of events) {
+                callback(eventName, event);
+            }
+        }
+    }
+
     eventsNumber(eventName) {
         return this.#events[eventName]?.length ?? 0;
     }
 
     clearEventQueue(name) {
         if(this.#events[name] != undefined) this.#events[name].length = 0;
+    }
+
+    clearAll() {
+        this.#events = {};
     }
 
 };

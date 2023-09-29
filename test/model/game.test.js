@@ -1,26 +1,13 @@
+const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
+const {GameRepository} = require('../../src/code/dal/repositories.js');
+const {mongo} = require('../../src/code/dal/dataBaseConnector.js');
 
 let game = null;
 let systemManager = null;
 let outputData = null;
 let randomGeneratorRetrunedValue = null;
-beforeAll(() => {
-    jest.useFakeTimers();
-
-    game = new Game(
-        (GameResponse) => outputData = GameResponse, 
-        {_id: 'some user id'}, 
-        () => randomGeneratorRetrunedValue,
-        settings
-    );
-
-    systemManager = game.world.getSystemManager();
-    systemManager.removeSystem('WorldLogger');
-    systemManager.updateGroup = jest.fn(systemManager.updateGroup); 
-
-    game.start();
-});
 
 function vegetableDto(vegetableType, vegetableStateNumber, ...needs) {
     return {
@@ -39,46 +26,70 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-describe.each([
-    {eventNames: [], elapsedMillis: 100000, randomValue: 0.3, expectedMoney: 20, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, null)},
+describe(`grow vegetable to 'adult' state`, () => {
+    beforeAll(async () => {
+        const dbConnector = new DBConnector();
+        const mongo = await dbConnector.getConnection();
+        const db = mongo.db('games');
+        const collection = db.collection('games');
+        await collection.deleteMany({});
+        
+        jest.useFakeTimers();
 
-    {eventNames: ['seeds'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
-
-    {eventNames: ['bailer'], elapsedMillis: 3000, randomValue: 0.3, expectedMoney: 17, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
-
-    {eventNames: [], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 1))},
+        game = new Game(
+            (GameResponse) => outputData = GameResponse, 
+            {_id: '123'}, 
+            () => randomGeneratorRetrunedValue,
+            new GameRepository(dbConnector),
+            settings
+        );
     
-    {eventNames: [], elapsedMillis: 40000, randomValue: 0.3, expectedMoney: 17, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'))},
-
-    {eventNames: ['bailer', 'fertilizer'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 15, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 2))},
+        game.world.getSystemManager().removeSystem('WorldLogger');
     
-    {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 15, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'))},
+        await game.start();
+    });
 
-    {eventNames: ['bailer', 'fertilizer'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 13, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 3))},
-
-    {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 13, 
-     expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER'))}
-
-])(`grow vegetable to 'adult' state`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
-    test(`eventNames: [${eventNames}], 
-          elapsedMillis: ${elapsedMillis},
-          randomValue: ${randomValue}
-          => expectedMoney: ${expectedMoney},
-             expectedVegetable: ${JSON.stringify(expectedVegetable)}`, 
-    () => {
-        randomGeneratorRetrunedValue = randomValue;
-        eventNames.forEach(eventName => game.execute({tool: eventName, cell: '0-0'}));
-        jest.advanceTimersByTime(elapsedMillis);
-
-        expect(outputData.containers[0]).toEqual(expectedVegetable);
-        expect(outputData.player.cash).toEqual(expectedMoney);
+    describe.each([
+        {eventNames: [], elapsedMillis: 100000, randomValue: 0.3, expectedMoney: 20, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, null)},
+    
+        {eventNames: ['seeds'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
+    
+        {eventNames: ['bailer'], elapsedMillis: 3000, randomValue: 0.3, expectedMoney: 17, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
+    
+        {eventNames: [], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 1))},
+        
+        {eventNames: [], elapsedMillis: 40000, randomValue: 0.3, expectedMoney: 17, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'))},
+    
+        {eventNames: ['bailer', 'fertilizer'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 15, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 2))},
+        
+        {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 15, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'))},
+    
+        {eventNames: ['bailer', 'fertilizer'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 13, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 3))},
+    
+        {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 13, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER'))}
+    
+    ])(`step $#`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
+        test(`eventNames: [${eventNames}], 
+              elapsedMillis: ${elapsedMillis},
+              randomValue: ${randomValue}
+              => expectedMoney: ${expectedMoney},
+                 expectedVegetable: ${JSON.stringify(expectedVegetable)}`, 
+        () => {
+            randomGeneratorRetrunedValue = randomValue;
+            eventNames.forEach(eventName => game.execute({tool: eventName, cell: '0-0'}));
+            jest.advanceTimersByTime(elapsedMillis);
+    
+            expect(outputData.containers[0]).toEqual(expectedVegetable);
+            expect(outputData.player.cash).toEqual(expectedMoney);
+        });
     });
 });

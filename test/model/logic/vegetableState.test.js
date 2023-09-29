@@ -53,6 +53,18 @@ function beforeEachSetting() {
 };
 beforeEach(beforeEachSetting);
 
+function vegetableState(currentState, ...intervalsInSeconds) {
+    let result = VegetableState.of(
+        StateDetail.of(intervalsInSeconds[0], lifeCycleStates.seed),
+        StateDetail.of(intervalsInSeconds[1], lifeCycleStates.sprout),
+        StateDetail.of(intervalsInSeconds[2], lifeCycleStates.child),
+        StateDetail.of(intervalsInSeconds[3], lifeCycleStates.youth)
+    );
+    result.history.push(currentState);
+
+    return result;
+}
+
 describe.each([
     {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.seed},
     {hasBailerEvent: false, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed}
@@ -117,15 +129,3 @@ describe.each([
         });
     }
 );
-
-function vegetableState(currentState, ...intervalsInSeconds) {
-    let result = VegetableState.of(
-        StateDetail.of(intervalsInSeconds[0], lifeCycleStates.seed),
-        StateDetail.of(intervalsInSeconds[1], lifeCycleStates.sprout),
-        StateDetail.of(intervalsInSeconds[2], lifeCycleStates.child),
-        StateDetail.of(intervalsInSeconds[3], lifeCycleStates.youth)
-    );
-    result.history.push(currentState);
-
-    return result;
-}

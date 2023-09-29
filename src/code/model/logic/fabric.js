@@ -9,6 +9,7 @@ const {Wallet} = require('./wallet.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
 const {Grid} = require('./store/grid.js');
+const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 
 const defaultSettings = {
     potato: {
@@ -127,6 +128,36 @@ module.exports.Fabric = class Fabric {
 
     constructor(settings) {
         this.settings = settings;
+
+        this.loadedComponents = {};
+        this.loadedComponents['GardenBedCellLink'] = props => new GardenBedCellLink(
+            props.cellX, 
+            props.cellY
+        );
+        this.loadedComponents['Immunity'] = props => new Immunity(
+            props.max, 
+            props.current, 
+            props.isSick, 
+            props.declineRatePerSeconds, 
+            props.probability
+        );
+        this.loadedComponents['PotatoGhost'] = props => new PotatoGhost(props.timeInMillis);
+        this.loadedComponents['Satiety'] = props => new Satiety(props.max, props.current, props.declineRatePerSeconds);
+        this.loadedComponents['Thirst'] = props => new Thirst(props.max, props.current, props.declineRatePerSeconds);
+        this.loadedComponents['VegetableMeta'] = props => new VegetableMeta(props.typeName);
+        this.loadedComponents['VegetableState'] = props => new VegetableState(
+            props.history.map(state => lifeCycleStates.findByName(state.name)),
+            props.stateDetails.map(state => 
+                new StateDetail(state.currentTimeInMillis, 
+                                state.intervalInSecond, 
+                                lifeCycleStates.findByName(state.lifeCycleState.name))
+            )
+        );
+        this.loadedComponents['Wallet'] = props => new Wallet(props.sum, props.fertilizerPrice, props.sprayerPrice, props.seedsPrice);
+    }
+
+    restoreComponentBy(compName, props) {
+        return this.loadedComponents[compName](props);
     }
 
     potatoGhost() {

@@ -1,7 +1,6 @@
 'use strict'
 
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
-const {Grid} = require('./store/grid.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
@@ -30,7 +29,9 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         for(let entity of manager.select(this.deadFilter)) {
             let meta = entity.get(VegetableMeta);
             let state = entity.get(VegetableState);
-            if(meta.typeName == 'Potato' && state.history.at(-1) == lifeCycleStates.death) {
+            if(meta.typeName == 'Potato' 
+               && state.history.at(-1) == lifeCycleStates.death 
+               && entity.hasComponents(Immunity, Satiety, Thirst)) {
                 entity.remove(Immunity, Satiety, Thirst).put(fabric.potatoGhost());
                 buffer.bindEntity(entity);
             }
