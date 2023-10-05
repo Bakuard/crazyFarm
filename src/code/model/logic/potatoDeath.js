@@ -16,7 +16,7 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta);
+        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta, Immunity, Satiety, Thirst);
         this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
     }
 
@@ -29,10 +29,11 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         for(let entity of manager.select(this.deadFilter)) {
             let meta = entity.get(VegetableMeta);
             let state = entity.get(VegetableState);
-            if(meta.typeName == 'Potato' 
-               && state.history.at(-1) == lifeCycleStates.death 
-               && entity.hasComponents(Immunity, Satiety, Thirst)) {
-                entity.remove(Immunity, Satiety, Thirst).put(fabric.potatoGhost());
+            if(meta.typeName == 'Potato' && state.current() == lifeCycleStates.death) {
+                entity.remove(Immunity, Satiety, Thirst);
+                if(state.previousIsOneOf(lifeCycleStates.child, lifeCycleStates.youth, lifeCycleStates.adult)) {
+                    entity.put(fabric.potatoGhost());
+                }
                 buffer.bindEntity(entity);
             }
         }

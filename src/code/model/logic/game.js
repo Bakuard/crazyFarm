@@ -8,6 +8,7 @@ const {ImmunitySystem} = require('./immunity.js');
 const {PotatoDeathSystem} = require('./potatoDeath.js');
 const {TomatoDeathSystem} = require('./tomatoDeath.js');
 const {groups} = require('../gameEngine/gameLoop.js');
+const {GameCommandSystem} = require('./gameCommand.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {GrowSystem} = require('./vegetableState.js');
@@ -22,14 +23,15 @@ let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user, randomGenerator, gameRepository, settings) {
+    constructor(outputCallback, user, randomGenerator, gameRepository, timeUtil, settings) {
         this.user = user;
         this.gameRepository = gameRepository;
-        this.world = new World(1000);
+        this.world = new World(1000, timeUtil);
         const manager = this.world.getEntityComponentManager();
 
         let initLogic = new InitSystem(settings);
         let loadGame = new LoadGameSystem(user._id);
+        let gameCommand = new GameCommandSystem();
         let shovel = new ShovelSystem();
         let plantNewVegetableSystem = new PlantNewVegetableSystem(randomGenerator);
         let thirst = new ThirstSystem(manager);
@@ -40,11 +42,12 @@ module.exports.Game = class Game {
         let grow = new GrowSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(outputCallback);
-        let saveGame = new SaveGameSystem(user._id, gameRepository);
+        let saveGame = new SaveGameSystem(user._id, gameRepository, timeUtil);
 
         this.world.getSystemManager().
             putSystem('InitSystem', initLogic.update.bind(initLogic), groups.start).
             putSystem('LoadGameSystem', loadGame.update.bind(loadGame), groups.start).
+            putSystem('GameCommandSystem', gameCommand.update.bind(gameCommand), groups.update).
             putSystem('ShovelSystem', shovel.update.bind(shovel), groups.update).
             putSystem('PlantNewVegetableSystem', plantNewVegetableSystem.update.bind(plantNewVegetableSystem), groups.update).
             putSystem('GrowSystem', grow.update.bind(grow), groups.update).
@@ -73,7 +76,7 @@ module.exports.Game = class Game {
 
     execute(command) {
         logger.info('userId=%s; execute game command=%s', this.user._id, command);
-        this.world.getEventManager().writeEvent(command.tool, new CommandRequest(command));
+        this.world.getEventManager().writeEvent('rawCommand', command);
     }
 
 };

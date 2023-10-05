@@ -51,6 +51,11 @@ module.exports.settings = {
         }
     },
     tomato: {
+        explosion: {
+            child: 1,
+            youth: 3,
+            adult: 6
+        },
         immunity: {
             max: 60,
             alertLevel1: 30,

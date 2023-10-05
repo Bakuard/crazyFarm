@@ -10,6 +10,7 @@ const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
 const {Grid} = require('./store/grid.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
+const {TomatoExplosion} = require('./tomatoDeath.js');
 
 const defaultSettings = {
     potato: {
@@ -62,6 +63,11 @@ const defaultSettings = {
         }
     },
     tomato: {
+        explosion: {
+            child: 1,
+            youth: 3,
+            adult: 6
+        },
         immunity: {
             max: 60,
             alertLevel1: 30,
@@ -153,6 +159,7 @@ module.exports.Fabric = class Fabric {
                                 lifeCycleStates.findByName(state.lifeCycleState.name))
             )
         );
+        this.loadedComponents['TomatoExplosion'] = props => new TomatoExplosion(props.neighboursNumber);
         this.loadedComponents['Wallet'] = props => new Wallet(props.sum, props.fertilizerPrice, props.sprayerPrice, props.seedsPrice);
     }
 
@@ -162,6 +169,14 @@ module.exports.Fabric = class Fabric {
 
     potatoGhost() {
         return new PotatoGhost(this.settings.potato.ghost.timeInMillis);
+    }
+
+    tomatoExplosion(lifeCycleState) {
+        let explosionSettings = this.settings.tomato.explosion;
+        
+        if(lifeCycleState == lifeCycleStates.child) return new TomatoExplosion(explosionSettings.child);
+        else if(lifeCycleState == lifeCycleStates.youth) return new TomatoExplosion(explosionSettings.youth);
+        else if(lifeCycleState == lifeCycleStates.adult) return new TomatoExplosion(explosionSettings.adult);
     }
 
     thirst(vegetableTypeName) {

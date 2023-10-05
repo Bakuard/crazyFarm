@@ -35,10 +35,8 @@ module.exports.ImmunitySystem = class ImmunitySystem {
             let immunity = entity.get(Immunity);
 
             this.fixedInterval.execute(() => {
-                if(!immunity.isSick) {
-                    let random = this.randomGenerator();
-                    immunity.isSick = random <= immunity.probability;
-                }
+                let random = this.randomGenerator();
+                immunity.isSick |= random <= immunity.probability;
             }, elapsedTime);
 
             if(immunity.isSick) {
