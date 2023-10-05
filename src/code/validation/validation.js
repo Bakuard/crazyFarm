@@ -25,6 +25,16 @@ const registerUserSchema = Joi.object({
 });
 const existedUserSchema = registerUserSchema.fork(['email'], schema => schema.optional());
 
+const gameCommandSchema = Joi.object({
+    tool: Joi.string().valid('shovel', 'bailer', 'fertilizer', 'sprayer', 'seeds').required().messages({
+        'string.valid': 'GameCommand.tool.unknown',
+        'any.required': 'GameCommand.tool.notEmpty'
+    }),
+    cell: Joi.string().regex(/^\d+-\d+$/).required().messages({
+        'object.regex': 'GameCommand.coordinates.format'
+    })
+});
+
 function exstractKeys(joiError, domainException) {
     for(let key of joiError.details) {
         domainException.userMessageKeys.push(key.message);
@@ -53,5 +63,17 @@ module.exports.checkExistedUser = function(user) {
         );
     } else if(user == null) {
         throw new exceptions.ValidationException(null, 'User.undefined');
+    }
+}
+
+module.exports.checkRawGameCommand = function(rawCommand) {
+    let {error, value} = gameCommandSchema.validate(rawCommand, {abortEarly: false});
+    if(error) {
+        throw exstractKeys(
+            error,
+            new exceptions.ValidationException(rawCommand)
+        );
+    } else if(rawCommand == null) {
+        throw new exceptions.ValidationException(null, 'GameCommand.undefined');
     }
 }

@@ -1,5 +1,6 @@
 const {GameLoop} = require('../../../src/code/model/gameEngine/gameLoop.js');
 const {FixedInterval} = require('../../../src/code/model/gameEngine/gameLoop.js');
+const {TimeUtil} = require('../../../src/code/model/gameEngine/timeUtil.js');
 
 test(`fixedInterval:
         elapsedTime < timeInMillis
@@ -47,7 +48,7 @@ test(`start():
         let worldMock = {
             getSystemManager: () => systemManagerMock
         };
-        let gameLoop = new GameLoop(worldMock, 100);
+        let gameLoop = new GameLoop(worldMock, 100, new TimeUtil());
 
         expect(() => gameLoop.start()).not.toThrow();
     });
@@ -62,7 +63,7 @@ test(`stop():
         let worldMock = {
             getSystemManager: () => systemManagerMock
         };
-        let gameLoop = new GameLoop(worldMock, 1000);
+        let gameLoop = new GameLoop(worldMock, 1000, new TimeUtil());
 
         expect(() => gameLoop.stop()).not.toThrow();
     });
@@ -77,7 +78,7 @@ test(`start() and stop():
         let worldMock = {
             getSystemManager: () => systemManagerMock
         };
-        let gameLoop = new GameLoop(worldMock, 100);
+        let gameLoop = new GameLoop(worldMock, 100, new TimeUtil());
 
         gameLoop.start();
         jest.advanceTimersByTime(2000);

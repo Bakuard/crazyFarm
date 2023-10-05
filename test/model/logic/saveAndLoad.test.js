@@ -1,6 +1,7 @@
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
+const {TimeUtil} = require('../../../src/code/model/gameEngine/timeUtil.js');
 
 const {SaveGameSystem} = require('../../../src/code/model/logic/saveGame.js');
 const {LoadGameSystem} = require('../../../src/code/model/logic/loadGame.js');
@@ -11,6 +12,7 @@ const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {PotatoGhost} = require('../../../src/code/model/logic/potatoDeath.js');
+const {TomatoExplosion} = require('../../../src/code/model/logic/tomatoDeath.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
@@ -105,7 +107,8 @@ function createDeadPotato({x, y}) {
                 new VegetableMeta('Potato'),
                 vegetableState([0, 30, 25, 15], [3, 40, 40, 40], lifeCycleStates.slice(lifeCycleStates.sleepingSeed, lifeCycleStates.death)),
                 new GardenBedCellLink(x, y),
-                new PotatoGhost(25000)
+                new PotatoGhost(25000),
+                new TomatoExplosion(3)
             );
     manager.bindEntity(entity);
     grid.write(x, y, entity);
@@ -163,7 +166,7 @@ describe.each([
                 else if(v.type == 'dead') result = createDeadPotato(v);
                 return result;
             });
-            let saveSystem = new SaveGameSystem(1, mockGameRepository);
+            let saveSystem = new SaveGameSystem(1, mockGameRepository, new TimeUtil());
             let loadSystem = new LoadGameSystem(1);
             
             saveSystem.update('stop', worldMock);

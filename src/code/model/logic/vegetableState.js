@@ -10,12 +10,15 @@ let lifeCycleStates = {
     youth: Object.freeze({ordinal: 4, name: 'youth'}),
     adult: Object.freeze({ordinal: 5, name: 'adult'}),
     death: Object.freeze({ordinal: 6, name: 'death'}),
-    findByName: function(stateName) {
+    findByName(stateName) {
         return this.allValues.find(state => state.name == stateName)
     },
     slice(from, to) {
         return Object.values(this).filter(state => state.ordinal >= from.ordinal && state.ordinal <= to.ordinal);
-    }
+    },
+    findByOrdinal(stateOrdinal) {
+        return this.allValues[stateOrdinal];
+    } 
 };
 lifeCycleStates.allValues = Object.freeze(Object.values(lifeCycleStates));
 lifeCycleStates = Object.freeze(lifeCycleStates);
@@ -30,6 +33,26 @@ class VegetableState {
         this.history = history;
         this.stateDetails = stateDetails;
     }
+
+    currentIsOneOf(...lifeCycleStates) {
+        return lifeCycleStates.some(state => state === this.history.at(-1));
+    }
+
+    previousIsOneOf(...lifeCycleStates) {
+        return lifeCycleStates.some(state => state === this.history.at(-2));
+    }
+
+    current() {
+        return this.history.at(-1);
+    }
+
+    previous() {
+        return this.history.at(-2);
+    }
+
+    stateDetail(lifeCycleState) {
+        return this.stateDetails.find(stateDetail => stateDetail.lifeCycleState == lifeCycleState);
+    }
 };
 module.exports.VegetableState = VegetableState;
 
@@ -42,6 +65,10 @@ class StateDetail {
         this.currentTimeInMillis = currentTimeInMillis;
         this.intervalInSecond = intervalInSecond;
         this.lifeCycleState = lifeCyleState;
+    }
+
+    intervalInMillis() {
+        return this.intervalInSecond * 1000;
     }
 };
 module.exports.StateDetail = StateDetail;
@@ -60,23 +87,21 @@ module.exports.GrowSystem = class GrowSystem {
         let elapsedTime = world.getGameLoop().getElapsedTime();
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
             let vegetableState = entity.get(VegetableState);
-            let currentStateOrdinal = vegetableState.history.at(-1).ordinal;
+            let {seed, sprout, child, youth} = lifeCycleStates;
 
-            if(currentStateOrdinal >= lifeCycleStates.seed.ordinal && currentStateOrdinal < lifeCycleStates.adult.ordinal) {
-                let stateDetail = this.#getStateDetail(vegetableState, currentStateOrdinal);
-                stateDetail.currentTimeInMillis += elapsedTime;
-                if(stateDetail.currentTimeInMillis >= stateDetail.intervalInSecond * 1000) {
-                    let nextState = lifeCycleStates.allValues[currentStateOrdinal + 1];
-                    vegetableState.history.push(nextState);
-                }
-            } else if(currentStateOrdinal == lifeCycleStates.sleepingSeed.ordinal && eventManager.readEvent('bailer', 0)) {
+            if(vegetableState.currentIsOneOf(seed, sprout, child, youth)) {
+                this.#nextState(vegetableState, elapsedTime);
+            } else if(vegetableState.current() == lifeCycleStates.sleepingSeed && eventManager.readEvent('bailer', 0)) {
                 let meta = entity.get(VegetableMeta);
+
                 entity.put(
                     fabric.thirst(meta.typeName),
                     fabric.satiety(meta.typeName),
                     fabric.immunity(meta.typeName)
                 );
-                entity.get(VegetableState).history.push(lifeCycleStates.seed);
+                vegetableState.history.push(lifeCycleStates.seed);
+                this.#nextState(vegetableState, elapsedTime);
+
                 buffer.bindEntity(entity);
                 eventManager.clearEventQueue('bailer');
             }
@@ -85,7 +110,17 @@ module.exports.GrowSystem = class GrowSystem {
         manager.flush(buffer);
     }
 
-    #getStateDetail(vegetableStateComp, currentStateOrdinal) {
-        return vegetableStateComp.stateDetails.find(stateDetail => stateDetail.lifeCycleState.ordinal == currentStateOrdinal);
+    #nextState(vegetableState, elapsedTime) {
+        let {seed, sprout, child, youth} = lifeCycleStates;
+
+        while(vegetableState.currentIsOneOf(seed, sprout, child, youth) && elapsedTime > 0) {
+            let stateDetail = vegetableState.stateDetail(vegetableState.current());
+            let diff = Math.min(stateDetail.intervalInMillis() - stateDetail.currentTimeInMillis, elapsedTime);
+            elapsedTime -= diff;
+            stateDetail.currentTimeInMillis += diff;
+            if(stateDetail.currentTimeInMillis >= stateDetail.intervalInMillis()) {
+                vegetableState.history.push(lifeCycleStates.findByOrdinal(vegetableState.current().ordinal + 1));
+            }
+        }
     }
 };

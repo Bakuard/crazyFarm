@@ -27,26 +27,28 @@ module.exports.FixedInterval = class FixedInterval {
 module.exports.GameLoop = class GameLoop {
     #state;
     #elapsedTime;
-    #timerId;
+    #loopId;
+    #timeUtil;
     #world;
     #frameDurationInMillis;
     #frameNumberSinceStart;
 
-    constructor(world, frameDurationInMillis) {
+    constructor(world, frameDurationInMillis, timeUtil) {
         this.#state = 'init';
         this.#elapsedTime = 0;
         this.#world = world;
         this.#frameDurationInMillis = frameDurationInMillis;
         this.#frameNumberSinceStart = 0;
+        this.#timeUtil = timeUtil;
     }
 
     start() {
         if(this.#state == 'init') {
             this.#state = 'update';
             this.#world.getSystemManager().updateGroup(groups.start, this.#world);
-            let lastTime = Date.now();
-            this.#timerId = setInterval(() => {
-                let currentTime = Date.now();
+            let lastTime = this.#timeUtil.now();
+            this.#loopId = this.#timeUtil.infiniteLoop(() => {
+                let currentTime = this.#timeUtil.now();
                 this.#elapsedTime = currentTime - lastTime;
                 lastTime = currentTime;
                 
@@ -61,7 +63,7 @@ module.exports.GameLoop = class GameLoop {
     stop() {
         if(this.#state == 'update') {
             this.#state = 'init';
-            clearInterval(this.#timerId);
+            this.#timeUtil.stopLoop(this.#loopId);
             this.#world.getSystemManager().updateGroup(groups.stop, this.#world);
         }
     }

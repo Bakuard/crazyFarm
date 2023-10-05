@@ -53,7 +53,7 @@ function beforeEachSetting() {
 };
 beforeEach(beforeEachSetting);
 
-function vegetableState(currentState, ...intervalsInSeconds) {
+function vegetableState(currentState, intervalsInSeconds) {
     let result = VegetableState.of(
         StateDetail.of(intervalsInSeconds[0], lifeCycleStates.seed),
         StateDetail.of(intervalsInSeconds[1], lifeCycleStates.sprout),
@@ -66,24 +66,33 @@ function vegetableState(currentState, ...intervalsInSeconds) {
 }
 
 describe.each([
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.seed},
-    {hasBailerEvent: false, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed}
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.seed, elapsedTime: 2999, intervalsInSeconds: [3, 40, 40, 40]},
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.sprout, elapsedTime: 3000, intervalsInSeconds: [3, 40, 40, 40]},
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.child, elapsedTime: 43000, intervalsInSeconds: [3, 40, 40, 40]},
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.youth, elapsedTime: 83000, intervalsInSeconds: [3, 40, 40, 40]},
+    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.adult, elapsedTime: 123000, intervalsInSeconds: [3, 40, 40, 40]},
+
+    {hasBailerEvent: false, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed, elapsedTime: 1000000, intervalsInSeconds: [3, 40, 40, 40]}
 ])(`update(groupName, world): vegetables currentState is 'sleepigSeed`,
-    ({hasBailerEvent, hasGrowComps, nextState}) => {
+    ({hasBailerEvent, hasGrowComps, nextState, elapsedTime, intervalsInSeconds}) => {
         beforeEach(beforeEachSetting);
 
-        test(`hasBailerEvent ${hasBailerEvent}
-              => nextState'${nextState.name}'`,
+        test(`hasBailerEvent ${hasBailerEvent},
+              elapsedTime ${elapsedTime},
+              intervalsInSeconds [${intervalsInSeconds}]
+              => nextState'${nextState.name}',
+                 hasGrowComps ${hasGrowComps}`,
         () => {
             let entity = manager.createEntity();
-            entity.put(vegetableState(lifeCycleStates.sleepingSeed, 1), new VegetableMeta('Potato'));
+            entity.put(vegetableState(lifeCycleStates.sleepingSeed, intervalsInSeconds), new VegetableMeta('Potato'));
             manager.bindEntity(entity);
             if(hasBailerEvent) eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
+            worldMock.elapsedTime = elapsedTime;
     
             let system = new GrowSystem(manager);
             system.update('udpate', worldMock);
     
-            expect(entity.get(VegetableState).history.at(-1)).toBe(nextState);
+            expect(entity.get(VegetableState).current()).toBe(nextState);
             expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(hasGrowComps);
         });
     }
@@ -105,6 +114,11 @@ describe.each([
     {currentState: lifeCycleStates.child, nextState: lifeCycleStates.youth, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40001},
     {currentState: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 40001},
 
+    {currentState: lifeCycleStates.seed, nextState: lifeCycleStates.child, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 43000},
+    {currentState: lifeCycleStates.sprout, nextState: lifeCycleStates.youth, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 80000},
+    {currentState: lifeCycleStates.child, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 80000},
+    {currentState: lifeCycleStates.youth, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 1000000},
+
     {currentState: lifeCycleStates.adult, nextState: lifeCycleStates.adult, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 1000000},
     {currentState: lifeCycleStates.death, nextState: lifeCycleStates.death, intervalsInSeconds: [3, 40, 40, 40], elapsedTime: 1000000}
 ])(`update(groupName, world):`,
@@ -118,14 +132,14 @@ describe.each([
               => nextState'${nextState.name}'`,
         () => {
             let entity = manager.createEntity();
-            entity.put(vegetableState(currentState, ...intervalsInSeconds));
+            entity.put(vegetableState(currentState, intervalsInSeconds));
             manager.bindEntity(entity);
             worldMock.elapsedTime = elapsedTime;
     
             let system = new GrowSystem(manager);
             system.update('udpate', worldMock);
     
-            expect(entity.get(VegetableState).history.at(-1)).toBe(nextState);
+            expect(entity.get(VegetableState).current()).toBe(nextState);
         });
     }
 );

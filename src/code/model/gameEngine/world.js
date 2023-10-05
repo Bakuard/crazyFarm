@@ -13,11 +13,11 @@ module.exports.World = class World {
     #eventManager;
     #gameLoop;
 
-    constructor(frameDurationPerMillis) {
+    constructor(frameDurationPerMillis, timeUtil) {
         this.#entityComponentManager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
         this.#systemManager = new SystemManager(this);
         this.#eventManager = new EventManager();
-        this.#gameLoop = new GameLoop(this, frameDurationPerMillis);
+        this.#gameLoop = new GameLoop(this, frameDurationPerMillis, timeUtil);
     }
 
     getEntityComponentManager() {

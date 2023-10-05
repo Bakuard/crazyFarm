@@ -2,12 +2,42 @@ const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
-const {mongo} = require('../../src/code/dal/dataBaseConnector.js');
+const { VegetableState } = require('../../src/code/model/logic/vegetableState.js');
 
 let game = null;
-let systemManager = null;
 let outputData = null;
-let randomGeneratorRetrunedValue = null;
+let randomGeneratorReturnedValue = null;
+let timeUtil = null;
+
+function createTimeUtil() {
+    return {
+        elapsedMillis: 0,
+        callbacks: [],
+        infiniteLoop(callback, iterationDurationInMillis) {
+            this.callbacks.push(callback);
+            return callback;
+        },
+        stopLoop(callback) {
+            this.callbacks = this.callbacks.filter(item => item != callback);
+        },
+        now() {
+            return this.elapsedMillis;
+        },
+        advanceTime(millis) {
+            this.elapsedMillis += millis;
+            this.callbacks.forEach(callback => callback());
+        }
+    };
+}
+
+async function clearDB(dbConnector) {
+    const mongo = await dbConnector.getConnection();
+    const db = mongo.db('crazyFarmTest');
+    const games = db.collection('games');
+    await games.deleteMany({});
+    const users = db.collection('users');
+    await users.deleteMany({});
+}
 
 function vegetableDto(vegetableType, vegetableStateNumber, ...needs) {
     return {
@@ -29,23 +59,20 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 describe(`grow vegetable to 'adult' state`, () => {
     beforeAll(async () => {
         const dbConnector = new DBConnector();
-        const mongo = await dbConnector.getConnection();
-        const db = mongo.db('games');
-        const collection = db.collection('games');
-        await collection.deleteMany({});
-        
-        jest.useFakeTimers();
+        await clearDB(dbConnector);
 
+        timeUtil = createTimeUtil();
         game = new Game(
             (GameResponse) => outputData = GameResponse, 
             {_id: '123'}, 
-            () => randomGeneratorRetrunedValue,
+            () => randomGeneratorReturnedValue,
             new GameRepository(dbConnector),
+            timeUtil,
             settings
         );
     
         game.world.getSystemManager().removeSystem('WorldLogger');
-    
+
         await game.start();
     });
 
@@ -53,10 +80,10 @@ describe(`grow vegetable to 'adult' state`, () => {
         {eventNames: [], elapsedMillis: 100000, randomValue: 0.3, expectedMoney: 20, 
          expectedVegetable: gardenBedCellDto(0, 0, false, null)},
     
-        {eventNames: ['seeds'], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
+        {eventNames: ['seeds'], elapsedMillis: 100000, randomValue: 0.3, expectedMoney: 17, 
          expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
     
-        {eventNames: ['bailer'], elapsedMillis: 3000, randomValue: 0.3, expectedMoney: 17, 
+        {eventNames: ['bailer'], elapsedMillis: 2000, randomValue: 0.3, expectedMoney: 17, 
          expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 0))},
     
         {eventNames: [], elapsedMillis: 1000, randomValue: 0.3, expectedMoney: 17, 
@@ -84,9 +111,9 @@ describe(`grow vegetable to 'adult' state`, () => {
               => expectedMoney: ${expectedMoney},
                  expectedVegetable: ${JSON.stringify(expectedVegetable)}`, 
         () => {
-            randomGeneratorRetrunedValue = randomValue;
+            randomGeneratorReturnedValue = randomValue;
             eventNames.forEach(eventName => game.execute({tool: eventName, cell: '0-0'}));
-            jest.advanceTimersByTime(elapsedMillis);
+            timeUtil.advanceTime(elapsedMillis);
     
             expect(outputData.containers[0]).toEqual(expectedVegetable);
             expect(outputData.player.cash).toEqual(expectedMoney);

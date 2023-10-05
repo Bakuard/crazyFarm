@@ -16,7 +16,7 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         let fabric = manager.getSingletonEntity('fabric');
         let grid = manager.getSingletonEntity('grid');
 
-        eventManager.forEachEvent('seeds', (event, index) => { 
+        eventManager.forEachEvent('seeds', (event) => { 
             if(!grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice) {
                 let vegetable = buffer.createEntity();
                 let metaComp = fabric.vegetableMeta(this.randomGenerator());
