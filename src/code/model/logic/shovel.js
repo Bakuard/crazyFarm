@@ -19,7 +19,7 @@ module.exports.ShovelSystem = class ShovelSystem {
 
         eventManager.forEachEvent('shovel', (event, index) => {
             let vegetable = grid.get(event.cellX, event.cellY);
-            if(vegetable && vegetable.get(VegetableState).history.at(-1) != lifeCycleStates.death) {
+            if(vegetable && vegetable.get(VegetableState).current() != lifeCycleStates.death) {
                 grid.remove(event.cellX, event.cellY);
                 buffer.removeEntity(vegetable);
 
