@@ -30,32 +30,40 @@ module.exports.ImmunitySystem = class ImmunitySystem {
         let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
+        let random = this.randomGenerator();
+        let grid = manager.getSingletonEntity('grid');
+        let wallet = manager.getSingletonEntity('wallet').get(Wallet);
         
-        for(let entity of manager.select(this.filter)) {
-            let immunity = entity.get(Immunity);
+        for(let vegetable of manager.select(this.filter)) {
+            let immunity = vegetable.get(Immunity);
 
-            this.fixedInterval.execute(() => {
-                let random = this.randomGenerator();
-                immunity.isSick |= random <= immunity.probability;
-            }, elapsedTime);
+            this.fixedInterval.execute(() => immunity.isSick |= random <= immunity.probability, elapsedTime);
 
-            if(immunity.isSick) {
-                immunity.current = Math.max(0, 
-                    immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
-            }
+            if(immunity.isSick) immunity.current = Math.max(0, immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
 
-            let wallet = manager.getSingletonEntity('wallet').get(Wallet);
-            if(eventManager.readEvent('sprayer', 0) && wallet.sum >= wallet.sprayerPrice) {
+            if(immunity.current == 0) vegetable.get(VegetableState).history.push(lifeCycleStates.death);
+        }
+
+        eventManager.forEachEvent('sprayer', (event, index) => {
+            let vegetable = grid.get(event.cellX, event.cellY);
+            if(this.#canHeal(vegetable, wallet)) {
+                let immunity = vegetable.get(Immunity);
+
                 immunity.current = immunity.max;
                 immunity.isSick = false;
                 wallet.sum -= wallet.sprayerPrice;
             }
-
-            if(immunity.current == 0) {
-                entity.get(VegetableState).history.push(lifeCycleStates.death);
-            }
-        }
+        });
 
         eventManager.clearEventQueue('sprayer');
+    }
+
+    #canHeal(vegetable, wallet) {
+        return Boolean(
+            vegetable
+            && vegetable.hasComponents(Immunity, VegetableState)
+            && vegetable.get(VegetableState).current() != lifeCycleStates.death
+            && wallet.sum >= wallet.sprayerPrice
+        );
     }
 };
