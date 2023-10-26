@@ -54,14 +54,13 @@ function beforeEachTest() {
             seedsPrice: 3
         }
     });
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     wallet = manager.createEntity().put(fabric.wallet());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('wallet', wallet);
     manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('grid', grid);
-
-    eventManager = new EventManager();
 
     worldMock = {
         getEntityComponentManager: () => manager,
@@ -70,75 +69,194 @@ function beforeEachTest() {
 };
 beforeEach(beforeEachTest);
 
-describe.each([
-    {cellIsEmpty: true, vegetableState: null, areThereShovelEvents: false, money: 10, expectedMoney: 10},
-    {cellIsEmpty: true, vegetableState: null, areThereShovelEvents: true, money: 10, expectedMoney: 10},
-    {cellIsEmpty: false, vegetableState: lifeCycleStates.death, areThereShovelEvents: true, money: 10, expectedMoney: 10}
-])(`update(groupName, world): can't use a shovel`,
-    ({cellIsEmpty, vegetableState, areThereShovelEvents, money, expectedMoney}) => {
-        beforeEach(beforeEachTest);
-
-        test(`cellIsEmpty ${cellIsEmpty}, 
-              areThereShovelEvents ${areThereShovelEvents}, 
-              money ${money}
-              => expectedMoney ${expectedMoney}`,
-        () => {
-            let cellItem = cellIsEmpty ? null : createVegetable(0, 0, vegetableState);
-            grid.write(0, 0, cellItem);
-            if(areThereShovelEvents) eventManager.writeEvent('shovel', {tool: 'shovel', cellX: 0, cellY: 0});
-            wallet.get(Wallet).sum = money;
-
-            let system = new ShovelSystem(manager);
-            system.update('update', worldMock);
-
-            expect(money).toEqual(expectedMoney);
-            expect(grid.get(0, 0)).toBe(cellItem);
-        });
-    }
-);
-
-describe.each([
-    {state: lifeCycleStates.sleepingSeed, money: 10, expectedMoney: 10},
-    {state: lifeCycleStates.seed, money: 10, expectedMoney: 10},
-    {state: lifeCycleStates.sprout, money: 10, expectedMoney: 10},
-    {state: lifeCycleStates.child, money: 10, expectedMoney: 24},
-    {state: lifeCycleStates.youth, money: 10, expectedMoney: 32},
-    {state: lifeCycleStates.adult, money: 10, expectedMoney: 40}
-])(`update(groupName, world): there is 'shovel' event, gardenBedCell is not empty`,
-    ({state, money, expectedMoney}) => {
-        beforeEach(beforeEachTest);
-
-        test(`vegetable state '${state.name}'
-                money ${money}
-                => remove vegetable,
-                cell must be empty,
-                wallet.sum = ${expectedMoney},
-                isAlive(vegetable) must return false`,
-        () => {
-            let vegetable = createVegetable(0, 0, state);
-            manager.bindEntity(vegetable);
-            grid.write(0, 0, vegetable);
-            eventManager.writeEvent('shovel', {tool: 'shovel', cellX: 0, cellY: 0});
-            wallet.get(Wallet).sum = money;
-
-            let system = new ShovelSystem(manager);
-            system.update('update', worldMock);
-            let vegetables = [...manager.select(manager.createFilter().all(VegetableMeta))];
-
-            expect(vegetables.length).toBe(0);
-            expect(grid.get(0, 0)).toBeNull();
-            expect(wallet.get(Wallet).sum).toBe(expectedMoney);
-            expect(manager.isAlive(vegetable)).toBe(false);
-        });
-    }
-);
-
-function createVegetable(cellX, cellY, state) {
+function createAndPrepareVegetable(cellX, cellY, currentState, previousState) {
     let stateComp = fabric.vegetableState('Potato');
-    stateComp.history.push(state);
-    return manager.createEntity().put(
+    stateComp.pushState(previousState);
+    stateComp.pushState(currentState);
+    let vegetable = manager.createEntity().put(
         new VegetableMeta('Potato'), 
         new GardenBedCellLink(cellX, cellY),
         stateComp
     );
+    grid.write(cellX, cellY, vegetable);
+    manager.bindEntity(vegetable);
+    return vegetable;
 }
+
+describe.each([
+    {
+        vegetableParams: {
+            cellX: 3,
+            cellY: 2,
+            currentState: lifeCycleStates.death,
+            previousState: lifeCycleStates.adult
+        },
+        event: null,
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: false, isAlive: true}
+    },
+    {
+        vegetableParams: {
+            cellX: 3,
+            cellY: 2,
+            currentState: lifeCycleStates.death,
+            previousState: lifeCycleStates.youth
+        },
+        event: null,
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: false, isAlive: true}
+    },
+    {
+        vegetableParams: {
+            cellX: 3,
+            cellY: 2,
+            currentState: lifeCycleStates.death,
+            previousState: lifeCycleStates.child
+        },
+        event: null,
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: false, isAlive: true}
+    },
+    {
+        vegetableParams: {
+            cellX: 3,
+            cellY: 2,
+            currentState: lifeCycleStates.death,
+            previousState: lifeCycleStates.adult
+        },
+        event: {tool: 'shovel', cellX: 1, cellY: 1},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: false, isAlive: true}
+    },
+    {
+        vegetableParams: {
+            cellX: 3,
+            cellY: 2,
+            currentState: lifeCycleStates.death,
+            previousState: lifeCycleStates.sprout
+        },
+        event: {tool: 'shovel', cellX: 3, cellY: 2},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: null,
+        event: {tool: 'shovel', cellX: 3, cellY: 2},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: null,
+        event: null,
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 3, cellY: 2, isEmpty: true, isAlive: false}
+    },
+
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.sleepingSeed,
+            previousState: null
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.seed,
+            previousState: lifeCycleStates.sleepingSeed
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.sprout,
+            previousState: lifeCycleStates.seed
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 10,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.child,
+            previousState: lifeCycleStates.sprout
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 24,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.youth,
+            previousState: lifeCycleStates.child
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 32,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    },
+    {
+        vegetableParams: {
+            cellX: 2,
+            cellY: 1,
+            currentState: lifeCycleStates.adult,
+            previousState: lifeCycleStates.youth
+        },
+        event: {tool: 'shovel', cellX: 2, cellY: 1},
+        money: 10, 
+        expectedMoney: 40,
+        expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
+    }
+])(`update(groupName, world): can't use a shovel`,
+    ({vegetableParams, event, money, expectedMoney, expectedCellState}) => {
+        beforeEach(beforeEachTest);
+
+        test(`vegetableParams ${JSON.stringify(vegetableParams)}, 
+              event ${JSON.stringify(event)}, 
+              money ${money}
+              => expectedMoney ${expectedMoney},
+                 expectedCellState ${JSON.stringify(expectedCellState)}`,
+        () => {
+            let vegetable = vegetableParams ? 
+                createAndPrepareVegetable(
+                    vegetableParams.cellX, 
+                    vegetableParams.cellY, 
+                    vegetableParams.currentState, 
+                    vegetableParams.previousState
+                ) : null;
+            if(event) eventManager.writeEvent(event.tool, event);
+            wallet.get(Wallet).sum = money;
+
+            let system = new ShovelSystem(manager);
+            system.update('update', worldMock);
+
+            expect(wallet.get(Wallet).sum).toEqual(expectedMoney);
+            expect(grid.get(expectedCellState.cellX, expectedCellState.cellY) == null).toBe(expectedCellState.isEmpty);
+            if(vegetable) expect(manager.isAlive(vegetable)).toBe(expectedCellState.isAlive);
+        });
+    }
+);

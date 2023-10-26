@@ -17,9 +17,10 @@ module.exports.ShovelSystem = class ShovelSystem {
         let wallet = manager.getSingletonEntity('wallet');
         let grid = manager.getSingletonEntity('grid');
 
+        let canBeDugUp = this.#canBeDugUp;
         eventManager.forEachEvent('shovel', (event, index) => {
             let vegetable = grid.get(event.cellX, event.cellY);
-            if(vegetable && vegetable.get(VegetableState).current() != lifeCycleStates.death) {
+            if(canBeDugUp(vegetable)) {
                 grid.remove(event.cellX, event.cellY);
                 buffer.removeEntity(vegetable);
 
@@ -49,5 +50,11 @@ module.exports.ShovelSystem = class ShovelSystem {
         }
         
         return Math.ceil(price); 
+    }
+
+    #canBeDugUp(vegetable) {
+        return vegetable 
+            && (vegetable.get(VegetableState).current() != lifeCycleStates.death
+                || vegetable.get(VegetableState).previous() == lifeCycleStates.sprout);
     }
 };
