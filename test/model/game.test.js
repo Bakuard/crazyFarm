@@ -2,7 +2,6 @@ const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
-const { VegetableState } = require('../../src/code/model/logic/vegetableState.js');
 
 let game = null;
 let outputData = null;

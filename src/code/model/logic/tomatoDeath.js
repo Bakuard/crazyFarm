@@ -15,8 +15,8 @@ class TomatoExplosion {
 module.exports.TomatoExplosion = TomatoExplosion;
 
 module.exports.TomatoDeathSystem = class TomatoDeathSystem {
-    constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().all(VegetableMeta, VegetableState, Immunity, Satiety, Thirst);
+    constructor(entityComponentManager, randomGenerator) {
+        this.randomGenerator = randomGenerator;
         this.explosionFilter = entityComponentManager.createFilter().all(TomatoExplosion);
     }
 
@@ -26,46 +26,52 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         let grid = manager.getSingletonEntity('grid');
         let fabric = manager.getSingletonEntity('fabric');
 
-        for(let entity of manager.select(this.deadFilter)) {
-            let meta = entity.get(VegetableMeta);
-            let state = entity.get(VegetableState);
-            if(meta.typeName == 'Tomato' && state.current() == lifeCycleStates.death) {
-                entity.remove(Immunity, Satiety, Thirst);
+        let isDeadTomato = this.#isDeadTomato;
+        let canBeBlownUp = this.#canBeBlownUp;
+        let randomGenerator = this.randomGenerator;
+        grid.forEach((x, y, vegetable) => {
+            if(isDeadTomato(vegetable)) {
+                let state = vegetable.get(VegetableState);
                 if(state.previousIsOneOf(lifeCycleStates.child, lifeCycleStates.youth, lifeCycleStates.adult)) {
-                    entity.put(fabric.tomatoExplosion(state.history.at(-2)));
-                }
-                buffer.bindEntity(entity);
-            }
-        }
+                    let explosion = fabric.tomatoExplosion(state.previous());
 
-        for(let entity of manager.select(this.explosionFilter)) {
-            let cellLink = entity.get(GardenBedCellLink);
-            let explosion = entity.get(TomatoExplosion);
-            let neighbours = grid.getNeigboursFor(cellLink.cellX, cellLink.cellY);
-            neighbours = this.#chooseRandomItems(neighbours, explosion.neighboursNumber);
-            neighbours.filter(vegetable => !vegetable.get(VegetableState).currentIsOneOf(lifeCycleStates.death, 
-                                                                                        lifeCycleStates.seed, 
-                                                                                        lifeCycleStates.sleepingSeed)
-                ).forEach(vegetable => {
-                    vegetable.get(VegetableState).history.push(lifeCycleStates.death);
-                    vegetable.addTags('exploded');
-                    buffer.bindEntity(vegetable);
-                });
-            grid.remove(cellLink.cellX, cellLink.cellY);
-            buffer.removeEntity(entity);
-        }
+                    let neighbours = grid.getRandomNeigboursFor(
+                        x, 
+                        y, 
+                        explosion.neighboursNumber, 
+                        randomGenerator
+                    );
+                    neighbours.filter(item => canBeBlownUp(item.value)).forEach(({value: neighbour}) => {
+                        neighbour.get(VegetableState).history.push(lifeCycleStates.death);
+                        neighbour.addTags('exploded');
+                        buffer.bindEntity(neighbour);
+                    });
+                }
+                
+                grid.remove(x, y);
+
+                buffer.removeEntity(vegetable);
+            }
+        });
 
         manager.flush(buffer);
     }
 
-    #chooseRandomItems(arr, itemsNumber) {
-        for(let i = arr.length - 1; i >= arr.length - itemsNumber; i--) {
-            const randomIndex = Math.floor(Math.random() * (i + 1));
-            const randomItem = arr[randomIndex];
-            arr[randomIndex] = arr[i];
-            arr[i] = randomItem;
-        }
-        return arr.slice(arr.length - itemsNumber, arr.length);
+    #canBeBlownUp(vegetable) {
+        return vegetable
+            && vegetable.hasComponents(VegetableState)
+            && !vegetable.get(VegetableState).currentIsOneOf(
+                lifeCycleStates.death, 
+                lifeCycleStates.seed, 
+                lifeCycleStates.sleepingSeed
+            );
+    }
+
+    #isDeadTomato(vegetable) {
+        return vegetable
+            && vegetable.hasComponents(VegetableMeta, VegetableState, Immunity, Satiety, Thirst)
+            && vegetable.get(VegetableMeta).typeName == 'Tomato'
+            && vegetable.get(VegetableState).current() == lifeCycleStates.death;
     }
 
 };

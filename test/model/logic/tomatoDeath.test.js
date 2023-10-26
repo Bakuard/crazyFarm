@@ -16,6 +16,7 @@ let manager = null;
 let worldMock = null;
 let grid = null;
 function beforeEachTest() {
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     fabric = new Fabric({
         tomato: {
             explosion: {
@@ -25,7 +26,6 @@ function beforeEachTest() {
             }
         }
     });
-    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('grid', grid);
@@ -42,62 +42,91 @@ function beforeEachTest() {
     };
 };
 
-function vegetableState(...states) {
+function vegetableState(stateHistory) {
     let result = VegetableState.of(
         StateDetail.of(10, lifeCycleStates.seed),
         StateDetail.of(10, lifeCycleStates.sprout),
         StateDetail.of(10, lifeCycleStates.child),
         StateDetail.of(10, lifeCycleStates.youth)
     );
-    result.history = states;
+    result.history = stateHistory;
 
     return result;
 }
 
-describe.each([
-    {state: lifeCycleStates.sleepingSeed, hasGrowComps: true, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, hasGrowComps: true, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, hasGrowComps: true, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.child, previousState: lifeCycleStates.sprout, hasGrowComps: true, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.youth, previousState: lifeCycleStates.child, hasGrowComps: true, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.adult, previousState: lifeCycleStates.youth, hasGrowComps: true, hasTomatoExplosionComp: false},
+function createAndPrepareVegetable({cellX, cellY, typeName, currentState, previousState}) {
+    let vegetable = manager.createEntity().put(
+        new VegetableMeta(typeName),
+        new GardenBedCellLink(cellX, cellY),
+        vegetableState([previousState, currentState]),
+        Immunity.of(60, 1, 0.2),
+        Satiety.of(60, 1),
+        Thirst.of(60, 1)
+    );
+    manager.bindEntity(vegetable);
+    grid.write(cellX, cellY, vegetable);
+    return vegetable;
+}
 
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sleepingSeed, hasGrowComps: false, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.seed, hasGrowComps: false, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, hasGrowComps: false, hasTomatoExplosionComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.child, hasGrowComps: false, hasTomatoExplosionComp: true},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.youth, hasGrowComps: false, hasTomatoExplosionComp: true},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.adult, hasGrowComps: false, hasTomatoExplosionComp: true}
-])(`update(groupName, world):`,
-    ({state, previousState, hasGrowComps, hasTomatoExplosionComp}) => {
+describe.each([
+    {
+        vegetablesParam: [
+            {
+                cellX: 0,
+                cellY: 0,
+                typeName: 'Tomato',
+                currentState: lifeCycleStates.death,
+                previousState: lifeCycleStates.adult
+            },
+            {
+                cellX: 1,
+                cellY: 0,
+                typeName: 'Tomato',
+                currentState: lifeCycleStates.adult,
+                previousState: lifeCycleStates.youth
+            },
+            {
+                cellX: 0,
+                cellY: 1,
+                typeName: 'Potato',
+                currentState: lifeCycleStates.adult,
+                previousState: lifeCycleStates.youth
+            },
+            {
+                cellX: 1,
+                cellY: 1,
+                typeName: 'Tomato',
+                currentState: lifeCycleStates.adult,
+                previousState: lifeCycleStates.youth
+            },
+        ],
+        randomValueForChoosingNeighbours: 0.1,
+        expectedVegetables: [
+            {cellX: 0, cellY: 0, isAlive: false},
+            {cellX: 1, cellY: 0, isAlive: false},
+            {cellX: 0, cellY: 1, isAlive: true},
+            {cellX: 1, cellY: 1, isAlive: false}
+        ]
+    }
+])(`update(groupName, world): there are several neigbours for exloded tomato`,
+    ({vegetablesParam, randomValueForChoosingNeighbours, expectedVegetables}) => {
         beforeEach(beforeEachTest);
 
-        test(`state ${state},
-              previousState ${previousState}
-              => hasGrowComps ${hasGrowComps},
-                 hasTomatoExplosionComp ${hasTomatoExplosionComp}`,
+        test(`vegetablesParam ${vegetablesParam.map(JSON.stringify)},
+              randomValueForChoosingNeighbours ${randomValueForChoosingNeighbours}
+              => expectedVegetables ${expectedVegetables.map(JSON.stringify)}`,
         () => {
-            let entity = manager.createEntity().put(
-                new VegetableMeta('Tomato'),
-                new GardenBedCellLink(0, 0),
-                vegetableState(previousState, state),
-                Immunity.of(60, 1, 0.2),
-                Satiety.of(60, 1),
-                Thirst.of(60, 1)
-            );
-            manager.bindEntity(entity);
-            grid.write(0, 0, entity);
+            vegetablesParam.map(p => createAndPrepareVegetable(p));
+            let actualVegetables = grid.clone(entity => entity);
 
-            let system = new TomatoDeathSystem(manager, fabric);
+            let system = new TomatoDeathSystem(manager, () => randomValueForChoosingNeighbours);
             system.update('update', worldMock);
 
-            expect(entity.hasComponents(Immunity)).toBe(hasGrowComps);
-            expect(entity.hasComponents(Satiety)).toBe(hasGrowComps);
-            expect(entity.hasComponents(Thirst)).toBe(hasGrowComps);
-            expect(entity.hasComponents(TomatoExplosion)).toBe(hasTomatoExplosionComp);
-            expect(entity.hasComponents(VegetableState)).toBe(true);
-            expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
-            expect(entity.hasComponents(VegetableMeta)).toBe(true);
+            expectedVegetables.forEach(exp => {
+                let vegetable = actualVegetables.get(exp.cellX, exp.cellY);
+                expect(grid.get(exp.cellX, exp.cellY) != null).toBe(exp.isAlive);
+                expect(manager.isAlive(vegetable)).toBe(exp.isAlive);
+            });
         });
     }
 );
