@@ -35,7 +35,7 @@ class VegetableState {
     }
 
     pushState(lifeCycleState) {
-        if(this.current() != lifeCycleState) this.history.push(lifeCycleState);
+        if(this.history.length > 0 && this.current() != lifeCycleState) this.history.push(lifeCycleState);
     }
 
     currentIsOneOf(...lifeCycleStates) {
@@ -87,6 +87,7 @@ module.exports.GrowSystem = class GrowSystem {
         let manager = world.getEntityComponentManager();
         let buffer = manager.createCommandBuffer();
         let fabric = manager.getSingletonEntity('fabric');
+        let grid = manager.getSingletonEntity('grid');
 
         let elapsedTime = world.getGameLoop().getElapsedTime();
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
@@ -95,19 +96,25 @@ module.exports.GrowSystem = class GrowSystem {
 
             if(vegetableState.currentIsOneOf(seed, sprout, child, youth)) {
                 this.#nextState(vegetableState, elapsedTime);
-            } else if(vegetableState.current() == lifeCycleStates.sleepingSeed && eventManager.readEvent('bailer', 0)) {
-                let meta = entity.get(VegetableMeta);
+            }
+        }
 
-                entity.put(
+        for(let i = 0; i < eventManager.eventsNumber('bailer'); i++) {
+            let event = eventManager.readEvent('bailer', i);
+            let vegetable = grid.get(event.cellX, event.cellY);
+
+            if(this.#isSleepingSeed(vegetable)) {
+                let meta = vegetable.get(VegetableMeta);
+                let vegetableState = vegetable.get(VegetableState);
+
+                vegetable.put(
                     fabric.thirst(meta.typeName),
                     fabric.satiety(meta.typeName),
                     fabric.immunity(meta.typeName)
                 );
-                vegetableState.history.push(lifeCycleStates.seed);
+                vegetableState.pushState(lifeCycleStates.seed);
                 this.#nextState(vegetableState, elapsedTime);
-
-                buffer.bindEntity(entity);
-                eventManager.clearEventQueue('bailer');
+                buffer.bindEntity(vegetable);
             }
         }
 
@@ -126,5 +133,11 @@ module.exports.GrowSystem = class GrowSystem {
                 vegetableState.history.push(lifeCycleStates.findByOrdinal(vegetableState.current().ordinal + 1));
             }
         }
+    }
+
+    #isSleepingSeed(vegetable) {
+        return vegetable
+            && vegetable.hasComponents(VegetableState)
+            && vegetable.get(VegetableState).current() == lifeCycleStates.sleepingSeed;
     }
 };
