@@ -45,19 +45,19 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 3,
+                intervalInSecond: 2,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'youth'
             }
         }
@@ -96,19 +96,19 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 3,
+                intervalInSecond: 2,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'youth'
             }
         }
