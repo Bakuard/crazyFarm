@@ -41,7 +41,7 @@ module.exports.ImmunitySystem = class ImmunitySystem {
 
             if(immunity.isSick) immunity.current = Math.max(0, immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
 
-            if(immunity.current == 0) vegetable.get(VegetableState).history.push(lifeCycleStates.death);
+            if(immunity.current == 0) vegetable.get(VegetableState).pushState(lifeCycleStates.death);
         }
 
         eventManager.forEachEvent('sprayer', (event, index) => {

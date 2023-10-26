@@ -30,7 +30,7 @@ module.exports.ThirstSystem = class ThirstSystem {
             let thirst = entity.get(Thirst);
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
             if(thirst.current == 0) {
-                entity.get(VegetableState).history.push(lifeCycleStates.death);
+                entity.get(VegetableState).pushState(lifeCycleStates.death);
             }
         }
 

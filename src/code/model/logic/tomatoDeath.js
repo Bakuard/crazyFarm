@@ -42,7 +42,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                         randomGenerator
                     );
                     neighbours.filter(item => canBeBlownUp(item.value)).forEach(({value: neighbour}) => {
-                        neighbour.get(VegetableState).history.push(lifeCycleStates.death);
+                        neighbour.get(VegetableState).pushState(lifeCycleStates.death);
                         neighbour.addTags('exploded');
                         buffer.bindEntity(neighbour);
                     });

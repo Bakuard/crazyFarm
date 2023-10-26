@@ -32,7 +32,7 @@ module.exports.SatietySystem = class SatietySystem {
             let satiety = entity.get(Satiety);
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
             if(satiety.current == 0) {
-                entity.get(VegetableState).history.push(lifeCycleStates.death);
+                entity.get(VegetableState).pushState(lifeCycleStates.death);
             }
         }
 

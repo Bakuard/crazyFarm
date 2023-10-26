@@ -25,7 +25,7 @@ module.exports.ShovelSystem = class ShovelSystem {
 
                 wallet.get(Wallet).sum += this.#calculatePrice(
                     fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
-                    vegetable.get(VegetableState).history.at(-1)
+                    vegetable.get(VegetableState).current()
                 );
             }
         });

@@ -34,6 +34,10 @@ class VegetableState {
         this.stateDetails = stateDetails;
     }
 
+    pushState(lifeCycleState) {
+        if(this.current() != lifeCycleState) this.history.push(lifeCycleState);
+    }
+
     currentIsOneOf(...lifeCycleStates) {
         return lifeCycleStates.some(state => state === this.history.at(-1));
     }
