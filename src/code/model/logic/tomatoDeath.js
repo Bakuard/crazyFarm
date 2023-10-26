@@ -33,7 +33,6 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                 let state = vegetable.get(VegetableState);
                 if(state.previousIsOneOf(lifeCycleStates.child, lifeCycleStates.youth, lifeCycleStates.adult)) {
                     let explosion = fabric.tomatoExplosion(state.previous());
-
                     let neighbours = grid.getRandomNeigboursFor(
                         x, 
                         y, 
@@ -48,6 +47,9 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
 
                     grid.remove(x, y);
                     buffer.removeEntity(vegetable);
+                } else if(state.previous() == lifeCycleStates.sprout) {
+                    vegetable.remove(Immunity, Satiety, Thirst);
+                    buffer.bindEntity(vegetable);
                 }
             }
         });

@@ -120,10 +120,10 @@ describe.each([
         ],
         randomValueForChoosingNeighbours: 0.1,
         expectedVegetables: [
-            {cellX: 3, cellY: 1, isAlive: true}
+            {cellX: 3, cellY: 1, isAlive: true, hasGrowComps: false}
         ]
     }
-])(`update(groupName, world): there are several neigbours for exloded tomato`,
+])(`update(groupName, world):`,
     ({vegetablesParam, randomValueForChoosingNeighbours, expectedVegetables}) => {
         beforeEach(beforeEachTest);
 
