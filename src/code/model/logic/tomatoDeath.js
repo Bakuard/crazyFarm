@@ -1,6 +1,5 @@
 'use strict'
 
-const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {Thirst} = require('./thirst.js');
 const {Satiety} = require('./satiety.js');
 const {Immunity} = require('./immunity.js');
@@ -46,11 +45,10 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                         neighbour.addTags('exploded');
                         buffer.bindEntity(neighbour);
                     });
-                }
-                
-                grid.remove(x, y);
 
-                buffer.removeEntity(vegetable);
+                    grid.remove(x, y);
+                    buffer.removeEntity(vegetable);
+                }
             }
         });
 

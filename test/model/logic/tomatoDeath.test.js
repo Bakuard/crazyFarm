@@ -1,7 +1,7 @@
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
-const {TomatoExplosion, TomatoDeathSystem} = require('../../../src/code/model/logic/tomatoDeath.js');
+const {TomatoDeathSystem} = require('../../../src/code/model/logic/tomatoDeath.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
@@ -106,6 +106,21 @@ describe.each([
             {cellX: 1, cellY: 0, isAlive: false},
             {cellX: 0, cellY: 1, isAlive: true},
             {cellX: 1, cellY: 1, isAlive: false}
+        ]
+    },
+    {
+        vegetablesParam: [
+            {
+                cellX: 3,
+                cellY: 1,
+                typeName: 'Tomato',
+                currentState: lifeCycleStates.death,
+                previousState: lifeCycleStates.sprout
+            }
+        ],
+        randomValueForChoosingNeighbours: 0.1,
+        expectedVegetables: [
+            {cellX: 3, cellY: 1, isAlive: true}
         ]
     }
 ])(`update(groupName, world): there are several neigbours for exloded tomato`,
