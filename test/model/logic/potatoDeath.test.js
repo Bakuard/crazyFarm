@@ -7,25 +7,20 @@ const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/compo
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
-const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 
-let fabric = null;
 let manager = null;
 let worldMock = null;
 let grid = null;
 function beforeEachTest() {
-    fabric = new Fabric({
-        potato: {
-            ghost: {
-                timeInMillis: 2000
-            }
-        }
-    });
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', fabric);
+    manager.putSingletonEntity('fabric', {
+        potatoGhost() {
+            return new PotatoGhost(2000);
+        }
+    });
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -72,7 +67,7 @@ describe.each([
             grid.write(0, 0, entity);
             worldMock.elapsedTime = elapsedTime;
 
-            let system = new PotatoDeathSystem(manager, fabric);
+            let system = new PotatoDeathSystem(manager);
             system.update('update', worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
@@ -114,7 +109,7 @@ describe.each([
             manager.bindEntity(entity);
             grid.write(0, 0, entity);
 
-            let system = new PotatoDeathSystem(manager, fabric);
+            let system = new PotatoDeathSystem(manager);
             system.update('update', worldMock);
 
             expect(entity.hasComponents(Immunity)).toBe(hasGrowComps);
@@ -124,6 +119,54 @@ describe.each([
             expect(entity.hasComponents(VegetableState)).toBe(true);
             expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
             expect(entity.hasComponents(VegetableMeta)).toBe(true);
+        });
+    }
+);
+
+describe.each([
+    {state: lifeCycleStates.sleepingSeed, previousState: lifeCycleStates.sleepingSeed, isExploded: false, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, isExploded: false, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, isExploded: false, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, isExploded: false, isAlive: true, isCellEmtpy: false},
+
+    {state: lifeCycleStates.sleepingSeed, previousState: lifeCycleStates.sleepingSeed, isExploded: true, isAlive: false, isCellEmtpy: true},
+    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, isExploded: true, isAlive: false, isCellEmtpy: true},
+    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, isExploded: true, isAlive: false, isCellEmtpy: true},
+    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, isExploded: true, isAlive: false, isCellEmtpy: true},
+
+    {state: lifeCycleStates.death, previousState: lifeCycleStates.adult, isExploded: true, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.death, previousState: lifeCycleStates.youth, isExploded: true, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.death, previousState: lifeCycleStates.child, isExploded: true, isAlive: true, isCellEmtpy: false},
+
+    {state: lifeCycleStates.adult, previousState: lifeCycleStates.youth, isExploded: true, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.youth, previousState: lifeCycleStates.child, isExploded: true, isAlive: true, isCellEmtpy: false},
+    {state: lifeCycleStates.child, previousState: lifeCycleStates.sprout, isExploded: true, isAlive: true, isCellEmtpy: false},
+])(`update(groupName, world):`,
+    ({state, previousState, isExploded, isAlive, isCellEmtpy}) => {
+        beforeEach(beforeEachTest);
+
+        test(`state: ${state.name},
+            previousState: ${previousState.name},
+            isExploded: ${isExploded}
+            => isAlive: ${isAlive}, isCellEmtpy: ${isCellEmtpy}`,
+        () => {
+            let entity = manager.createEntity().put(
+                new VegetableMeta('Potato'),
+                new GardenBedCellLink(0, 0),
+                vegetableState(previousState, state),
+                Immunity.of(60, 1, 0.2),
+                Satiety.of(60, 1),
+                Thirst.of(60, 1)
+            );
+            if(isExploded) entity.addTags('exploded');
+            manager.bindEntity(entity);
+            grid.write(0, 0, entity);
+
+            let system = new PotatoDeathSystem(manager);
+            system.update('update', worldMock);
+
+            expect(grid.get(0, 0) == null).toBe(isCellEmtpy);
+            expect(manager.isAlive(entity)).toBe(isAlive);
         });
     }
 );
