@@ -8,11 +8,14 @@ const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js'
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
+const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 
 let fabric = null;
 let manager = null;
 let eventManager = null;
 let worldMock = null;
+let grid = null;
 function beforeEachSetting() {
     fabric = new Fabric({
         potato: {
@@ -34,10 +37,11 @@ function beforeEachSetting() {
             }
         }
     });
-    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    manager.putSingletonEntity('fabric', fabric);
-
     eventManager = new EventManager();
+    manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
+    grid = new Grid(4, 3);
+    manager.putSingletonEntity('fabric', fabric);
+    manager.putSingletonEntity('grid', grid);
     
     worldMock = {
         elapsedTime: 1000000,
@@ -60,40 +64,94 @@ function vegetableState(currentState, intervalsInSeconds) {
         StateDetail.of(intervalsInSeconds[2], lifeCycleStates.child),
         StateDetail.of(intervalsInSeconds[3], lifeCycleStates.youth)
     );
-    result.history.push(currentState);
+    result.pushState(currentState);
 
     return result;
 }
 
-describe.each([
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.seed, elapsedTime: 2999, intervalsInSeconds: [3, 40, 40, 40]},
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.sprout, elapsedTime: 3000, intervalsInSeconds: [3, 40, 40, 40]},
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.child, elapsedTime: 43000, intervalsInSeconds: [3, 40, 40, 40]},
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.youth, elapsedTime: 83000, intervalsInSeconds: [3, 40, 40, 40]},
-    {hasBailerEvent: true, hasGrowComps: true, nextState: lifeCycleStates.adult, elapsedTime: 123000, intervalsInSeconds: [3, 40, 40, 40]},
+function createAndPrepareSleepingSeed(cellX, cellY, typeName, intervalsInSeconds) {
+    let vegetable = manager.createEntity().put(
+        new VegetableMeta(typeName),
+        new GardenBedCellLink(cellX, cellY),
+        vegetableState(lifeCycleStates.sleepingSeed, intervalsInSeconds)
+    );
+    manager.bindEntity(vegetable);
+    grid.write(cellX, cellY, vegetable);
+    return vegetable;
+}
 
-    {hasBailerEvent: false, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed, elapsedTime: 1000000, intervalsInSeconds: [3, 40, 40, 40]}
-])(`update(groupName, world): vegetables currentState is 'sleepigSeed`,
-    ({hasBailerEvent, hasGrowComps, nextState, elapsedTime, intervalsInSeconds}) => {
+describe.each([
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 3, cellY: 2},
+        elapsedTime: 2999, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: true, nextState: lifeCycleStates.seed}
+    },
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 3, cellY: 2},
+        elapsedTime: 3000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: true, nextState: lifeCycleStates.sprout}
+    },
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 3, cellY: 2},
+        elapsedTime: 43000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: true, nextState: lifeCycleStates.child}
+    },
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 3, cellY: 2},
+        elapsedTime: 83000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: true, nextState: lifeCycleStates.youth}
+    },
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 3, cellY: 2},
+        elapsedTime: 123000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: true, nextState: lifeCycleStates.adult}
+    },
+
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: null,
+        elapsedTime: 1000000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed}
+    },
+    {
+        sleepingSeedParam: {cellX: 3, cellY: 2},
+        event: {tool: 'bailer', cellX: 0, cellY: 1},
+        elapsedTime: 1000000, 
+        intervalsInSeconds: [3, 40, 40, 40],
+        expectedVegetableState: {cellX: 3, cellY: 2, hasGrowComps: false, nextState: lifeCycleStates.sleepingSeed}
+    }
+])(`update(groupName, world): vegetables currentState is 'sleepigSeed'`,
+    ({sleepingSeedParam, event, elapsedTime, intervalsInSeconds, expectedVegetableState}) => {
         beforeEach(beforeEachSetting);
 
-        test(`hasBailerEvent ${hasBailerEvent},
+        test(`sleepingSeedParam ${JSON.stringify(sleepingSeedParam)},
+              event ${JSON.stringify(event)},
               elapsedTime ${elapsedTime},
               intervalsInSeconds [${intervalsInSeconds}]
-              => nextState'${nextState.name}',
-                 hasGrowComps ${hasGrowComps}`,
+              => expectedVegetableState ${JSON.stringify(expectedVegetableState)}`,
         () => {
-            let entity = manager.createEntity();
-            entity.put(vegetableState(lifeCycleStates.sleepingSeed, intervalsInSeconds), new VegetableMeta('Potato'));
-            manager.bindEntity(entity);
-            if(hasBailerEvent) eventManager.writeEvent('bailer', {tool: 'bailer', cell: 'center'});
+            let vegetable = createAndPrepareSleepingSeed(sleepingSeedParam.cellX, sleepingSeedParam.cellY, 'Potato', intervalsInSeconds);
+            if(event) eventManager.writeEvent(event.tool, event);
             worldMock.elapsedTime = elapsedTime;
-    
+
             let system = new GrowSystem(manager);
             system.update('udpate', worldMock);
-    
-            expect(entity.get(VegetableState).current()).toBe(nextState);
-            expect(entity.hasComponents(Immunity, Satiety, Thirst)).toBe(hasGrowComps);
+
+            expect(vegetable.get(VegetableState).current()).toBe(expectedVegetableState.nextState);
+            expect(vegetable.hasComponents(Immunity)).toBe(expectedVegetableState.hasGrowComps);
+            expect(vegetable.hasComponents(Satiety)).toBe(expectedVegetableState.hasGrowComps);
+            expect(vegetable.hasComponents(Thirst)).toBe(expectedVegetableState.hasGrowComps);
         });
     }
 );

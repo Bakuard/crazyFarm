@@ -16,25 +16,32 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta, Immunity, Satiety, Thirst);
-        this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
+        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta, GardenBedCellLink).none(PotatoGhost);
+        this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost, GardenBedCellLink);
     }
 
     update(groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let buffer = manager.createCommandBuffer();
-        let fabric = manager.getSingletonEntity('fabric');
-        let grid = manager.getSingletonEntity('grid');
+        const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
+        const manager = world.getEntityComponentManager();
+        const buffer = manager.createCommandBuffer();
+        const fabric = manager.getSingletonEntity('fabric');
+        const grid = manager.getSingletonEntity('grid');
 
         for(let entity of manager.select(this.deadFilter)) {
             let meta = entity.get(VegetableMeta);
             let state = entity.get(VegetableState);
-            if(meta.typeName == 'Potato' && state.current() == lifeCycleStates.death) {
+            let cell = entity.get(GardenBedCellLink);
+            if(meta.typeName == 'Potato' && (state.current() == death || entity.hasTags('exploded'))) {
                 entity.remove(Immunity, Satiety, Thirst);
-                if(state.previousIsOneOf(lifeCycleStates.child, lifeCycleStates.youth, lifeCycleStates.adult)) {
+                if(state.current() == death && state.previousIsOneOf(child, youth, adult) ||
+                        entity.hasTags('exploded') && state.currentIsOneOf(child, youth, adult)) {
                     entity.put(fabric.potatoGhost());
+                    buffer.bindEntity(entity);
+                } else if(entity.hasTags('exploded') && 
+                        (state.previous() == sprout || state.currentIsOneOf(sleepingSeed, seed, sprout))) {
+                    grid.remove(cell.cellX, cell.cellY);
+                    buffer.removeEntity(entity);
                 }
-                buffer.bindEntity(entity);
             }
         }
 
