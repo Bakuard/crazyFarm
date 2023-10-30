@@ -5,7 +5,7 @@ const {Wallet} = require('./wallet.js');
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
-    constructor(entityComponentManager) {
+    constructor() {
         
     }
 
@@ -17,15 +17,16 @@ module.exports.ShovelSystem = class ShovelSystem {
         let wallet = manager.getSingletonEntity('wallet');
         let grid = manager.getSingletonEntity('grid');
 
+        let canBeDugUp = this.#canBeDugUp;
         eventManager.forEachEvent('shovel', (event, index) => {
             let vegetable = grid.get(event.cellX, event.cellY);
-            if(vegetable && vegetable.get(VegetableState).history.at(-1) != lifeCycleStates.death) {
+            if(canBeDugUp(vegetable)) {
                 grid.remove(event.cellX, event.cellY);
                 buffer.removeEntity(vegetable);
 
                 wallet.get(Wallet).sum += this.#calculatePrice(
                     fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
-                    vegetable.get(VegetableState).history.at(-1)
+                    vegetable.get(VegetableState).current()
                 );
             }
         });
@@ -49,5 +50,12 @@ module.exports.ShovelSystem = class ShovelSystem {
         }
         
         return Math.ceil(price); 
+    }
+
+    #canBeDugUp(vegetable) {
+        return vegetable 
+            && vegetable.hasComponents(VegetableState, VegetableMeta)
+            && (vegetable.get(VegetableState).current() != lifeCycleStates.death
+                || vegetable.get(VegetableState).previous() == lifeCycleStates.sprout);
     }
 };

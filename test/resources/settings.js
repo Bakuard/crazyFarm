@@ -37,20 +37,28 @@ module.exports.settings = {
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'youth'
             }
         }
     },
     tomato: {
+        explosion: {
+            neighboursNumber: {
+                child: 8,
+                youth: 8,
+                adult: 8
+            },
+            timeInMillis: 1001
+        },
         immunity: {
             max: 60,
             alertLevel1: 30,
@@ -83,21 +91,21 @@ module.exports.settings = {
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 100,
                 lifeCyleState: 'youth'
             }
         }
     },
     wallet: {
-        sum: 20,
+        sum: 200,
         fertilizerPrice: 2,
         sprayerPrice: 2,
         seedsPrice: 3

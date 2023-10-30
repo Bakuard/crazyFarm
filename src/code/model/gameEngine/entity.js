@@ -115,7 +115,7 @@ module.exports.Entity = class Entity {
 
     toDetailString() {
         let components = Array.from(Object.values(this.#components)).
-                            map(c => util.formatWithOptions({breakLength: Infinity, compact: true}, '%O', c)).
+                            map(c => util.formatWithOptions({breakLength: Infinity, compact: true, depth: 5}, '%O', c)).
                             join(', ');
         return `{personalId=${this.personalId}, generation=${this.generation}, tags=[${Array.from(this.#tags)}], ${components}}`;
     }

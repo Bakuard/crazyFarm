@@ -1,6 +1,14 @@
 'use strict'
 
 module.exports.Grid = class Grid {
+    static of(width, height, ...items) {
+        let grid = new Grid(width, height);
+        for(let i = 0; i < grid.cellsNumber() && i < items.length; i++) {
+            grid.#data[i] = items[i];
+        }
+        return grid;
+    }
+
     #width;
     #height;
     #data;
@@ -32,6 +40,10 @@ module.exports.Grid = class Grid {
         return this.#height;
     }
 
+    cellsNumber() {
+        return this.#width * this.#height;
+    }
+
     fill(callback) {
         for(let x = 0; x < this.#width; x++) {
             for(let y = 0; y < this.#height; y++) {
@@ -60,13 +72,27 @@ module.exports.Grid = class Grid {
         return result;
     }
 
+    getRandomNeigboursFor(x, y, neigboursNumber, randomGenerator) {
+        let neigbours = this.getNeigboursFor(x, y);
+        neigboursNumber = Math.min(neigboursNumber, neigbours.length);
+
+        for(let i = 0; i < neigboursNumber; i++) {
+            const randomIndex = Math.floor(randomGenerator() * (neigboursNumber - i) + i);
+            const randomItem = neigbours[randomIndex];
+            neigbours[randomIndex] = neigbours[i];
+            neigbours[i] = randomItem;
+        }
+
+        return neigbours.slice(0, neigboursNumber);
+    }
+
     inBound(x, y) {
         return x >= 0 && x < this.#width && y >= 0 && y < this.#height;
     }
 
     forEach(callback) {
-        for(let x = 0; x < this.#width; x++) {
-            for(let y = 0; y < this.#height; y++) {
+        for(let y = 0; y < this.#height; y++) {
+            for(let x = 0; x < this.#width; x++) {
                 callback(x, y, this.get(x, y));
             }
         }
@@ -84,6 +110,12 @@ module.exports.Grid = class Grid {
             result = itemComparator(this.#data[i], otherGrid.#data[i]);
         }
         return result;
+    }
+
+    toString(itemStringConverter) {
+        let items = [];
+        this.forEach((x, y, item) => items.push(`{x: ${x}, y: ${y}, item: ${itemStringConverter(item)}}`));
+        return `Grid{width: ${this.#width}, height: ${this.#height}, items: [${items.join(', ')}]}`;
     }
 
 };

@@ -8,6 +8,7 @@ const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
 const {PotatoGhost} = require('../model/logic/potatoDeath.js');
+const {TomatoExplosion} = require('../model/logic/tomatoDeath.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
 
@@ -60,11 +61,36 @@ class VegetableResponse {
     constructor(vegetable) {
         this.type = vegetable.get(VegetableMeta).typeName.toLowerCase();
         this.needs = [];
-        this.stage = Math.max(0, vegetable.get(VegetableState).history.at(-1).ordinal - 1);
+
+        let state = vegetable.get(VegetableState);
+        if(state.currentIsOneOf(lifeCycleStates.sleepingSeed, lifeCycleStates.seed)) this.stage = 0;
+        else if(state.current() == lifeCycleStates.sprout) this.stage = 1;
+        else if(state.current() == lifeCycleStates.child) this.stage = 2;
+        else if(state.current() == lifeCycleStates.youth) this.stage = 3;
+        else if(state.current() == lifeCycleStates.adult) this.stage = 4;
+        else if(state.current() == lifeCycleStates.death && 
+                state.previous() == lifeCycleStates.sprout) this.stage = 5;
+        else if(state.current() == lifeCycleStates.death && 
+                state.previous() == lifeCycleStates.child && 
+                this.type == 'tomato') this.stage = 6;
+        else if(state.current() == lifeCycleStates.death && 
+                state.previous() == lifeCycleStates.youth && 
+                this.type == 'tomato') this.stage = 7;
+        else if(state.current() == lifeCycleStates.death && 
+                state.previous() == lifeCycleStates.adult && 
+                this.type == 'tomato') this.stage = 8;
+        else if(state.current() == lifeCycleStates.death && 
+                state.previousIsOneOf(lifeCycleStates.child, lifeCycleStates.youth, lifeCycleStates.adult) && 
+                this.type == 'potato' && 
+                !vegetable.hasTags('exploded')) this.stage = 6;
+        else if(state.current() == lifeCycleStates.death && 
+                this.type == 'potato' && 
+                vegetable.hasTags('exploded')) this.stage = 7;
+
         if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
-            if(vegetable.get(Thirst).current < 30) this.needs.push('THIRST');
-            if(vegetable.get(Satiety).current < 30) this.needs.push('HUNGER');
-            if(vegetable.get(Immunity).current < 30) this.needs.push('SICKNESS');
+            if(vegetable.get(Thirst).current <= 30) this.needs.push('THIRST');
+            if(vegetable.get(Satiety).current <= 30) this.needs.push('HUNGER');
+            if(vegetable.get(Immunity).current <= 30) this.needs.push('SICKNESS');
         }
     }
 }
@@ -73,7 +99,7 @@ module.exports.VegetableResponse = VegetableResponse;
 class GardenBedCellResponse {
     constructor(x, y, vegetable) {
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.get(PotatoGhost) || vegetable?.hasTags('explosion'));
+        this.isBlocked = Boolean(vegetable?.hasComponents(PotatoGhost));
         this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }

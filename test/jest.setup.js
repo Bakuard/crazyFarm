@@ -12,9 +12,45 @@ expect.extend({
 
 expect.extend({
     containsEntities(actual, ...entities) {
-        let isPass = entities.every(entity => actual.find(e => entity.equals(e)));
+        let missingEntities = [];
+        for(let i = 0; i < entities.length; i++) {
+            let isFind = false;
+            for(let j = 0; j < actual.length && !isFind; j++) {
+                isFind = entities[i] === actual[j] || (entities[i] != null && entities[i].deepEquals(actual[j]));
+            }
+            if(!isFind) missingEntities.push(entities[i]);
+        }
+        let isPass = missingEntities.length == 0 && actual.length >= entities.length;
         return {
-            message: () => isPass ? 'pass' : `actual [${actual}] must contain [${entities}]`,
+            message: () => isPass ? 
+'pass' : 
+`actual: 
+[${actual.map(e => e != null ? e.toDetailString() : 'null').join('\n')}] 
+must contain: 
+[${missingEntities.map(e => e != null ? e.toDetailString() : 'null').join('\n')}]`,
+            pass: isPass
+        };
+    }
+});
+
+expect.extend({
+    containsEntitiesInTheSameOrder(actual, ...entities) {
+        let missingEntities = [];
+        for(let i = 0, lastIndex = 0; i < entities.length; ++i) {
+            let isFind = false;
+            for(let j = lastIndex; j < actual.length && !isFind; ++j, lastIndex = j) {
+                isFind = entities[i] === actual[j] || (entities[i] != null && entities[i].deepEquals(actual[j]));
+            }
+            if(!isFind) missingEntities.push(entities[i]);
+        }
+        let isPass = missingEntities.length == 0 && actual.length >= entities.length;
+        return {
+            message: () => isPass ? 
+'pass' : 
+`actual: 
+[${actual.map(e => e != null ? e.toDetailString() : 'null').join('\n')}] 
+must contain: 
+[${missingEntities.map(e => e != null ? e.toDetailString() : 'null').join('\n')}]`,
             pass: isPass
         };
     }

@@ -9,6 +9,8 @@ const {Wallet} = require('./wallet.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
 const {Grid} = require('./store/grid.js');
+const {GardenBedCellLink} = require('./gardenBedCellLink.js');
+const {TomatoExplosion} = require('./tomatoDeath.js');
 
 const defaultSettings = {
     potato: {
@@ -16,19 +18,19 @@ const defaultSettings = {
             timeInMillis: 10000
         },
         immunity: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.05
         },
         satiety: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -43,38 +45,46 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 3,
+                intervalInSecond: 1,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'youth'
             }
         }
     },
     tomato: {
+        explosion: {
+            neighboursNumber: {
+                child: 1,
+                youth: 3,
+                adult: 6
+            },
+            timeInMillis: 1001
+        },
         immunity: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.05
         },
         satiety: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -89,25 +99,25 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 3,
+                intervalInSecond: 1,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'sprout'
             },
             chidlDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'child'
             },
             youthDetail: {
-                intervalInSecond: 40,
+                intervalInSecond: 90,
                 lifeCyleState: 'youth'
             }
         }
     },
     wallet: {
-        sum: 20,
+        sum: 1000,
         fertilizerPrice: 2,
         sprayerPrice: 2,
         seedsPrice: 3
@@ -127,10 +137,53 @@ module.exports.Fabric = class Fabric {
 
     constructor(settings) {
         this.settings = settings;
+
+        this.loadedComponents = {};
+        this.loadedComponents['GardenBedCellLink'] = props => new GardenBedCellLink(
+            props.cellX, 
+            props.cellY
+        );
+        this.loadedComponents['Immunity'] = props => new Immunity(
+            props.max, 
+            props.current, 
+            props.isSick, 
+            props.declineRatePerSeconds, 
+            props.probability
+        );
+        this.loadedComponents['PotatoGhost'] = props => new PotatoGhost(props.timeInMillis);
+        this.loadedComponents['Satiety'] = props => new Satiety(props.max, props.current, props.declineRatePerSeconds);
+        this.loadedComponents['Thirst'] = props => new Thirst(props.max, props.current, props.declineRatePerSeconds);
+        this.loadedComponents['VegetableMeta'] = props => new VegetableMeta(props.typeName);
+        this.loadedComponents['VegetableState'] = props => new VegetableState(
+            props.history.map(state => lifeCycleStates.findByName(state.name)),
+            props.stateDetails.map(state => 
+                new StateDetail(state.currentTimeInMillis, 
+                                state.intervalInSecond, 
+                                lifeCycleStates.findByName(state.lifeCycleState.name))
+            )
+        );
+        this.loadedComponents['TomatoExplosion'] = props => new TomatoExplosion(props.neighboursNumber);
+        this.loadedComponents['Wallet'] = props => new Wallet(props.sum, props.fertilizerPrice, props.sprayerPrice, props.seedsPrice);
+    }
+
+    restoreComponentBy(compName, props) {
+        return this.loadedComponents[compName](props);
     }
 
     potatoGhost() {
         return new PotatoGhost(this.settings.potato.ghost.timeInMillis);
+    }
+
+    tomatoExplosion(lifeCycleState) {
+        let explosionSettings = this.settings.tomato.explosion;
+        
+        let tomatoExplosion = null;
+        if(lifeCycleState == lifeCycleStates.child) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.child);
+        else if(lifeCycleState == lifeCycleStates.youth) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.youth);
+        else if(lifeCycleState == lifeCycleStates.adult) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.adult);
+        tomatoExplosion.timeInMillis = explosionSettings.timeInMillis;
+
+        return tomatoExplosion;
     }
 
     thirst(vegetableTypeName) {

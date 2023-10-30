@@ -1,6 +1,5 @@
 'use strict'
 
-const {Entity} = require('./entity.js');
 const {CommandBuffer} = require('./commandBuffer.js');
 const BitSet = require('bitset');
 const exceptions = require('../exception/exceptions.js');
@@ -209,6 +208,10 @@ module.exports.EntityComponentManager = class EntityComponentManager {
 
     createFilter() {
         return new EntityFilter(this.#componentsIdGenerator);
+    }
+
+    getEntityManager() {
+        return this.#entityManager;
     }
 
 

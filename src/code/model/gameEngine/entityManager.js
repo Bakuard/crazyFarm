@@ -32,4 +32,21 @@ module.exports.EntityManager = class EntityManager {
         return entity.equals(this.#entities[entity.personalId]);
     }
 
+    snapshot() {
+        let liveEntities = this.#entities.filter(entity => !this.#reusableEntityId.includes(entity.personalId));
+        let deadEntities = this.#entities.filter(entity => this.#reusableEntityId.includes(entity.personalId));
+        return {liveEntities, deadEntities};
+    }
+
+    restore(snapshot) {
+        this.#entities = new Array(snapshot.liveEntities.length + snapshot.deadEntities.length);
+        snapshot.liveEntities.forEach(entity => this.#entities[entity.personalId] = entity);
+        snapshot.deadEntities.reverse().forEach(entity => {
+            this.#entities[entity.personalId] = entity;
+            this.#reusableEntityId.push(entity.personalId);
+        });
+
+        return this;
+    }
+
 };

@@ -16,28 +16,40 @@ class Thirst {
 module.exports.Thirst = Thirst;
 
 module.exports.ThirstSystem = class ThirstSystem {
-    filter;
     constructor(entityComponentManager) {
         this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
     }
 
     update(groupName, world) {
+        let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();
+        let grid = manager.getSingletonEntity('grid');
 
-        for(let entity of world.getEntityComponentManager().select(this.filter)) {
+        for(let entity of manager.select(this.filter)) {
             let thirst = entity.get(Thirst);
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
-
-            if(eventManager.readEvent('bailer', 0)) {
-                thirst.current = thirst.max;
-            }
-
             if(thirst.current == 0) {
-                entity.get(VegetableState).history.push(lifeCycleStates.death);
+                entity.get(VegetableState).pushState(lifeCycleStates.death);
             }
         }
 
+        eventManager.forEachEvent('bailer', (event, index) => {
+            let vegetable = grid.get(event.cellX, event.cellY);
+            if(this.#canPour(vegetable)) {
+                let thirst = vegetable.get(Thirst);
+                thirst.current = thirst.max;
+            }
+        });
+
         eventManager.clearEventQueue('bailer');
+    }
+
+    #canPour(vegetable) {
+        return Boolean(
+            vegetable
+            && vegetable.hasComponents(Thirst, VegetableState)
+            && vegetable.get(VegetableState).current() != lifeCycleStates.death
+        );
     }
 };

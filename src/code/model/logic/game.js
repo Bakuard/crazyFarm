@@ -8,51 +8,63 @@ const {ImmunitySystem} = require('./immunity.js');
 const {PotatoDeathSystem} = require('./potatoDeath.js');
 const {TomatoDeathSystem} = require('./tomatoDeath.js');
 const {groups} = require('../gameEngine/gameLoop.js');
+const {GameCommandSystem} = require('./gameCommand.js');
 const {ShovelSystem} = require('./shovel.js');
 const {OutputSystem} = require('./output.js');
 const {GrowSystem} = require('./vegetableState.js');
 const {WorldLogger} = require('./worldLogger.js');
-const {InitLogicSystem} = require('./initLogic.js');
+const {InitSystem} = require('./init.js');
+const {LoadGameSystem} = require('./loadGame.js');
 const {newLogger} = require('../../conf/logConf.js');
-const {CommandRequest} = require('../../dto/dto.js');
+const {SaveGameSystem} = require('./saveGame.js');
 
 let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user, randomGenerator, settings) {
+    constructor(outputCallback, user, randomGenerator, gameRepository, timeUtil, settings) {
         this.user = user;
-        this.world = new World(1000);
+        this.gameRepository = gameRepository;
+        this.world = new World(1000, timeUtil);
         const manager = this.world.getEntityComponentManager();
 
-        let initLogic = new InitLogicSystem(settings);
-        let shovel = new ShovelSystem(manager);
+        let initLogic = new InitSystem(settings);
+        let loadGame = new LoadGameSystem(user._id);
+        let gameCommand = new GameCommandSystem();
+        let shovel = new ShovelSystem();
         let plantNewVegetableSystem = new PlantNewVegetableSystem(randomGenerator);
+        let grow = new GrowSystem(manager);
         let thirst = new ThirstSystem(manager);
         let satiety = new SatietySystem(manager);
         let immunity = new ImmunitySystem(manager, randomGenerator);
+        let tomatoDeath = new TomatoDeathSystem(manager, randomGenerator);
         let potatoDeath = new PotatoDeathSystem(manager);
-        let tomatoDeath = new TomatoDeathSystem(manager);
-        let grow = new GrowSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(outputCallback);
+        let saveGame = new SaveGameSystem(user._id, gameRepository, timeUtil);
 
         this.world.getSystemManager().
-            putSystem('InitLogicSystem', initLogic.update.bind(initLogic), groups.start).
+            putSystem('InitSystem', initLogic.update.bind(initLogic), groups.start).
+            putSystem('LoadGameSystem', loadGame.update.bind(loadGame), groups.start).
+            putSystem('GameCommandSystem', gameCommand.update.bind(gameCommand), groups.update).
             putSystem('ShovelSystem', shovel.update.bind(shovel), groups.update).
             putSystem('PlantNewVegetableSystem', plantNewVegetableSystem.update.bind(plantNewVegetableSystem), groups.update).
             putSystem('GrowSystem', grow.update.bind(grow), groups.update).
             putSystem('ThirstSystem', thirst.update.bind(thirst), groups.update).
             putSystem('SatietySystem', satiety.update.bind(satiety), groups.update).
             putSystem('ImmunitySystem', immunity.update.bind(immunity), groups.update).
-            putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('TomatoDeathSystem', tomatoDeath.update.bind(tomatoDeath), groups.update).
+            putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
-            putSystem('OutputSystem', output.update.bind(output), groups.update);
+            putSystem('OutputSystem', output.update.bind(output), groups.update).
+            putSystem('SaveGameSystem', saveGame.update.bind(saveGame), groups.stop);
     }
 
-    start() {
-        logger.info('userId=%s; start game', this.user._id);
+    async start() {
+        logger.info('userId=%s: start game', this.user._id);
+
+        let fullGameState = await this.gameRepository.load(this.user._id);
+        this.world.getEntityComponentManager().putSingletonEntity('fullGameState', fullGameState);
         this.world.getGameLoop().start();
     }
 
@@ -63,7 +75,7 @@ module.exports.Game = class Game {
 
     execute(command) {
         logger.info('userId=%s; execute game command=%s', this.user._id, command);
-        this.world.getEventManager().writeEvent(command.tool, new CommandRequest(command));
+        this.world.getEventManager().writeEvent('rawCommand', command);
     }
 
 };
