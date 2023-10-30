@@ -55,7 +55,7 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-describe(`grow vegetable to 'adult' state`, () => {
+describe(`integration tests`, () => {
     beforeAll(async () => {
         const dbConnector = new DBConnector();
         await clearDB(dbConnector);
@@ -103,7 +103,7 @@ describe(`grow vegetable to 'adult' state`, () => {
         {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 13, 
          expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER'))}
     
-    ])(`step $#`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
+    ])(`grow vegetable to 'adult' state: step $#`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
         test(`eventNames: [${eventNames}], 
               elapsedMillis: ${elapsedMillis},
               randomValue: ${randomValue}

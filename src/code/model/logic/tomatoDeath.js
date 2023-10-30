@@ -36,9 +36,14 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
             let meta = vegetable.get(VegetableMeta);
             let state = vegetable.get(VegetableState);
             
-            if(meta.typeName == 'Tomato' && state.current() == death && state.previousIsOneOf(child, youth, adult)) {
-                vegetable.addTags('exploded');
-                stack.push(vegetable);
+            if(meta.typeName == 'Tomato' && state.current() == death) {
+                if(state.previousIsOneOf(child, youth, adult)) {
+                    vegetable.addTags('exploded');
+                    stack.push(vegetable);
+                } else if(state.previous() == sprout) {
+                    vegetable.remove(Immunity, Satiety, Thirst);
+                    buffer.bindEntity(vegetable);
+                }
             }
         }
 
