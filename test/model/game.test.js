@@ -55,7 +55,7 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-describe(`integration tests`, () => {
+describe(`grow vegetable to 'adult' state: step $#`, () => {
     beforeAll(async () => {
         const dbConnector = new DBConnector();
         await clearDB(dbConnector);
@@ -103,6 +103,47 @@ describe(`integration tests`, () => {
         {eventNames: [], elapsedMillis: 39000, randomValue: 0.3, expectedMoney: 13, 
          expectedVegetable: gardenBedCellDto(0, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER'))}
     
+    ])(`grow vegetable to 'adult' state: step $#`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
+        test(`eventNames: [${eventNames}], 
+              elapsedMillis: ${elapsedMillis},
+              randomValue: ${randomValue}
+              => expectedMoney: ${expectedMoney},
+                 expectedVegetable: ${JSON.stringify(expectedVegetable)}`, 
+        () => {
+            randomGeneratorReturnedValue = randomValue;
+            eventNames.forEach(eventName => game.execute({tool: eventName, cell: '0-0'}));
+            timeUtil.advanceTime(elapsedMillis);
+    
+            expect(outputData.containers[0]).toEqual(expectedVegetable);
+            expect(outputData.player.cash).toEqual(expectedMoney);
+        });
+    });
+});
+
+
+describe(`death of several vegetables: step $#`, () => {
+    beforeAll(async () => {
+        const dbConnector = new DBConnector();
+        await clearDB(dbConnector);
+
+        timeUtil = createTimeUtil();
+        game = new Game(
+            (GameResponse) => outputData = GameResponse, 
+            {_id: '123'}, 
+            () => randomGeneratorReturnedValue,
+            new GameRepository(dbConnector),
+            timeUtil,
+            settings
+        );
+    
+        game.world.getSystemManager().removeSystem('WorldLogger');
+
+        await game.start();
+    });
+
+    describe.each([
+        {eventNames: [], elapsedMillis: 100000, randomValue: 0.3, expectedMoney: 20, 
+         expectedVegetable: gardenBedCellDto(0, 0, false, null)},
     ])(`grow vegetable to 'adult' state: step $#`, ({eventNames, elapsedMillis, randomValue, expectedMoney, expectedVegetable}) => {
         test(`eventNames: [${eventNames}], 
               elapsedMillis: ${elapsedMillis},
