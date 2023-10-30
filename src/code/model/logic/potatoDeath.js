@@ -33,6 +33,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
             let cell = entity.get(GardenBedCellLink);
             if(meta.typeName == 'Potato' && (state.current() == death || entity.hasTags('exploded'))) {
                 entity.remove(Immunity, Satiety, Thirst);
+                buffer.bindEntity(entity);
                 if(state.current() == death && state.previousIsOneOf(child, youth, adult) ||
                         entity.hasTags('exploded') && state.currentIsOneOf(child, youth, adult)) {
                     entity.put(fabric.potatoGhost());

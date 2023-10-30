@@ -18,19 +18,19 @@ const defaultSettings = {
             timeInMillis: 10000
         },
         immunity: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.05
         },
         satiety: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -45,7 +45,7 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 2,
+                intervalInSecond: 1,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {
@@ -72,19 +72,19 @@ const defaultSettings = {
             timeInMillis: 1001
         },
         immunity: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.05
         },
         satiety: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 60,
-            alertLevel1: 30,
+            max: 80,
+            alertLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -99,7 +99,7 @@ const defaultSettings = {
         },
         vegetableState: {
             seedDetail: {
-                intervalInSecond: 2,
+                intervalInSecond: 1,
                 lifeCyleState: 'seed'
             },
             sproutDetail: {

@@ -1,6 +1,14 @@
 'use strict'
 
 module.exports.Grid = class Grid {
+    static of(width, height, ...items) {
+        let grid = new Grid(width, height);
+        for(let i = 0; i < grid.cellsNumber() && i < items.length; i++) {
+            grid.#data[i] = items[i];
+        }
+        return grid;
+    }
+
     #width;
     #height;
     #data;

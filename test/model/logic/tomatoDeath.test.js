@@ -187,7 +187,7 @@ describe.each([
             {cellX: 2, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
             {cellX: 1, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
             {cellX: 2, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
-            {cellX: 0, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true}
+            {cellX: 0, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: false}
         ]
     }
 ])(`update(groupName, world):`,

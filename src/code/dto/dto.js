@@ -88,9 +88,9 @@ class VegetableResponse {
                 vegetable.hasTags('exploded')) this.stage = 7;
 
         if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
-            if(vegetable.get(Thirst).current < 30) this.needs.push('THIRST');
-            if(vegetable.get(Satiety).current < 30) this.needs.push('HUNGER');
-            if(vegetable.get(Immunity).current < 30) this.needs.push('SICKNESS');
+            if(vegetable.get(Thirst).current <= 30) this.needs.push('THIRST');
+            if(vegetable.get(Satiety).current <= 30) this.needs.push('HUNGER');
+            if(vegetable.get(Immunity).current <= 30) this.needs.push('SICKNESS');
         }
     }
 }
@@ -99,7 +99,7 @@ module.exports.VegetableResponse = VegetableResponse;
 class GardenBedCellResponse {
     constructor(x, y, vegetable) {
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.hasComponents(PotatoGhost) || vegetable?.hasComponents(TomatoExplosion));
+        this.isBlocked = Boolean(vegetable?.hasComponents(PotatoGhost));
         this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }
