@@ -17,7 +17,7 @@ module.exports.PotatoGhost = PotatoGhost;
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
         this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta, Immunity, Satiety, Thirst);
-        this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost);
+        this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost, GardenBedCellLink);
     }
 
     update(groupName, world) {

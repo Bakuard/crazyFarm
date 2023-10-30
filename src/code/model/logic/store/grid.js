@@ -32,6 +32,10 @@ module.exports.Grid = class Grid {
         return this.#height;
     }
 
+    cellsNumber() {
+        return this.#width * this.#height;
+    }
+
     fill(callback) {
         for(let x = 0; x < this.#width; x++) {
             for(let y = 0; y < this.#height; y++) {

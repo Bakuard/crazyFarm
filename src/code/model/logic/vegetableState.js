@@ -137,7 +137,7 @@ module.exports.GrowSystem = class GrowSystem {
 
     #isSleepingSeed(vegetable) {
         return vegetable
-            && vegetable.hasComponents(VegetableState)
+            && vegetable.hasComponents(VegetableState, VegetableMeta)
             && vegetable.get(VegetableState).current() == lifeCycleStates.sleepingSeed;
     }
 };

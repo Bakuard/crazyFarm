@@ -64,9 +64,12 @@ const defaultSettings = {
     },
     tomato: {
         explosion: {
-            child: 1,
-            youth: 3,
-            adult: 6
+            neighboursNumber: {
+                child: 1,
+                youth: 3,
+                adult: 6
+            },
+            timeInMillis: 1001
         },
         immunity: {
             max: 60,
@@ -174,9 +177,13 @@ module.exports.Fabric = class Fabric {
     tomatoExplosion(lifeCycleState) {
         let explosionSettings = this.settings.tomato.explosion;
         
-        if(lifeCycleState == lifeCycleStates.child) return new TomatoExplosion(explosionSettings.child);
-        else if(lifeCycleState == lifeCycleStates.youth) return new TomatoExplosion(explosionSettings.youth);
-        else if(lifeCycleState == lifeCycleStates.adult) return new TomatoExplosion(explosionSettings.adult);
+        let tomatoExplosion = null;
+        if(lifeCycleState == lifeCycleStates.child) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.child);
+        else if(lifeCycleState == lifeCycleStates.youth) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.youth);
+        else if(lifeCycleState == lifeCycleStates.adult) tomatoExplosion = new TomatoExplosion(explosionSettings.neighboursNumber.adult);
+        tomatoExplosion.timeInMillis = explosionSettings.timeInMillis;
+
+        return tomatoExplosion;
     }
 
     thirst(vegetableTypeName) {
