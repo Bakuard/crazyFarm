@@ -93,8 +93,8 @@ describe.each([
     ({state, previousState, hasGrowComps, hasGhostComp}) => {
         beforeEach(beforeEachTest);
 
-        test(`state ${state},
-              previousState ${previousState}
+        test(`state ${state.name},
+              previousState ${previousState?.name}
               => hasGrowComps ${hasGrowComps},
                  hasGhostComp ${hasGhostComp}`,
         () => {
@@ -111,14 +111,16 @@ describe.each([
 
             let system = new PotatoDeathSystem(manager);
             system.update('update', worldMock);
+            let generator = manager.select(manager.createFilter().all(VegetableMeta));
+            let actual = [...generator][0];
 
-            expect(entity.hasComponents(Immunity)).toBe(hasGrowComps);
-            expect(entity.hasComponents(Satiety)).toBe(hasGrowComps);
-            expect(entity.hasComponents(Thirst)).toBe(hasGrowComps);
-            expect(entity.hasComponents(PotatoGhost)).toBe(hasGhostComp);
-            expect(entity.hasComponents(VegetableState)).toBe(true);
-            expect(entity.hasComponents(GardenBedCellLink)).toBe(true);
-            expect(entity.hasComponents(VegetableMeta)).toBe(true);
+            expect(actual.hasComponents(Immunity)).toBe(hasGrowComps);
+            expect(actual.hasComponents(Satiety)).toBe(hasGrowComps);
+            expect(actual.hasComponents(Thirst)).toBe(hasGrowComps);
+            expect(actual.hasComponents(PotatoGhost)).toBe(hasGhostComp);
+            expect(actual.hasComponents(VegetableState)).toBe(true);
+            expect(actual.hasComponents(GardenBedCellLink)).toBe(true);
+            expect(actual.hasComponents(VegetableMeta)).toBe(true);
         });
     }
 );

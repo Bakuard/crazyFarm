@@ -2,14 +2,20 @@
 
 const {VegetableMeta} = require('./vegetableMeta');
 
+function LifeCycleState(ordinal, name) {
+    return Object.freeze({
+        ordinal,
+        name
+    });
+}
 let lifeCycleStates = {
-    sleepingSeed: Object.freeze({ordinal: 0, name: 'sleepingSeed'}),
-    seed: Object.freeze({ordinal: 1, name: 'seed'}),
-    sprout: Object.freeze({ordinal: 2, name: 'sprout'}),
-    child: Object.freeze({ordinal: 3, name: 'child'}),
-    youth: Object.freeze({ordinal: 4, name: 'youth'}),
-    adult: Object.freeze({ordinal: 5, name: 'adult'}),
-    death: Object.freeze({ordinal: 6, name: 'death'}),
+    sleepingSeed: new LifeCycleState(0, 'sleepingSeed'),
+    seed: new LifeCycleState(1, 'seed'),
+    sprout: new LifeCycleState(2, 'sprout'),
+    child: new LifeCycleState(3, 'child'),
+    youth: new LifeCycleState(4, 'youth'),
+    adult: new LifeCycleState(5, 'adult'),
+    death: new LifeCycleState(6, 'death'),
     findByName(stateName) {
         return this.allValues.find(state => state.name == stateName)
     },
@@ -115,9 +121,12 @@ module.exports.GrowSystem = class GrowSystem {
                 vegetableState.pushState(lifeCycleStates.seed);
                 this.#nextState(vegetableState, elapsedTime);
                 buffer.bindEntity(vegetable);
+
+                eventManager.markEvent('bailer', i, 'emptyBailer');
             }
         }
 
+        eventManager.clearEventQueue('bailer', 'emptyBailer');
         manager.flush(buffer);
     }
 

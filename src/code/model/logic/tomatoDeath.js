@@ -58,7 +58,9 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                 grid.remove(cell.cellX, cell.cellY);
                 buffer.removeEntity(vegetable);
             } else if(state.current() == death && state.previousIsOneOf(child, youth, adult) || state.currentIsOneOf(child, youth, adult)) {
-                let explosion = fabric.tomatoExplosion(state.current());
+                if(state.currentIsOneOf(child, youth, adult)) state.pushState(death);
+
+                let explosion = fabric.tomatoExplosion(state.previous());
                 explosion.timeInMillis -= elapsedTime;
                 let neighbours = grid.getRandomNeigboursFor(cell.cellX, cell.cellY, explosion.neighboursNumber, this.randomGenerator);
                 neighbours.
@@ -77,8 +79,6 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                     grid.remove(cell.cellX, cell.cellY);
                     buffer.removeEntity(vegetable);
                 }
-
-                if(state.currentIsOneOf(child, youth, adult))  state.pushState(death);
             }
         }
 
