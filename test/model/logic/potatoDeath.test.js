@@ -226,7 +226,7 @@ describe.each([
                 new GardenBedCellLink(0, 0),
                 vegetableState(previousState, state)
             );
-            if(hasGrowComps) entity.put( Immunity.of(60, 1, 0.2), Satiety.of(60, 1), Thirst.of(60, 1) );
+            if(hasGrowComps) entity.put( Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30) );
             if(isExploded) entity.addTags('exploded');
             if(alreadyHasGhostComp) entity.put( new PotatoGhost(10000) );
             manager.bindEntity(entity);

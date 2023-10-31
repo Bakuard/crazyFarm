@@ -53,9 +53,9 @@ function createAndPrepareTomato(cellX, cellY, currentState, previousState) {
         new VegetableMeta('Tomato'),
         new GardenBedCellLink(cellX, cellY),
         vegetableState([previousState, currentState]),
-        Immunity.of(60, 1, 0.2),
-        Satiety.of(60, 1),
-        Thirst.of(60, 1)
+        Immunity.of(60, 1, 0.2, 30),
+        Satiety.of(60, 1, 30),
+        Thirst.of(60, 1, 30)
     );
     manager.bindEntity(vegetable);
     grid.write(cellX, cellY, vegetable);

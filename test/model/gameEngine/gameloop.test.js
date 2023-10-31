@@ -9,7 +9,7 @@ test(`fixedInterval:
             let fixedInterval = new FixedInterval(1000);
             let callback = jest.fn(() => {});
 
-            fixedInterval.execute(callback, 500);
+            fixedInterval.execute(callback, 999);
 
             expect(callback.mock.calls).toHaveLength(0);
         });
@@ -33,7 +33,7 @@ test(`fixedInterval:
             let fixedInterval = new FixedInterval(1000);
             let callback = jest.fn(() => {});
 
-            fixedInterval.execute(callback, 10000);
+            fixedInterval.execute(callback, 10001);
 
             expect(callback.mock.calls).toHaveLength(10);
         });

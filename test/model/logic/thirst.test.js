@@ -128,7 +128,7 @@ describe.each([
 function createVegetable(cellX, cellY, maxThirst, currentThirst, declineThirstRatePerSeconds) {
     return manager.createEntity().put(
         vegetableState(),
-        new Thirst(maxThirst, currentThirst, declineThirstRatePerSeconds),
+        new Thirst(maxThirst, currentThirst, declineThirstRatePerSeconds, 1),
         new GardenBedCellLink(cellX, cellY)
     );
 }

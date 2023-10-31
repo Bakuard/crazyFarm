@@ -20,18 +20,18 @@ const defaultSettings = {
         },
         immunity: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1,
             probability: 0.05
         },
         satiety: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -74,18 +74,18 @@ const defaultSettings = {
         },
         immunity: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1,
             probability: 0.05
         },
         satiety: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 80,
-            alertLevel1: 40,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1
         },
         price: {
@@ -128,7 +128,7 @@ const defaultSettings = {
         height: 3
     },
     gameLoop: {
-        frameDurationInMillis: 1000
+        frameDurationInMillis: 200
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -152,11 +152,12 @@ module.exports.Fabric = class Fabric {
             props.current, 
             props.isSick, 
             props.declineRatePerSeconds, 
-            props.probability
+            props.probability,
+            props.alarmLevel
         );
         this.loadedComponents['PotatoGhost'] = props => new PotatoGhost(props.timeInMillis);
-        this.loadedComponents['Satiety'] = props => new Satiety(props.max, props.current, props.declineRatePerSeconds);
-        this.loadedComponents['Thirst'] = props => new Thirst(props.max, props.current, props.declineRatePerSeconds);
+        this.loadedComponents['Satiety'] = props => new Satiety(props.max, props.current, props.declineRatePerSeconds, props.alarmLevel);
+        this.loadedComponents['Thirst'] = props => new Thirst(props.max, props.current, props.declineRatePerSeconds, props.alarmLevel);
         this.loadedComponents['VegetableMeta'] = props => new VegetableMeta(props.typeName);
         this.loadedComponents['VegetableState'] = props => new VegetableState(
             props.history.map(state => lifeCycleStates.findByName(state.name)),
@@ -166,7 +167,7 @@ module.exports.Fabric = class Fabric {
                                 lifeCycleStates.findByName(state.lifeCycleState.name))
             )
         );
-        this.loadedComponents['TomatoExplosion'] = props => new TomatoExplosion(props.neighboursNumber);
+        this.loadedComponents['TomatoExplosion'] = props => new TomatoExplosion(props.neighboursNumber, props.timeInMillis);
         this.loadedComponents['Wallet'] = props => new Wallet(props.sum, props.fertilizerPrice, props.sprayerPrice, props.seedsPrice);
     }
 
@@ -195,7 +196,8 @@ module.exports.Fabric = class Fabric {
 
         return Thirst.of(
             vegetableSettings.thirst.max, 
-            vegetableSettings.thirst.declineRatePerSeconds
+            vegetableSettings.thirst.declineRatePerSeconds,
+            vegetableSettings.thirst.alarmLevel1
         );
     }
 
@@ -204,7 +206,8 @@ module.exports.Fabric = class Fabric {
 
         return Satiety.of(
             vegetableSettings.satiety.max, 
-            vegetableSettings.satiety.declineRatePerSeconds
+            vegetableSettings.satiety.declineRatePerSeconds,
+            vegetableSettings.satiety.alarmLevel1
         );
     }
 
@@ -214,7 +217,8 @@ module.exports.Fabric = class Fabric {
         return Immunity.of(
             vegetableSettings.immunity.max, 
             vegetableSettings.immunity.declineRatePerSeconds,
-            vegetableSettings.immunity.probability
+            vegetableSettings.immunity.probability,
+            vegetableSettings.immunity.alarmLevel1
         );
     }  
 

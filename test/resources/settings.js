@@ -7,18 +7,18 @@ module.exports.settings = {
         },
         immunity: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1,
             probability: 0.2
         },
         satiety: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         price: {
@@ -61,18 +61,18 @@ module.exports.settings = {
         },
         immunity: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1,
             probability: 0.2
         },
         satiety: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 60,
-            alertLevel1: 30,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         price: {
@@ -115,6 +115,6 @@ module.exports.settings = {
         height: 3
     },
     gameLoop: {
-        frameDurationInMillis: 1000
+        frameDurationInMillis: 200
     }
 };
