@@ -31,17 +31,38 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
             let meta = entity.get(VegetableMeta);
             let state = entity.get(VegetableState);
             let cell = entity.get(GardenBedCellLink);
-            if(meta.typeName == 'Potato' && (state.current() == death || entity.hasTags('exploded'))) {
-                entity.remove(Immunity, Satiety, Thirst);
-                buffer.bindEntity(entity);
-                if(state.current() == death && state.previousIsOneOf(child, youth, adult) ||
-                        entity.hasTags('exploded') && state.currentIsOneOf(child, youth, adult)) {
-                    entity.put(fabric.potatoGhost());
-                    buffer.bindEntity(entity);
-                } else if(entity.hasTags('exploded') && 
-                        (state.previous() == sprout || state.currentIsOneOf(sleepingSeed, seed, sprout))) {
-                    grid.remove(cell.cellX, cell.cellY);
-                    buffer.removeEntity(entity);
+
+            if(meta.typeName == 'Potato') {
+                if(entity.hasTags('exploded')) {
+                    if(state.currentIsOneOf(sleepingSeed, seed, sprout)) {
+                        grid.remove(cell.cellX, cell.cellY);
+                        buffer.removeEntity(entity);
+                    } else if(state.currentIsOneOf(child, youth, adult)) {
+                        entity.remove(Immunity, Satiety, Thirst);
+                        entity.put(fabric.potatoGhost());
+                        state.pushState(death);
+                        buffer.bindEntity(entity);
+                    } else if(state.current() == death && state.previousIsOneOf(sleepingSeed, seed, sprout)) {
+                        grid.remove(cell.cellX, cell.cellY);
+                        buffer.removeEntity(entity);
+                    } else if(state.current() == death && state.previousIsOneOf(child, youth, adult)) {
+                        entity.remove(Immunity, Satiety, Thirst);
+                        entity.put(fabric.potatoGhost());
+                        state.pushState(death);
+                        buffer.bindEntity(entity);
+                    }
+                } else if(state.current() == death) {
+                    if(state.previousIsOneOf(child, youth, adult)) {
+                        entity.remove(Immunity, Satiety, Thirst);
+                        entity.put(fabric.potatoGhost());
+                        buffer.bindEntity(entity);
+                    } else if(state.previousIsOneOf(sleepingSeed, seed)) {
+                        grid.remove(cell.cellX, cell.cellY);
+                        buffer.removeEntity(entity);
+                    } else if(state.previous() == sprout) {
+                        entity.remove(Immunity, Satiety, Thirst);
+                        buffer.bindEntity(entity);
+                    }
                 }
             }
         }
