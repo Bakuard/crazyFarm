@@ -113,5 +113,8 @@ module.exports.settings = {
     grid: {
         width: 4,
         height: 3
+    },
+    gameLoop: {
+        frameDurationInMillis: 1000
     }
 };

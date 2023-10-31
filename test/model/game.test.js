@@ -2,6 +2,7 @@ const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
+const { Fabric } = require('../../src/code/model/logic/fabric.js');
 
 let game = null;
 let outputData = null;
@@ -12,7 +13,7 @@ function createTimeUtil() {
     return {
         elapsedMillis: 0,
         callbacks: [],
-        infiniteLoop(callback, iterationDurationInMillis) {
+        infiniteLoop(callback) {
             this.callbacks.push(callback);
             return callback;
         },
@@ -57,21 +58,22 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 
 async function beforeEachTestScenario() {
     const dbConnector = new DBConnector();
-        await clearDB(dbConnector);
+    await clearDB(dbConnector);
 
-        timeUtil = createTimeUtil();
-        game = new Game(
-            (GameResponse) => outputData = GameResponse, 
-            {_id: '123'}, 
-            () => randomGeneratorReturnedValue,
-            new GameRepository(dbConnector),
-            timeUtil,
-            settings
-        );
-    
-        game.world.getSystemManager().removeSystem('WorldLogger');
+    timeUtil = createTimeUtil();
+    const fabric = new Fabric(settings);
+    fabric.timeUtil = () => timeUtil;
+    fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
+    game = new Game(
+        (GameResponse) => outputData = GameResponse, 
+        {_id: '123'}, 
+        new GameRepository(dbConnector),
+        fabric
+    );
 
-        await game.start();
+    game.world.getSystemManager().removeSystem('WorldLogger');
+
+    await game.start();
 }
 
 describe(`grow some vegetables to 'sprout' then die,

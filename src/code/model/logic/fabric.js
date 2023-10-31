@@ -11,6 +11,7 @@ const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState
 const {Grid} = require('./store/grid.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {TomatoExplosion} = require('./tomatoDeath.js');
+const {TimeUtil} = require('../gameEngine/timeUtil.js');
 
 const defaultSettings = {
     potato: {
@@ -125,6 +126,9 @@ const defaultSettings = {
     grid: {
         width: 4,
         height: 3
+    },
+    gameLoop: {
+        frameDurationInMillis: 1000
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -136,7 +140,7 @@ module.exports.Fabric = class Fabric {
     }
 
     constructor(settings) {
-        this.settings = settings;
+        this.settings = settings ?? defaultSettings;
 
         this.loadedComponents = {};
         this.loadedComponents['GardenBedCellLink'] = props => new GardenBedCellLink(
@@ -281,6 +285,19 @@ module.exports.Fabric = class Fabric {
             this.settings.grid.width,
             this.settings.grid.height
         );
+    }
+
+    timeUtil() {
+        if(!this.timeUtilObj) this.timeUtilObj = new TimeUtil();
+        return this.timeUtilObj;
+    }
+
+    frameDurationInMillis() {
+        return this.settings.gameLoop.frameDurationInMillis;
+    }
+
+    randomGenerator() {
+        return Math.random;
     }
 
 
