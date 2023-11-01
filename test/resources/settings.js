@@ -115,6 +115,6 @@ module.exports.settings = {
         height: 3
     },
     gameLoop: {
-        frameDurationInMillis: 200
+        frameDurationInMillis: 100
     }
 };
