@@ -27,27 +27,32 @@ module.exports.SatietySystem = class SatietySystem {
     }
 
     update(systemName, groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let eventManager = world.getEventManager();
-        let elapsedTime = world.getGameLoop().getElapsedTime();
-        let grid = manager.getSingletonEntity('grid');
-        let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+        const manager = world.getEntityComponentManager();
+        const eventManager = world.getEventManager();
+        const elapsedTime = world.getGameLoop().getElapsedTime();
+        const grid = manager.getSingletonEntity('grid');
+        const wallet = manager.getSingletonEntity('wallet').get(Wallet);
         
         for(let entity of manager.select(this.filter)) {
-            let satiety = entity.get(Satiety);
+            const satiety = entity.get(Satiety);
+            const isAlarm = satiety.isAlarm();
+
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
-            if(satiety.current == 0) {
-                entity.get(VegetableState).pushState(lifeCycleStates.death);
-            }
+
+            if(satiety.current == 0) entity.get(VegetableState).pushState(lifeCycleStates.death);
+
+            if(satiety.isAlarm() != isAlarm) eventManager.setFlag('gameStateWasChangedEvent');
         }
 
         eventManager.forEachEvent('fertilizer', (event, index) => {
-            let vegetable = grid.get(event.cellX, event.cellY);
+            const vegetable = grid.get(event.cellX, event.cellY);
             if(this.#canFertilize(vegetable, wallet)) {
-                let satiety = vegetable.get(Satiety);
+                const satiety = vegetable.get(Satiety);
 
                 satiety.current = satiety.max;
                 wallet.sum -= wallet.fertilizerPrice;
+
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         });
 

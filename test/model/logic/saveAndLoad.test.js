@@ -18,6 +18,7 @@ const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js'
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {settings} = require('../../resources/settings.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 let mockGameRepository = null;
 let manager = null;
@@ -25,8 +26,10 @@ let worldMock = null;
 let wallet = null;
 let grid = null;
 let fabric = null;
+let eventManager = null;
 
 function createNewEmptyGameWorld() {
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     mockGameRepository = {
         save: async function save(fullGameState) {
@@ -35,7 +38,8 @@ function createNewEmptyGameWorld() {
         load: async function load(userId) {}
     }
     worldMock = {
-        getEntityComponentManager: () => manager
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
     };
     wallet = manager.createEntity().put(new Wallet(10, 2, 2, 3));
     manager.putSingletonEntity('wallet', wallet);

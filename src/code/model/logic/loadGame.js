@@ -12,15 +12,16 @@ module.exports.LoadGameSystem = class LoadGameSystem {
     }
 
     update(systemName, groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let entityManager = manager.getEntityManager();
+        const eventManager = world.getEventManager();
+        const manager = world.getEntityComponentManager();
+        const entityManager = manager.getEntityManager();
 
-        let fabric = manager.getSingletonEntity('fabric');
-        let grid = manager.getSingletonEntity('grid');
-        let wallet = manager.getSingletonEntity('wallet');
-        let fullGameState = manager.getSingletonEntity('fullGameState');
+        const fabric = manager.getSingletonEntity('fabric');
+        const grid = manager.getSingletonEntity('grid');
+        const wallet = manager.getSingletonEntity('wallet');
+        const fullGameState = manager.getSingletonEntity('fullGameState');
 
-        let loadEntity = this.#loadEntity;
+        const loadEntity = this.#loadEntity;
         if(fullGameState) {
             wallet.put(fabric.restoreComponentBy('Wallet', fullGameState.wallet));
             let snapshot = {
@@ -37,6 +38,8 @@ module.exports.LoadGameSystem = class LoadGameSystem {
             });
 
             manager.putSingletonEntity('fullGameState', null);
+
+            eventManager.setFlag('gameStateWasChangedEvent');
 
             logger.info('Load game for user %s', this.userId);
         }

@@ -10,16 +10,16 @@ module.exports.ShovelSystem = class ShovelSystem {
     }
 
     update(systemName, groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let eventManager = world.getEventManager();
-        let buffer = manager.createCommandBuffer();
-        let fabric = manager.getSingletonEntity('fabric');
-        let wallet = manager.getSingletonEntity('wallet');
-        let grid = manager.getSingletonEntity('grid');
+        const manager = world.getEntityComponentManager();
+        const eventManager = world.getEventManager();
+        const buffer = manager.createCommandBuffer();
+        const fabric = manager.getSingletonEntity('fabric');
+        const wallet = manager.getSingletonEntity('wallet');
+        const grid = manager.getSingletonEntity('grid');
 
-        let canBeDugUp = this.#canBeDugUp;
+        const canBeDugUp = this.#canBeDugUp;
         eventManager.forEachEvent('shovel', (event, index) => {
-            let vegetable = grid.get(event.cellX, event.cellY);
+            const vegetable = grid.get(event.cellX, event.cellY);
             if(canBeDugUp(vegetable)) {
                 grid.remove(event.cellX, event.cellY);
                 buffer.removeEntity(vegetable);
@@ -28,6 +28,8 @@ module.exports.ShovelSystem = class ShovelSystem {
                     fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
                     vegetable.get(VegetableState).current()
                 );
+
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         });
 

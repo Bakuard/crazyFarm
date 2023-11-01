@@ -29,7 +29,7 @@ test(`putSystem(name, updateMethod, ...groups):
         systemManager.updateGroup('groupB');
         systemManager.updateGroup('groupC');
 
-        expect(systemMock.mock.calls).toHaveLength(3);
+        expect(systemMock).toHaveBeenCalledTimes(3);
         expect(systemMock.mock.calls[0][1]).toEqual('groupA');
         expect(systemMock.mock.calls[1][1]).toEqual('groupB');
         expect(systemMock.mock.calls[2][1]).toEqual('groupC');

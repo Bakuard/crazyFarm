@@ -26,6 +26,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
 
     update(systemName, groupName, world) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
+        const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
         const grid = manager.getSingletonEntity('grid');
@@ -33,8 +34,8 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
 
         const stack = [];
         for(let vegetable of manager.select(this.aliveVegetables)) {
-            let meta = vegetable.get(VegetableMeta);
-            let state = vegetable.get(VegetableState);
+            const meta = vegetable.get(VegetableMeta);
+            const state = vegetable.get(VegetableState);
             
             if(meta.typeName == 'Tomato' && state.current() == death) {
                 if(state.previousIsOneOf(child, youth, adult)) {
@@ -43,26 +44,28 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                 } else if(state.previous() == sprout) {
                     vegetable.remove(Immunity, Satiety, Thirst);
                     buffer.bindEntity(vegetable);
+                    eventManager.setFlag('gameStateWasChangedEvent');
                 }
             }
         }
 
-        let elapsedTime = world.getGameLoop().getElapsedTime();
+        const elapsedTime = world.getGameLoop().getElapsedTime();
         while(stack.length > 0) {
-            let vegetable = stack.pop();
-            let state = vegetable.get(VegetableState);
-            let cell = vegetable.get(GardenBedCellLink);
+            const vegetable = stack.pop();
+            const state = vegetable.get(VegetableState);
+            const cell = vegetable.get(GardenBedCellLink);
 
             if(state.currentIsOneOf(sleepingSeed, seed, sprout) || (state.current() == death && state.previous() == sprout)) {
                 vegetable.remove(Immunity, Satiety, Thirst);
                 grid.remove(cell.cellX, cell.cellY);
                 buffer.removeEntity(vegetable);
+                eventManager.setFlag('gameStateWasChangedEvent');
             } else if(state.current() == death && state.previousIsOneOf(child, youth, adult) || state.currentIsOneOf(child, youth, adult)) {
                 if(state.currentIsOneOf(child, youth, adult)) state.pushState(death);
 
-                let explosion = fabric.tomatoExplosion(state.previous());
+                const explosion = fabric.tomatoExplosion(state.previous());
                 explosion.timeInMillis -= elapsedTime;
-                let neighbours = grid.getRandomNeigboursFor(cell.cellX, cell.cellY, explosion.neighboursNumber, this.randomGenerator);
+                const neighbours = grid.getRandomNeigboursFor(cell.cellX, cell.cellY, explosion.neighboursNumber, this.randomGenerator);
                 neighbours.
                     filter(({value: neighbour}) => neighbour && neighbour.hasComponents(VegetableMeta) && !neighbour.hasTags('exploded')).
                     forEach(({value: neighbour}) => {
@@ -75,21 +78,24 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                 vegetable.put(explosion);
                 if(explosion.timeInMillis > 0) {
                     buffer.bindEntity(vegetable);
+                    eventManager.setFlag('gameStateWasChangedEvent');
                 } else {
                     grid.remove(cell.cellX, cell.cellY);
                     buffer.removeEntity(vegetable);
+                    eventManager.setFlag('gameStateWasChangedEvent');
                 }
             }
         }
 
         for(let tomato of manager.select(this.explodedTomatos)) {
-            let cell = tomato.get(GardenBedCellLink);
-            let explosion = tomato.get(TomatoExplosion);
+            const cell = tomato.get(GardenBedCellLink);
+            const explosion = tomato.get(TomatoExplosion);
 
             explosion.timeInMillis -= elapsedTime;
             if(explosion.timeInMillis <= 0) {
                 grid.remove(cell.cellX, cell.cellY);
                 buffer.removeEntity(tomato);
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         }
 

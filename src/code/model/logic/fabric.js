@@ -22,7 +22,7 @@ const defaultSettings = {
             max: 80,
             alarmLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.01
+            probability: 0.005
         },
         satiety: {
             max: 80,
@@ -76,7 +76,7 @@ const defaultSettings = {
             max: 80,
             alarmLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.01
+            probability: 0.005
         },
         satiety: {
             max: 80,

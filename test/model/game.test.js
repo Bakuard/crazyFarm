@@ -2,7 +2,9 @@ const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
-const { Fabric } = require('../../src/code/model/logic/fabric.js');
+const {Fabric} = require('../../src/code/model/logic/fabric.js');
+const {OutputSystem} = require('../../src/code/model/logic/output.js');
+const {groups} = require('../../src/code/model/gameEngine/gameLoop.js');
 
 let game = null;
 let outputData = null;
@@ -65,13 +67,15 @@ async function beforeEachTestScenario() {
     fabric.timeUtil = () => timeUtil;
     fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
     game = new Game(
-        (GameResponse) => outputData = GameResponse, 
+        () => {}, 
         {_id: '123'}, 
         new GameRepository(dbConnector),
         fabric
     );
 
+    let outputSystem = new OutputSystem(true, (gameResponse) => outputData = gameResponse);
     game.world.getSystemManager().removeSystem('WorldLogger');
+    game.world.getSystemManager().putSystem('OutputSystem', outputSystem.update.bind(outputSystem), groups.update);
 
     await game.start();
 }

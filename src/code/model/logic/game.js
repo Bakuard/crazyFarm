@@ -17,7 +17,6 @@ const {InitSystem} = require('./init.js');
 const {LoadGameSystem} = require('./loadGame.js');
 const {newLogger} = require('../../conf/logConf.js');
 const {SaveGameSystem} = require('./saveGame.js');
-const {ChangeObserverSystem} = require('./changeObserver.js');
 
 let logger = newLogger('info', 'game.js');
 
@@ -41,14 +40,12 @@ module.exports.Game = class Game {
         let tomatoDeath = new TomatoDeathSystem(manager, fabric.randomGenerator());
         let potatoDeath = new PotatoDeathSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
-        let changeObserver = new ChangeObserverSystem();
-        let output = new OutputSystem(outputCallback);
+        let output = new OutputSystem(false, outputCallback);
         let saveGame = new SaveGameSystem(user._id, gameRepository, fabric.timeUtil());
 
         this.world.getSystemManager().
             putSystem('InitSystem', initLogic.update.bind(initLogic), groups.start).
             putSystem('LoadGameSystem', loadGame.update.bind(loadGame), groups.start).
-            putSystem('ChangeObserverSystem_first', changeObserver.update.bind(changeObserver), groups.updat).
             putSystem('GameCommandSystem', gameCommand.update.bind(gameCommand), groups.update).
             putSystem('ShovelSystem', shovel.update.bind(shovel), groups.update).
             putSystem('PlantNewVegetableSystem', plantNewVegetableSystem.update.bind(plantNewVegetableSystem), groups.update).
@@ -59,7 +56,6 @@ module.exports.Game = class Game {
             putSystem('TomatoDeathSystem', tomatoDeath.update.bind(tomatoDeath), groups.update).
             putSystem('PotatoDeathSystem', potatoDeath.update.bind(potatoDeath), groups.update).
             putSystem('WorldLogger', worldLogger.update.bind(worldLogger), groups.update).
-            putSystem('ChangeObserverSystem_last', changeObserver.update.bind(changeObserver), groups.updat).
             putSystem('OutputSystem', output.update.bind(output), groups.update).
             putSystem('SaveGameSystem', saveGame.update.bind(saveGame), groups.stop);
     }
