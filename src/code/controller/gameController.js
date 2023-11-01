@@ -5,6 +5,7 @@ const ms = require('ms');
 const {newLogger} = require('../conf/logConf.js');
 const {Game} = require('../model/logic/game.js');
 const {TimeUtil} = require('../model/gameEngine/timeUtil.js');
+const {Fabric} = require('../model/logic/fabric.js');
 
 const logger = newLogger('info', 'gameController.js');
 
@@ -43,9 +44,8 @@ module.exports.GameController = class GameController {
         let game = new Game(
             (gameResponse) => clientSocket.send(JSON.stringify(gameResponse, null, 4)), 
             req.user,
-            Math.random,
             this.#gameRepository,
-            new TimeUtil()
+            new Fabric()
         );
 
         clientSocket.on('pong', () => clientSocket.isAlive = true);

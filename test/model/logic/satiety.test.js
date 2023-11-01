@@ -146,7 +146,7 @@ describe.each([
 function createVegetable(cellX, cellY, maxSatiety, currentSatiety, declineSatietyRatePerSeconds) {
     return manager.createEntity().put(
         vegetableState(),
-        new Satiety(maxSatiety, currentSatiety, declineSatietyRatePerSeconds),
+        new Satiety(maxSatiety, currentSatiety, declineSatietyRatePerSeconds, 1),
         new GardenBedCellLink(cellX, cellY)
     );
 }

@@ -92,9 +92,9 @@ function createGrowingPotato({x, y, stateHistory}) {
                 new VegetableMeta('Potato'),
                 vegetableState([0, 30, 25, 15], [3, 40, 40, 40], stateHistory),
                 new GardenBedCellLink(x, y),
-                new Immunity(60, 20, false, 1, 0.2),
-                new Thirst(60, 20, 1),
-                new Satiety(60, 47, 1)
+                new Immunity(60, 20, false, 1, 0.2, 30),
+                new Thirst(60, 20, 1, 30),
+                new Satiety(60, 47, 1, 30)
             );
     manager.bindEntity(entity);
     grid.write(x, y, entity);
@@ -108,7 +108,7 @@ function createDeadPotato({x, y}) {
                 vegetableState([0, 30, 25, 15], [3, 40, 40, 40], lifeCycleStates.slice(lifeCycleStates.sleepingSeed, lifeCycleStates.death)),
                 new GardenBedCellLink(x, y),
                 new PotatoGhost(25000),
-                new TomatoExplosion(3)
+                new TomatoExplosion(3, 2000)
             );
     manager.bindEntity(entity);
     grid.write(x, y, entity);

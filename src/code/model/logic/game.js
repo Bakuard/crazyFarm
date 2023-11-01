@@ -22,26 +22,26 @@ let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user, randomGenerator, gameRepository, timeUtil, settings) {
+    constructor(outputCallback, user, gameRepository, fabric) {
         this.user = user;
         this.gameRepository = gameRepository;
-        this.world = new World(1000, timeUtil);
+        this.world = new World(fabric.frameDurationInMillis(), fabric.timeUtil());
         const manager = this.world.getEntityComponentManager();
 
-        let initLogic = new InitSystem(settings);
+        let initLogic = new InitSystem(fabric);
         let loadGame = new LoadGameSystem(user._id);
         let gameCommand = new GameCommandSystem();
         let shovel = new ShovelSystem();
-        let plantNewVegetableSystem = new PlantNewVegetableSystem(randomGenerator);
+        let plantNewVegetableSystem = new PlantNewVegetableSystem(fabric.randomGenerator());
         let grow = new GrowSystem(manager);
         let thirst = new ThirstSystem(manager);
         let satiety = new SatietySystem(manager);
-        let immunity = new ImmunitySystem(manager, randomGenerator);
-        let tomatoDeath = new TomatoDeathSystem(manager, randomGenerator);
+        let immunity = new ImmunitySystem(manager, fabric.randomGenerator());
+        let tomatoDeath = new TomatoDeathSystem(manager, fabric.randomGenerator());
         let potatoDeath = new PotatoDeathSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
         let output = new OutputSystem(outputCallback);
-        let saveGame = new SaveGameSystem(user._id, gameRepository, timeUtil);
+        let saveGame = new SaveGameSystem(user._id, gameRepository, fabric.timeUtil());
 
         this.world.getSystemManager().
             putSystem('InitSystem', initLogic.update.bind(initLogic), groups.start).

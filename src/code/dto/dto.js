@@ -88,9 +88,9 @@ class VegetableResponse {
                 vegetable.hasTags('exploded')) this.stage = 7;
 
         if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
-            if(vegetable.get(Thirst).current <= 30) this.needs.push('THIRST');
-            if(vegetable.get(Satiety).current <= 30) this.needs.push('HUNGER');
-            if(vegetable.get(Immunity).current <= 30) this.needs.push('SICKNESS');
+            if(vegetable.get(Thirst).isAlarm()) this.needs.push('THIRST');
+            if(vegetable.get(Satiety).isAlarm()) this.needs.push('HUNGER');
+            if(vegetable.get(Immunity).isAlarm()) this.needs.push('SICKNESS');
         }
     }
 }

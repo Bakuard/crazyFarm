@@ -4,14 +4,19 @@ const {Wallet} = require('./wallet.js');
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Satiety {
-    static of(max, declineRatePerSeconds) {
-        return new Satiety(max, max, declineRatePerSeconds);
+    static of(max, declineRatePerSeconds, alarmLevel) {
+        return new Satiety(max, max, declineRatePerSeconds, alarmLevel);
     }
 
-    constructor(max, current, declineRatePerSeconds) {
+    constructor(max, current, declineRatePerSeconds, alarmLevel) {
         this.max = max;
         this.current = current;
         this.declineRatePerSeconds = declineRatePerSeconds;
+        this.alarmLevel = alarmLevel;
+    }
+
+    isAlarm() {
+        return this.current <= this.alarmLevel;
     }
 };
 module.exports.Satiety = Satiety;

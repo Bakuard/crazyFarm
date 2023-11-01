@@ -3,14 +3,19 @@
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Thirst {
-    static of(max, declineRatePerSeconds) {
-        return new Thirst(max, max, declineRatePerSeconds);
+    static of(max, declineRatePerSeconds, alarmLevel) {
+        return new Thirst(max, max, declineRatePerSeconds, alarmLevel);
     }
 
-    constructor(max, current, declineRatePerSeconds) {
+    constructor(max, current, declineRatePerSeconds, alarmLevel) {
         this.max = max;
         this.current = current;
         this.declineRatePerSeconds = declineRatePerSeconds;
+        this.alarmLevel = alarmLevel;
+    }
+
+    isAlarm() {
+        return this.current <= this.alarmLevel;
     }
 };
 module.exports.Thirst = Thirst;

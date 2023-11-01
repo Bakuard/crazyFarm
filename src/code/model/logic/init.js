@@ -1,21 +1,18 @@
 'use strict'
 
-const {Fabric} = require('./fabric.js');
-
 module.exports.InitSystem = class InitSystem {
 
-    constructor(settings) {
-        this.settings = settings;
+    constructor(fabric) {
+        this.fabric = fabric;
     }
 
     update(groupName, world) {
-        let manager = world.getEntityComponentManager();
+        const manager = world.getEntityComponentManager();
 
-        let fabric = this.settings ? new Fabric(this.settings) : Fabric.createWithDefaultSettings();
-        let grid = fabric.grid();
-        let wallet = manager.createEntity().put(fabric.wallet());
+        const grid = this.fabric.grid();
+        const wallet = manager.createEntity().put(this.fabric.wallet());
 
-        manager.putSingletonEntity('fabric', fabric);
+        manager.putSingletonEntity('fabric', this.fabric);
         manager.putSingletonEntity('grid', grid);
         manager.putSingletonEntity('wallet', wallet);
     }

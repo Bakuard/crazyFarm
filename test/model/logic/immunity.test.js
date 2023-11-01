@@ -32,6 +32,23 @@ function beforeEachTest() {
     };
 };
 
+function createVegetable(cellX, cellY, max, current, isSick, declineRatePerSeconds, probability) {
+    return manager.createEntity().put(
+        vegetableState(),
+        new Immunity(max, current, isSick, declineRatePerSeconds, probability, 1),
+        new GardenBedCellLink(cellX, cellY)
+    );
+}
+
+function vegetableState() {
+    return VegetableState.of(
+        StateDetail.of(10, lifeCycleStates.seed),
+        StateDetail.of(10, lifeCycleStates.sprout),
+        StateDetail.of(10, lifeCycleStates.child),
+        StateDetail.of(10, lifeCycleStates.youth)
+    );
+}
+
 describe.each([
     {max: 10, declineRatePerSeconds: 1, updateNumber: 1, probability: 0.5, random: 0.5, expectedImmunity: 9, isDeath: false},
     {max: 10, declineRatePerSeconds: 2, updateNumber: 1, probability: 0.5, random: 0.5, expectedImmunity: 9.5, isDeath: false},
@@ -170,20 +187,3 @@ describe.each([
         });
     }
 );
-
-function createVegetable(cellX, cellY, max, current, isSick, declineRatePerSeconds, probability) {
-    return manager.createEntity().put(
-        vegetableState(),
-        new Immunity(max, current, isSick, declineRatePerSeconds, probability),
-        new GardenBedCellLink(cellX, cellY)
-    );
-}
-
-function vegetableState() {
-    return VegetableState.of(
-        StateDetail.of(10, lifeCycleStates.seed),
-        StateDetail.of(10, lifeCycleStates.sprout),
-        StateDetail.of(10, lifeCycleStates.child),
-        StateDetail.of(10, lifeCycleStates.youth)
-    );
-}

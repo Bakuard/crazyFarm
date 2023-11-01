@@ -86,7 +86,7 @@ module.exports.GameRepository = class GameRepository {
         const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
-        collection.deleteOne({userId: fullGameState.userId});
+        await collection.deleteOne({userId: fullGameState.userId});
         await collection.insertOne(fullGameState);
     }
 

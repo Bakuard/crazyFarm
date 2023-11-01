@@ -9,9 +9,10 @@ module.exports.OutputSystem = class OutputSystem {
     }
 
     update(groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let wallet = manager.getSingletonEntity('wallet').get(Wallet);
-        let grid = manager.getSingletonEntity('grid');
-        this.callback(new dto.GameResponse(grid, wallet));
+        const manager = world.getEntityComponentManager();
+        const wallet = manager.getSingletonEntity('wallet').get(Wallet);
+        const grid = manager.getSingletonEntity('grid');
+        const response = new dto.GameResponse(grid, wallet);
+        this.callback(response);
     }
 };

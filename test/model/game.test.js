@@ -2,6 +2,7 @@ const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
 const {GameRepository} = require('../../src/code/dal/repositories.js');
+const { Fabric } = require('../../src/code/model/logic/fabric.js');
 
 let game = null;
 let outputData = null;
@@ -12,7 +13,7 @@ function createTimeUtil() {
     return {
         elapsedMillis: 0,
         callbacks: [],
-        infiniteLoop(callback, iterationDurationInMillis) {
+        infiniteLoop(callback) {
             this.callbacks.push(callback);
             return callback;
         },
@@ -57,21 +58,22 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 
 async function beforeEachTestScenario() {
     const dbConnector = new DBConnector();
-        await clearDB(dbConnector);
+    await clearDB(dbConnector);
 
-        timeUtil = createTimeUtil();
-        game = new Game(
-            (GameResponse) => outputData = GameResponse, 
-            {_id: '123'}, 
-            () => randomGeneratorReturnedValue,
-            new GameRepository(dbConnector),
-            timeUtil,
-            settings
-        );
-    
-        game.world.getSystemManager().removeSystem('WorldLogger');
+    timeUtil = createTimeUtil();
+    const fabric = new Fabric(settings);
+    fabric.timeUtil = () => timeUtil;
+    fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
+    game = new Game(
+        (GameResponse) => outputData = GameResponse, 
+        {_id: '123'}, 
+        new GameRepository(dbConnector),
+        fabric
+    );
 
-        await game.start();
+    game.world.getSystemManager().removeSystem('WorldLogger');
+
+    await game.start();
 }
 
 describe(`grow some vegetables to 'sprout' then die,
@@ -102,8 +104,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [{tool: 'seeds', cell: '0-0'}, {tool: 'seeds', cell: '0-1'}, {tool: 'seeds', cell: '1-0'}, {tool: 'seeds', cell: '3-2'}], 
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.3, 
             expectedMoney: 188, 
             expectedGardenCells: [
@@ -123,8 +125,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [{tool: 'seeds', cell: '1-1'}, {tool: 'seeds', cell: '2-2'}], 
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.7, 
             expectedMoney: 182, 
             expectedGardenCells: [
@@ -144,8 +146,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [{tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'}], 
-            elapsedMillis: 1000, 
-            updateNumber: 3,
+            elapsedMillis: 200, 
+            updateNumber: 15,
             randomValue: 0.3, 
             expectedMoney: 182, 
             expectedGardenCells: [
@@ -165,8 +167,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [], 
-            elapsedMillis: 1000, 
-            updateNumber: 27,
+            elapsedMillis: 200, 
+            updateNumber: 135,
             randomValue: 0.3, 
             expectedMoney: 182, 
             expectedGardenCells: [
@@ -189,8 +191,8 @@ describe(`grow some vegetables to 'sprout' then die,
                 {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
                 {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
             ], 
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.2, 
             expectedMoney: 174, 
             expectedGardenCells: [
@@ -210,8 +212,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [], 
-            elapsedMillis: 1000, 
-            updateNumber: 29,
+            elapsedMillis: 200, 
+            updateNumber: 145,
             randomValue: 0.3, 
             expectedMoney: 174, 
             expectedGardenCells: [
@@ -233,8 +235,8 @@ describe(`grow some vegetables to 'sprout' then die,
             events: [
                 {tool: 'sprayer', cell: '0-0'}, {tool: 'sprayer', cell: '1-0'}, {tool: 'sprayer', cell: '0-1'}, {tool: 'sprayer', cell: '1-1'}
             ], 
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.3, 
             expectedMoney: 166, 
             expectedGardenCells: [
@@ -257,8 +259,8 @@ describe(`grow some vegetables to 'sprout' then die,
                 {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
                 {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
             ],
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.3, 
             expectedMoney: 162, 
             expectedGardenCells: [
@@ -278,8 +280,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [],
-            elapsedMillis: 1000, 
-            updateNumber: 29,
+            elapsedMillis: 200, 
+            updateNumber: 145,
             randomValue: 0.3, 
             expectedMoney: 162, 
             expectedGardenCells: [
@@ -299,8 +301,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [],
-            elapsedMillis: 1000, 
-            updateNumber: 12,
+            elapsedMillis: 200, 
+            updateNumber: 60,
             randomValue: 0.3, 
             expectedMoney: 162, 
             expectedGardenCells: [
@@ -320,8 +322,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [{tool: 'bailer', cell: '0-1'}, {tool: 'fertilizer', cell: '0-1'}],
-            elapsedMillis: 1000, 
-            updateNumber: 18,
+            elapsedMillis: 200, 
+            updateNumber: 90,
             randomValue: 0.3, 
             expectedMoney: 160, 
             expectedGardenCells: [
@@ -341,8 +343,8 @@ describe(`grow some vegetables to 'sprout' then die,
         },
         {
             events: [{tool: 'bailer', cell: '0-1'}, {tool: 'fertilizer', cell: '0-1'}],
-            elapsedMillis: 1000, 
-            updateNumber: 1,
+            elapsedMillis: 200, 
+            updateNumber: 5,
             randomValue: 0.3, 
             expectedMoney: 158, 
             expectedGardenCells: [
