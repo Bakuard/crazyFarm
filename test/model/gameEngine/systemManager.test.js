@@ -7,7 +7,7 @@ test(`putSystem(name, updateMethod, ...groups):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let systemMock = jest.fn((groupName, world) => {});
+        let systemMock = jest.fn();
 
         systemManager.putSystem('system1', systemMock, 'groupA');
         systemManager.updateGroup('groupA');
@@ -22,7 +22,7 @@ test(`putSystem(name, updateMethod, ...groups):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let systemMock = jest.fn((groupName, world) => {});
+        let systemMock = jest.fn();
 
         systemManager.putSystem('system1', systemMock, 'groupA', 'groupB', 'groupC');
         systemManager.updateGroup('groupA');
@@ -30,9 +30,9 @@ test(`putSystem(name, updateMethod, ...groups):
         systemManager.updateGroup('groupC');
 
         expect(systemMock.mock.calls).toHaveLength(3);
-        expect(systemMock.mock.calls[0][0]).toEqual('groupA');
-        expect(systemMock.mock.calls[1][0]).toEqual('groupB');
-        expect(systemMock.mock.calls[2][0]).toEqual('groupC');
+        expect(systemMock.mock.calls[0][1]).toEqual('groupA');
+        expect(systemMock.mock.calls[1][1]).toEqual('groupB');
+        expect(systemMock.mock.calls[2][1]).toEqual('groupC');
     });
 
 test(`putSystem(name, updateMethod, ...groups):
@@ -43,12 +43,37 @@ test(`putSystem(name, updateMethod, ...groups):
         let systemManager = new SystemManager(worldMock);
 
         let actual = [];
-        systemManager.putSystem('system1', (groupName, world) => actual.push('system1'), 'group');
-        systemManager.putSystem('system2', (groupName, world) => actual.push('system2'), 'group');
-        systemManager.putSystem('system3', (groupName, world) => actual.push('system3'), 'group');
+        systemManager.putSystem('system1', (systemName, groupName, world) => actual.push('system1'), 'group');
+        systemManager.putSystem('system2', (systemName, groupName, world) => actual.push('system2'), 'group');
+        systemManager.putSystem('system3', (systemName, groupName, world) => actual.push('system3'), 'group');
         systemManager.updateGroup('group');
 
         expect(actual).toEqual(['system1', 'system2', 'system3']);
+    });
+
+test(`putSystem(name, updateMethod, ...groups):
+        there is system with such name
+        => updateGroup(groupName) must call new updateMethod for each groupб
+           don't call old updateMethod`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+        let originalSystem = jest.fn();
+        let newSystem = jest.fn();
+        systemManager.putSystem('system', originalSystem, 'group1', 'group2', 'group3');
+
+        systemManager.putSystem('system', newSystem, 'group3', 'group4', 'group5');
+        systemManager.updateGroup('group1');
+        systemManager.updateGroup('group2');
+        systemManager.updateGroup('group3');
+        systemManager.updateGroup('group4');
+        systemManager.updateGroup('group5');
+
+        expect(originalSystem).toHaveBeenCalledTimes(0);
+        expect(newSystem).toHaveBeenCalledTimes(3);
+        expect(newSystem.mock.calls[0][1]).toBe('group3');
+        expect(newSystem.mock.calls[1][1]).toBe('group4');
+        expect(newSystem.mock.calls[2][1]).toBe('group5');
     });
 
 test(`updateMethod(groupName):
@@ -57,7 +82,7 @@ test(`updateMethod(groupName):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let system = jest.fn(() => {});
+        let system = jest.fn();
         systemManager.putSystem('system1', system, 'group1');
 
         systemManager.updateGroup('group2');
@@ -71,9 +96,9 @@ test(`removeSystem(name):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let system1 = jest.fn(() => {});
-        let system2 = jest.fn(() => {});
-        let system3 = jest.fn(() => {});
+        let system1 = jest.fn();
+        let system2 = jest.fn();
+        let system3 = jest.fn();
         systemManager.putSystem('system1', system1, 'group1', 'group2', 'group3');
         systemManager.putSystem('system2', system2, 'group1', 'group2');
         systemManager.putSystem('system3', system3, 'group1');

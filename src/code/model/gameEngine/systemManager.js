@@ -13,6 +13,8 @@ module.exports.SystemManager = class SystemManager {
     }
 
     putSystem(name, updateMethod, ...groupNames) {
+        this.removeSystem(name);
+
         this.#systems[name] = updateMethod;
         for(let groupName of groupNames) {
             if(!this.#groups[groupName]) this.#groups[groupName] = [];
@@ -31,7 +33,7 @@ module.exports.SystemManager = class SystemManager {
 
     updateGroup(groupName) {
         this.#groups[groupName]?.
-            forEach(systemName => this.#systems[systemName](groupName, this.#world));
+            forEach(systemName => this.#systems[systemName](systemName, groupName, this.#world));
     }
 
 }

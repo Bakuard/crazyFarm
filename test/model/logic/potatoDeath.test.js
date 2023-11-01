@@ -69,7 +69,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            system.update('PotatoDeathSystem', 'update', worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
             expect(grid.get(0, 0) === null).toBe(isCellEmpty);
@@ -233,7 +233,7 @@ describe.each([
             grid.write(0, 0, entity);
 
             let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            system.update('PotatoDeathSystem', 'update', worldMock);
             let generator = manager.select(manager.createFilter().all(VegetableMeta));
             let entityAfterUpdate = [...generator][0];
 

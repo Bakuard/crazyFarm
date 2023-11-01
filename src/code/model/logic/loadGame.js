@@ -11,7 +11,7 @@ module.exports.LoadGameSystem = class LoadGameSystem {
         this.userId = userId;
     }
 
-    update(groupName, world) {
+    update(systemName, groupName, world) {
         let manager = world.getEntityComponentManager();
         let entityManager = manager.getEntityManager();
 

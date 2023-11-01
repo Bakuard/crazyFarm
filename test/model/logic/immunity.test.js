@@ -75,7 +75,7 @@ describe.each([
             manager.bindEntity(vegetable); 
 
             let system = new ImmunitySystem(manager, () => random);
-            for(let i = 0; i < updateNumber; i++) system.update('update', worldMock);
+            for(let i = 0; i < updateNumber; i++) system.update('ImmunitySystem', 'update', worldMock);
 
             expect(vegetable.get(Immunity).current).toBe(expectedImmunity);
             expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
@@ -177,7 +177,7 @@ describe.each([
             wallet.get(Wallet).sprayerPrice = sprayerPrice;
 
             let system = new ImmunitySystem(manager, () => random);
-            system.update('update', worldMock);
+            system.update('ImmunitySystem', 'update', worldMock);
 
             expect(wallet.get(Wallet).sum).toBe(expectedMoney);
             expectedImmunity.forEach(param => {

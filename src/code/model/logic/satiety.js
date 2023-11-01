@@ -26,7 +26,7 @@ module.exports.SatietySystem = class SatietySystem {
         this.filter = entityComponentManager.createFilter().all(Satiety, VegetableState);
     }
 
-    update(groupName, world) {
+    update(systemName, groupName, world) {
         let manager = world.getEntityComponentManager();
         let eventManager = world.getEventManager();
         let elapsedTime = world.getGameLoop().getElapsedTime();

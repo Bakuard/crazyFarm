@@ -205,7 +205,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system  = new TomatoDeathSystem(manager, () => 0.1);
-            system.update('update', worldMock);
+            system.update('TomatoDeathSystem', 'update', worldMock);
 
             expectedVegetablesState.forEach((expected, index) => {
                 let vegetable = vegetables[index];

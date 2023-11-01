@@ -29,7 +29,7 @@ module.exports.ImmunitySystem = class ImmunitySystem {
         this.filter = entityComponentManager.createFilter().all(Immunity, VegetableState);
     }
 
-    update(groupName, world) {
+    update(systemName, groupName, world) {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const grid = manager.getSingletonEntity('grid');

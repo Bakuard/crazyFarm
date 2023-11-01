@@ -169,11 +169,11 @@ describe.each([
             let saveSystem = new SaveGameSystem(1, mockGameRepository, new TimeUtil());
             let loadSystem = new LoadGameSystem(1);
             
-            saveSystem.update('stop', worldMock);
+            saveSystem.update('SaveGameSystem', 'stop', worldMock);
             let fullGameState = mockGameRepository.fullGameState;
             createNewEmptyGameWorld();
             manager.putSingletonEntity('fullGameState', fullGameState);
-            loadSystem.update('start', worldMock);
+            loadSystem.update('LoadGameSystem', 'start', worldMock);
         
             let actual = getEntitiesFromGrid();
             expect(actual).containsEntitiesInTheSameOrder(...expected); 

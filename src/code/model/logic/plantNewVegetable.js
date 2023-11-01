@@ -8,7 +8,7 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         this.randomGenerator = randomGenerator;
     }
 
-    update(groupName, world) {
+    update(systemName, groupName, world) {
         let manager = world.getEntityComponentManager();
         let buffer = manager.createCommandBuffer();
         let eventManager = world.getEventManager();
