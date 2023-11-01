@@ -2,9 +2,11 @@
 
 module.exports.EventManager = class EventManager {
     #events;
+    #flags;
 
     constructor() {
         this.#events = {};
+        this.#flags = new Set();
     }
 
     writeEvent(name, ...events) {
@@ -52,6 +54,19 @@ module.exports.EventManager = class EventManager {
 
     clearAll() {
         this.#events = {};
+        this.#flags.clear();
+    }
+
+    setFlag(flagName) {
+        this.#flags.add(flagName);
+    }
+
+    clearFlag(flagName) {
+        this.#flags.delete(flagName);
+    }
+
+    hasFlag(flagName) {
+        return this.#flags.has(flagName);
     }
 
 };
