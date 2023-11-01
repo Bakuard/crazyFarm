@@ -22,7 +22,7 @@ const defaultSettings = {
             max: 80,
             alarmLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.05
+            probability: 0.01
         },
         satiety: {
             max: 80,
@@ -76,7 +76,7 @@ const defaultSettings = {
             max: 80,
             alarmLevel1: 40,
             declineRatePerSeconds: 1,
-            probability: 0.05
+            probability: 0.01
         },
         satiety: {
             max: 80,
@@ -128,7 +128,7 @@ const defaultSettings = {
         height: 3
     },
     gameLoop: {
-        frameDurationInMillis: 200
+        frameDurationInMillis: 100
     }
 };
 module.exports.defaultSettings = defaultSettings;
