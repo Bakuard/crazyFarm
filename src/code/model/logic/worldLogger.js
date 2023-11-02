@@ -12,7 +12,7 @@ module.exports.WorldLogger = class WorldLogger {
         this.userId = userId;
     }
 
-    update(groupName, world) {
+    update(systemName, groupName, world) {
         let manager = world.getEntityComponentManager();
         let gameLoop = world.getGameLoop();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);

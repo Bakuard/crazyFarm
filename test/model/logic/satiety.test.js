@@ -55,7 +55,7 @@ describe.each([
             manager.bindEntity(vegetable); 
 
             let system = new SatietySystem(manager);
-            for(let i = 0; i < updateNumber; i++) system.update('update', worldMock);
+            for(let i = 0; i < updateNumber; i++) system.update('SatietySystem', 'update', worldMock);
 
             expect(vegetable.get(Satiety).current).toBe(expectedSatiety);
             expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
@@ -132,7 +132,7 @@ describe.each([
             wallet.get(Wallet).fertilizerPrice = fertilizerPrice;
 
             let system = new SatietySystem(manager);
-            system.update('update', worldMock);
+            system.update('SatietySystem', 'update', worldMock);
 
             expect(wallet.get(Wallet).sum).toBe(expectedMoney);
             expectedSatiety.forEach(param => {

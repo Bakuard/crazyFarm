@@ -9,12 +9,15 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 let manager = null;
 let worldMock = null;
 let grid = null;
+let eventManager = null;
 function beforeEachTest() {
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('fabric', {
@@ -32,7 +35,8 @@ function beforeEachTest() {
                 getElapsedTime: () => et
             }
         },
-        getEntityComponentManager: () => manager
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
     };
 };
 
@@ -69,7 +73,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            system.update('PotatoDeathSystem', 'update', worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
             expect(grid.get(0, 0) === null).toBe(isCellEmpty);
@@ -233,7 +237,7 @@ describe.each([
             grid.write(0, 0, entity);
 
             let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            system.update('PotatoDeathSystem', 'update', worldMock);
             let generator = manager.select(manager.createFilter().all(VegetableMeta));
             let entityAfterUpdate = [...generator][0];
 

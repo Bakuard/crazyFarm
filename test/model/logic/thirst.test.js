@@ -51,7 +51,7 @@ describe.each([
             manager.bindEntity(vegetable); 
 
             let system = new ThirstSystem(manager);
-            for(let i = 0; i < updateNumber; i++) system.update('update', worldMock);
+            for(let i = 0; i < updateNumber; i++) system.update('ThirstSystem', 'update', worldMock);
 
             expect(vegetable.get(Thirst).current).toBe(expected);
             expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
@@ -115,7 +115,7 @@ describe.each([
             events.forEach(event => eventManager.writeEvent(event.tool, event));
 
             let system = new ThirstSystem(manager);
-            system.update('update', worldMock);
+            system.update('ThirstSystem', 'update', worldMock);
 
             expectedThirst.forEach(param => {
                 let currentThirst = grid.get(param.cellX, param.cellY).get(Thirst).current;

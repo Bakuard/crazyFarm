@@ -88,30 +88,30 @@ module.exports.GrowSystem = class GrowSystem {
         this.filter = entityComponentManager.createFilter().all(VegetableState);
     }
 
-    update(groupName, world) {
-        let eventManager = world.getEventManager();
-        let manager = world.getEntityComponentManager();
-        let buffer = manager.createCommandBuffer();
-        let fabric = manager.getSingletonEntity('fabric');
-        let grid = manager.getSingletonEntity('grid');
+    update(systemName, groupName, world) {
+        const eventManager = world.getEventManager();
+        const manager = world.getEntityComponentManager();
+        const buffer = manager.createCommandBuffer();
+        const fabric = manager.getSingletonEntity('fabric');
+        const grid = manager.getSingletonEntity('grid');
 
-        let elapsedTime = world.getGameLoop().getElapsedTime();
+        const elapsedTime = world.getGameLoop().getElapsedTime();
         for(let entity of world.getEntityComponentManager().select(this.filter)) {
-            let vegetableState = entity.get(VegetableState);
-            let {seed, sprout, child, youth} = lifeCycleStates;
+            const vegetableState = entity.get(VegetableState);
+            const {seed, sprout, child, youth} = lifeCycleStates;
 
             if(vegetableState.currentIsOneOf(seed, sprout, child, youth)) {
-                this.#nextState(vegetableState, elapsedTime);
+                this.#nextState(vegetableState, elapsedTime, eventManager);
             }
         }
 
         for(let i = 0; i < eventManager.eventsNumber('bailer'); i++) {
-            let event = eventManager.readEvent('bailer', i);
-            let vegetable = grid.get(event.cellX, event.cellY);
+            const event = eventManager.readEvent('bailer', i);
+            const vegetable = grid.get(event.cellX, event.cellY);
 
             if(this.#isSleepingSeed(vegetable)) {
-                let meta = vegetable.get(VegetableMeta);
-                let vegetableState = vegetable.get(VegetableState);
+                const meta = vegetable.get(VegetableMeta);
+                const vegetableState = vegetable.get(VegetableState);
 
                 vegetable.put(
                     fabric.thirst(meta.typeName),
@@ -119,10 +119,11 @@ module.exports.GrowSystem = class GrowSystem {
                     fabric.immunity(meta.typeName)
                 );
                 vegetableState.pushState(lifeCycleStates.seed);
-                this.#nextState(vegetableState, elapsedTime);
+                this.#nextState(vegetableState, elapsedTime, eventManager);
                 buffer.bindEntity(vegetable);
 
                 eventManager.markEvent('bailer', i, 'emptyBailer');
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         }
 
@@ -130,8 +131,8 @@ module.exports.GrowSystem = class GrowSystem {
         manager.flush(buffer);
     }
 
-    #nextState(vegetableState, elapsedTime) {
-        let {seed, sprout, child, youth} = lifeCycleStates;
+    #nextState(vegetableState, elapsedTime, eventManager) {
+        const {seed, sprout, child, youth} = lifeCycleStates;
 
         while(vegetableState.currentIsOneOf(seed, sprout, child, youth) && elapsedTime > 0) {
             let stateDetail = vegetableState.stateDetail(vegetableState.current());
@@ -140,6 +141,8 @@ module.exports.GrowSystem = class GrowSystem {
             stateDetail.currentTimeInMillis += diff;
             if(stateDetail.currentTimeInMillis >= stateDetail.intervalInMillis()) {
                 vegetableState.history.push(lifeCycleStates.findByOrdinal(vegetableState.current().ordinal + 1));
+
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         }
     }

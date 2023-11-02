@@ -40,7 +40,7 @@ module.exports.Game = class Game {
         let tomatoDeath = new TomatoDeathSystem(manager, fabric.randomGenerator());
         let potatoDeath = new PotatoDeathSystem(manager);
         let worldLogger = new WorldLogger(manager, this.user._id);
-        let output = new OutputSystem(outputCallback);
+        let output = new OutputSystem(false, outputCallback);
         let saveGame = new SaveGameSystem(user._id, gameRepository, fabric.timeUtil());
 
         this.world.getSystemManager().

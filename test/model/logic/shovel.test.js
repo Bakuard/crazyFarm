@@ -231,7 +231,7 @@ describe.each([
         expectedMoney: 40,
         expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
     }
-])(`update(groupName, world): can't use a shovel`,
+])(`update(groupName, world):`,
     ({vegetableParams, event, money, expectedMoney, expectedCellState}) => {
         beforeEach(beforeEachTest);
 
@@ -252,7 +252,7 @@ describe.each([
             wallet.get(Wallet).sum = money;
 
             let system = new ShovelSystem(manager);
-            system.update('update', worldMock);
+            system.update('ShovelSystem', 'update', worldMock);
 
             expect(wallet.get(Wallet).sum).toEqual(expectedMoney);
             expect(grid.get(expectedCellState.cellX, expectedCellState.cellY) == null).toBe(expectedCellState.isEmpty);

@@ -146,7 +146,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system = new GrowSystem(manager);
-            system.update('udpate', worldMock);
+            system.update('GrowSystem', 'udpate', worldMock);
 
             expect(vegetable.get(VegetableState).current()).toBe(expectedVegetableState.nextState);
             expect(vegetable.hasComponents(Immunity)).toBe(expectedVegetableState.hasGrowComps);
@@ -195,7 +195,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
     
             let system = new GrowSystem(manager);
-            system.update('udpate', worldMock);
+            system.update('GrowSystem', 'udpate', worldMock);
     
             expect(entity.get(VegetableState).current()).toBe(nextState);
         });

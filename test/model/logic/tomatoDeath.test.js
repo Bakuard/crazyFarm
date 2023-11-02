@@ -9,12 +9,15 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 
 const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 let manager = null;
 let worldMock = null;
 let grid = null;
+let eventManager = null;
 function beforeEachTest() {
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('fabric', {
@@ -32,7 +35,8 @@ function beforeEachTest() {
                 getElapsedTime: () => et
             }
         },
-        getEntityComponentManager: () => manager
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
     };
 };
 
@@ -205,7 +209,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system  = new TomatoDeathSystem(manager, () => 0.1);
-            system.update('update', worldMock);
+            system.update('TomatoDeathSystem', 'update', worldMock);
 
             expectedVegetablesState.forEach((expected, index) => {
                 let vegetable = vegetables[index];

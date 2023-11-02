@@ -162,7 +162,7 @@ describe.each([
             let gridClone = grid.clone(entity => entity);
 
             let system = new PlantNewVegetableSystem(() => 0.1);
-            system.update('update', worldMock);
+            system.update('PlantNewVegetableSystem', 'update', worldMock);
 
             expectedNewVegetablesCoordinates.forEach(pos => {
                 expect(grid.get(pos.x, pos.y)).not.toBe(gridClone.get(pos.x, pos.y));

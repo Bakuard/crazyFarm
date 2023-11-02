@@ -26,7 +26,7 @@ module.exports.User = class User {
 
     constructor({_id, loggin, email, passwordHash, salt}) {
         this._id = _id;
-        this.loggin = loggin;
+        this.loggin = loggin?.trim();
         this.email = email;
         this.passwordHash = passwordHash;
         this.salt = salt;

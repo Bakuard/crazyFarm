@@ -25,25 +25,29 @@ module.exports.ThirstSystem = class ThirstSystem {
         this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
     }
 
-    update(groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let eventManager = world.getEventManager();
-        let elapsedTime = world.getGameLoop().getElapsedTime();
-        let grid = manager.getSingletonEntity('grid');
+    update(systemName, groupName, world) {
+        const manager = world.getEntityComponentManager();
+        const eventManager = world.getEventManager();
+        const elapsedTime = world.getGameLoop().getElapsedTime();
+        const grid = manager.getSingletonEntity('grid');
 
         for(let entity of manager.select(this.filter)) {
-            let thirst = entity.get(Thirst);
+            const thirst = entity.get(Thirst);
+            const isAlarm = thirst.isAlarm();
+
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
-            if(thirst.current == 0) {
-                entity.get(VegetableState).pushState(lifeCycleStates.death);
-            }
+
+            if(thirst.current == 0) entity.get(VegetableState).pushState(lifeCycleStates.death);
+
+            if(thirst.isAlarm() != isAlarm) eventManager.setFlag('gameStateWasChangedEvent');
         }
 
         eventManager.forEachEvent('bailer', (event, index) => {
-            let vegetable = grid.get(event.cellX, event.cellY);
+            const vegetable = grid.get(event.cellX, event.cellY);
             if(this.#canPour(vegetable)) {
-                let thirst = vegetable.get(Thirst);
+                const thirst = vegetable.get(Thirst);
                 thirst.current = thirst.max;
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         });
 
