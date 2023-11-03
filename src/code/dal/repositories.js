@@ -61,6 +61,28 @@ module.exports.UserRepository = class UserRepository {
         return user;
     }
 
+    async findByEmail(email) {
+        const mongo = await this.dbConnector.getConnection();
+        const db = mongo.db(process.env.MONGO_DB_NAME);
+        const collection = db.collection('users');
+        const userDto = await collection.findOne({email: email});
+
+        let result = null;
+        if(userDto) result = new User(userDto);
+        return result;
+    }
+
+    async tryFindByEmail(email) {
+        let user = await this.findByEmail(email);
+        if(!user) {
+            throw new exceptions.UnknownUserException(
+                'User.email.unknown',
+                `User with email=${email} doesn't exist`
+            );
+        }
+        return user;
+    }
+
     async assertUnique(user) {
         const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
