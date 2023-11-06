@@ -383,3 +383,234 @@ describe(`grow some vegetables to 'sprout' then die,
         });
     });
 });
+
+describe(`grow vegetable to adult state and dig up this`, () => {
+    beforeAll(beforeEachTestScenario);
+
+    describe.each([
+        {
+            events: [
+                {tool: 'seeds', cell: '0-0'}, {tool: 'seeds', cell: '0-1'}, {tool: 'seeds', cell: '1-0'}, {tool: 'seeds', cell: '1-1'},
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '1-1'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 188, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 200, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 188, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 188, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 1, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 1, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 1, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
+                {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
+            ], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 180, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
+                {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
+            ], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 172, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
+                {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
+            ], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 164, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
+                {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
+            ], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 156, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '0-0'}, {tool: 'bailer', cell: '1-0'}, {tool: 'bailer', cell: '0-1'}, {tool: 'bailer', cell: '1-1'},
+                {tool: 'fertilizer', cell: '0-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'fertilizer', cell: '0-1'}, {tool: 'fertilizer', cell: '1-1'}
+            ], 
+            elapsedMillis: 5000, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 148, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 4, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'shovel', cell: '0-0'}, {tool: 'shovel', cell: '1-0'}, {tool: 'shovel', cell: '0-1'}, {tool: 'shovel', cell: '1-1'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedMoney: 148 + 66 * 4, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        }
+    ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedMoney, expectedGardenCells}) => {
+        test(`events: ${JSON.stringify(events)}, 
+              elapsedMillis: ${elapsedMillis},
+              updateNumber: ${updateNumber},
+              randomValue: ${randomValue},
+              => expectedMoney: ${expectedMoney},
+              expectedGardenCells: ${JSON.stringify(expectedGardenCells, null, 4)}`, 
+        () => {
+            randomGeneratorReturnedValue = randomValue;
+            events.forEach(event => game.execute(event));
+            for(let i = 0; i < updateNumber; i++) timeUtil.advanceTime(elapsedMillis);
+    
+            expect(outputData.containers).toEqual(expectedGardenCells);
+            expect(outputData.player.cash).toEqual(expectedMoney);
+        });
+    });
+});

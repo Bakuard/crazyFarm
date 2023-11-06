@@ -235,9 +235,9 @@ module.exports.Fabric = class Fabric {
         let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
 
         return {
-            satietyAlertLevel: vegetableSettings.satiety.alertLevel1,
+            satietyAlarmLevel: vegetableSettings.satiety.alarmLevel1,
             fertilizerPrice: this.settings.wallet.fertilizerPrice,
-            immunityAlertLevel: vegetableSettings.immunity.alertLevel1,
+            immunityAlarmtLevel: vegetableSettings.immunity.alarmLevel1,
             sprayerPrice: this.settings.wallet.sprayerPrice,
             seedsPrice: this.settings.wallet.seedsPrice,
             priceCoff: vegetableSettings.price.coff,
