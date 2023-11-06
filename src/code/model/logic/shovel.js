@@ -46,8 +46,8 @@ module.exports.ShovelSystem = class ShovelSystem {
                 totalSecondInterval += vegetablePrizeFactor.growIntervals[i];
             }
 
-            price = (totalSecondInterval / vegetablePrizeFactor.satietyAlertLevel * vegetablePrizeFactor.fertilizerPrice +
-                        totalSecondInterval / vegetablePrizeFactor.immunityAlertLevel * vegetablePrizeFactor.sprayerPrice +
+            price = (totalSecondInterval / vegetablePrizeFactor.satietyAlarmLevel * vegetablePrizeFactor.fertilizerPrice +
+                        totalSecondInterval / vegetablePrizeFactor.immunityAlarmtLevel * vegetablePrizeFactor.sprayerPrice +
                         vegetablePrizeFactor.seedsPrice) * vegetablePrizeFactor.priceCoff;
         }
         

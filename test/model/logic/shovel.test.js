@@ -20,10 +20,10 @@ function beforeEachTest() {
     fabric = new Fabric({
         potato: {
             satiety: {
-                alertLevel1: 30
+                alarmLevel1: 30
             },
             immunity: {
-                alertLevel1: 30
+                alarmLevel1: 30
             },
             price: {
                 coff: 1.5
