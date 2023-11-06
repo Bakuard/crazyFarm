@@ -13,6 +13,7 @@ const {GameController} = require('./controller/gameController.js');
 const {exceptionHandler} = require('./controller/exceptionHandler.js');
 const {newLogger} = require('./conf/logConf.js');
 const {i18next,i18nMiddleware} = require('./conf/i18nConf.js');
+const { GoogleAuthService } = require('./service/googleAuthService.js');
 
 const logger = newLogger('info', 'index.js');
 const app = express();
@@ -22,7 +23,8 @@ const jwsService = new JwsService();
 const dbConnector = new DBConnector();
 const userRepository = new UserRepository(dbConnector);
 const gameRepository = new GameRepository(dbConnector);
-const userController = new UserController(jwsService, userRepository);
+const googleAuthService = new GoogleAuthService(userRepository, jwsService);
+const userController = new UserController(jwsService, userRepository, googleAuthService);
 const gameController = new GameController(jwsService, wsServer, userRepository, gameRepository);
 
 app.use(express.json());
@@ -31,8 +33,10 @@ app.use(cors);
 app.use(i18nMiddleware.handle(i18next));
 app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.post('/users/enter', wrapAsync(userController.enter.bind(userController)));
+app.post('/users/enter/google', wrapAsync(userController.enterGoogle.bind(userController)));
 app.post('/users/registration/firstStep', wrapAsync(userController.registrationFirstStep.bind(userController)));
 app.post('/users/registration/finalStep', wrapAsync(userController.registrationFinalStep.bind(userController)));
+app.post('/users/registration/google', wrapAsync(userController.registrationGoogle.bind(userController)));
 app.use(wrapAsync(checkJws));
 app.get('/users/getByJws', wrapAsync(userController.getByJws.bind(userController)));
 app.get('/game/getJwtForConnection', wrapAsync(gameController.getJwtForConnection.bind(gameController)));

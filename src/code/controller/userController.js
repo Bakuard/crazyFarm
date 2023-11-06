@@ -17,10 +17,12 @@ module.exports.UserController = class UserController {
 
     #jwsService;
     #userRepository;
+    #googleAuthService;
 
-    constructor(jwsService, userRepository) {
+    constructor(jwsService, userRepository, googleAuthService) {
         this.#jwsService = jwsService;
         this.#userRepository = userRepository;
+        this.#googleAuthService = googleAuthService;
     }
 
     async enter(req, res, next) { 
@@ -54,6 +56,16 @@ module.exports.UserController = class UserController {
         await this.#userRepository.add(user);
         let jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));
         res.send(new dto.JwsResponse(jws, user));
+    }
+
+    async enterGoogle(req, res, next) {
+        let jwtAndUser = await this.#googleAuthService.enter(req.headers.authorization);
+        res.send(new dto.JwsResponse(jwtAndUser.jws, jwtAndUser.user));
+    }
+
+    async registrationGoogle(req, res, next) {
+        let jwtAndUser = await this.#googleAuthService.registration(req.headers.authorization);
+        res.send(new dto.JwsResponse(jwtAndUser.jws, jwtAndUser.user));
     }
 
     async getByJws(req, res, next) {
