@@ -10,6 +10,7 @@ const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCell
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 let manager = null;
@@ -52,6 +53,10 @@ function vegetableState(...states) {
     return result;
 }
 
+function systemHandler(system) {
+    return new SystemHandler('PotatoDeathSystem', 'update', system, 0, 1);
+}
+
 describe.each([
     {elapsedTime: 100, ghostDurationInMillis: 100, isAlive: false, isCellEmpty: true},
     {elapsedTime: 101, ghostDurationInMillis: 100, isAlive: false, isCellEmpty: true},
@@ -73,7 +78,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system = new PotatoDeathSystem(manager);
-            system.update('PotatoDeathSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
             expect(grid.get(0, 0) === null).toBe(isCellEmpty);
@@ -237,7 +242,7 @@ describe.each([
             grid.write(0, 0, entity);
 
             let system = new PotatoDeathSystem(manager);
-            system.update('PotatoDeathSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
             let generator = manager.select(manager.createFilter().all(VegetableMeta));
             let entityAfterUpdate = [...generator][0];
 

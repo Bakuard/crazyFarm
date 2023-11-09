@@ -88,7 +88,7 @@ module.exports.GrowSystem = class GrowSystem {
         this.filter = entityComponentManager.createFilter().all(VegetableState);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();

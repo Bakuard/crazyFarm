@@ -24,7 +24,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         this.explodedTomatos = entityComponentManager.createFilter().all(TomatoExplosion, GardenBedCellLink);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();

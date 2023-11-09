@@ -9,7 +9,7 @@ module.exports.OutputSystem = class OutputSystem {
         this.callback = callback;
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const wallet = manager.getSingletonEntity('wallet').get(Wallet);

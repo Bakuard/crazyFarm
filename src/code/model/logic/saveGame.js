@@ -12,7 +12,7 @@ module.exports.SaveGameSystem = class SaveGameSystem {
         this.timeUtil = timeUtil;
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         let manager = world.getEntityComponentManager();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);
         let snapshot = manager.getEntityManager().snapshot();

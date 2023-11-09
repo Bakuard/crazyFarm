@@ -25,7 +25,7 @@ module.exports.ThirstSystem = class ThirstSystem {
         this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const eventManager = world.getEventManager();
         const elapsedTime = world.getGameLoop().getElapsedTime();

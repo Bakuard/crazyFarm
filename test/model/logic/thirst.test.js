@@ -7,6 +7,7 @@ const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let manager = null;
 let eventManager = null;
@@ -28,6 +29,27 @@ function beforeEachTest(){
         getEventManager: () => eventManager
     };
 };
+
+function createVegetable(cellX, cellY, maxThirst, currentThirst, declineThirstRatePerSeconds) {
+    return manager.createEntity().put(
+        vegetableState(),
+        new Thirst(maxThirst, currentThirst, declineThirstRatePerSeconds, 1),
+        new GardenBedCellLink(cellX, cellY)
+    );
+}
+
+function vegetableState() {
+    return VegetableState.of(
+        StateDetail.of(10, lifeCycleStates.seed),
+        StateDetail.of(10, lifeCycleStates.sprout),
+        StateDetail.of(10, lifeCycleStates.child),
+        StateDetail.of(10, lifeCycleStates.youth)
+    );
+}
+
+function systemHandler(system) {
+    return new SystemHandler('ThirstSystem', 'update', system, 0, 1);
+}
 
 describe.each([
     {max: 10, current: 10, declineRatePerSeconds: 1, expected: 9, updateNumber: 1, isDeath: false},
@@ -51,7 +73,7 @@ describe.each([
             manager.bindEntity(vegetable); 
 
             let system = new ThirstSystem(manager);
-            for(let i = 0; i < updateNumber; i++) system.update('ThirstSystem', 'update', worldMock);
+            for(let i = 0; i < updateNumber; i++) system.update(systemHandler(system), worldMock);
 
             expect(vegetable.get(Thirst).current).toBe(expected);
             expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
@@ -115,7 +137,7 @@ describe.each([
             events.forEach(event => eventManager.writeEvent(event.tool, event));
 
             let system = new ThirstSystem(manager);
-            system.update('ThirstSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expectedThirst.forEach(param => {
                 let currentThirst = grid.get(param.cellX, param.cellY).get(Thirst).current;
@@ -124,20 +146,3 @@ describe.each([
         });
     }
 );
-
-function createVegetable(cellX, cellY, maxThirst, currentThirst, declineThirstRatePerSeconds) {
-    return manager.createEntity().put(
-        vegetableState(),
-        new Thirst(maxThirst, currentThirst, declineThirstRatePerSeconds, 1),
-        new GardenBedCellLink(cellX, cellY)
-    );
-}
-
-function vegetableState() {
-    return VegetableState.of(
-        StateDetail.of(10, lifeCycleStates.seed),
-        StateDetail.of(10, lifeCycleStates.sprout),
-        StateDetail.of(10, lifeCycleStates.child),
-        StateDetail.of(10, lifeCycleStates.youth)
-    );
-}

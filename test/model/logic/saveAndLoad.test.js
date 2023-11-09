@@ -19,6 +19,7 @@ const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {settings} = require('../../resources/settings.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let mockGameRepository = null;
 let manager = null;
@@ -119,6 +120,10 @@ function createDeadPotato({x, y}) {
     return entity;
 }
 
+function systemHandler(systemName, system) {
+    return new SystemHandler(systemName, 'some group', system, 0, 1);
+}
+
 describe.each([
     {
         filled: 100,
@@ -173,11 +178,11 @@ describe.each([
             let saveSystem = new SaveGameSystem(1, mockGameRepository, new TimeUtil());
             let loadSystem = new LoadGameSystem(1);
             
-            saveSystem.update('SaveGameSystem', 'stop', worldMock);
+            saveSystem.update(systemHandler('SaveGameSystem', saveSystem), worldMock);
             let fullGameState = mockGameRepository.fullGameState;
             createNewEmptyGameWorld();
             manager.putSingletonEntity('fullGameState', fullGameState);
-            loadSystem.update('LoadGameSystem', 'start', worldMock);
+            loadSystem.update(systemHandler('LoadGameSystem', saveSystem), worldMock);
         
             let actual = getEntitiesFromGrid();
             expect(actual).containsEntitiesInTheSameOrder(...expected); 

@@ -73,9 +73,10 @@ async function beforeEachTestScenario() {
         fabric
     );
 
-    let outputSystem = new OutputSystem(true, (gameResponse) => outputData = gameResponse);
     game.world.getSystemManager().removeSystem('WorldLogger');
-    game.world.getSystemManager().putSystem('OutputSystem', outputSystem.update.bind(outputSystem), groups.update);
+    game.world.getSystemManager().putSystem('OutputSystem',  
+        new OutputSystem(true, (gameResponse) => outputData = gameResponse)
+    );
 
     await game.start();
 }

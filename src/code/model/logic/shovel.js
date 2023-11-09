@@ -9,7 +9,7 @@ module.exports.ShovelSystem = class ShovelSystem {
         
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const eventManager = world.getEventManager();
         const buffer = manager.createCommandBuffer();

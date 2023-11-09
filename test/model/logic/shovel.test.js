@@ -9,6 +9,7 @@ const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCell
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let fabric = null;
 let manager = null;
@@ -81,6 +82,10 @@ function createAndPrepareVegetable(cellX, cellY, currentState, previousState) {
     grid.write(cellX, cellY, vegetable);
     manager.bindEntity(vegetable);
     return vegetable;
+}
+
+function systemHandler(system) {
+    return new SystemHandler('ShovelSystem', 'update', system, 0, 1);
 }
 
 describe.each([
@@ -252,7 +257,7 @@ describe.each([
             wallet.get(Wallet).sum = money;
 
             let system = new ShovelSystem(manager);
-            system.update('ShovelSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expect(wallet.get(Wallet).sum).toEqual(expectedMoney);
             expect(grid.get(expectedCellState.cellX, expectedCellState.cellY) == null).toBe(expectedCellState.isEmpty);

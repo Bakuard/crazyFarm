@@ -10,6 +10,7 @@ const {Satiety} = require('../../../src/code/model/logic/satiety.js');
 const {Thirst} = require('../../../src/code/model/logic/thirst.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let fabric = null;
 let manager = null;
@@ -80,6 +81,10 @@ function createAndPrepareSleepingSeed(cellX, cellY, typeName, intervalsInSeconds
     return vegetable;
 }
 
+function systemHandler(system) {
+    return new SystemHandler('GrowSystem', 'update', system, 0, 1);
+}
+
 describe.each([
     {
         sleepingSeedParam: {cellX: 3, cellY: 2},
@@ -146,7 +151,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system = new GrowSystem(manager);
-            system.update('GrowSystem', 'udpate', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expect(vegetable.get(VegetableState).current()).toBe(expectedVegetableState.nextState);
             expect(vegetable.hasComponents(Immunity)).toBe(expectedVegetableState.hasGrowComps);
@@ -195,7 +200,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
     
             let system = new GrowSystem(manager);
-            system.update('GrowSystem', 'udpate', worldMock);
+            system.update(systemHandler(system), worldMock);
     
             expect(entity.get(VegetableState).current()).toBe(nextState);
         });

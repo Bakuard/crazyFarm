@@ -11,7 +11,7 @@ module.exports.GameCommandSystem = class GameCommandSystem {
 
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         let eventManager = world.getEventManager();
 
         eventManager.forEachEvent('rawCommand', rawCommand => {

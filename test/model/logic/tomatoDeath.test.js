@@ -10,6 +10,7 @@ const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCell
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 let manager = null;
@@ -76,6 +77,10 @@ function createAndPrepareExplodedTomato(cellX, cellY, previousState, explosion) 
     manager.bindEntity(vegetable);
     grid.write(cellX, cellY, vegetable);
     return vegetable;
+}
+
+function systemHandler(system) {
+    return new SystemHandler('TomatoDeathSystem', 'update', system, 0, 1);
 }
 
 describe.each([
@@ -209,7 +214,7 @@ describe.each([
             worldMock.elapsedTime = elapsedTime;
 
             let system  = new TomatoDeathSystem(manager, () => 0.1);
-            system.update('TomatoDeathSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expectedVegetablesState.forEach((expected, index) => {
                 let vegetable = vegetables[index];

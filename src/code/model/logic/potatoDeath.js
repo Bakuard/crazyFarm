@@ -20,7 +20,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost, GardenBedCellLink);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();

@@ -9,6 +9,7 @@ const {VegetableState} = require('../../../src/code/model/logic/vegetableState.j
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let fabric = null;
 let manager = null;
@@ -113,6 +114,10 @@ function createVegetable(x, y) {
     return vegetable;
 }
 
+function systemHandler(system) {
+    return new SystemHandler('PlantNewVegetableSystem', 'update', system, 0, 1);
+}
+
 describe.each([
     {seedsEventsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
     notEmptyCellsCoordinates: [p(0, 0), p(1, 1), p(3, 2)],
@@ -162,7 +167,7 @@ describe.each([
             let gridClone = grid.clone(entity => entity);
 
             let system = new PlantNewVegetableSystem(() => 0.1);
-            system.update('PlantNewVegetableSystem', 'update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expectedNewVegetablesCoordinates.forEach(pos => {
                 expect(grid.get(pos.x, pos.y)).not.toBe(gridClone.get(pos.x, pos.y));

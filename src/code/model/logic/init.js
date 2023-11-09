@@ -6,7 +6,7 @@ module.exports.InitSystem = class InitSystem {
         this.fabric = fabric;
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
 
         const grid = this.fabric.grid();
