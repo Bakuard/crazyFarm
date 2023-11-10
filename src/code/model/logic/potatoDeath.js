@@ -16,78 +16,102 @@ module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
     constructor(entityComponentManager) {
-        this.deadFilter = entityComponentManager.createFilter().all(VegetableState, VegetableMeta, GardenBedCellLink).none(PotatoGhost);
-        this.ghostFilter = entityComponentManager.createFilter().all(PotatoGhost, GardenBedCellLink);
+        this.explodedFilter = entityComponentManager.createFilter().
+            allTags('exploded').
+            all(VegetableState, VegetableMeta, GardenBedCellLink).
+            none(PotatoGhost);
+        this.deadFilter = entityComponentManager.createFilter().
+            allTags('dead').
+            all(VegetableState, VegetableMeta, GardenBedCellLink).
+            none(PotatoGhost);
+        this.ghostFilter = entityComponentManager.createFilter().
+            all(PotatoGhost, GardenBedCellLink);
     }
 
     update(systemHandler, world) {
-        const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
         const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
 
-        for(let entity of manager.select(this.deadFilter)) {
-            const meta = entity.get(VegetableMeta);
-            const state = entity.get(VegetableState);
-            const cell = entity.get(GardenBedCellLink);
-
-            if(meta.typeName == 'Potato') {
-                if(entity.hasTags('exploded')) {
-                    if(state.currentIsOneOf(sleepingSeed, seed, sprout)) {
-                        grid.remove(cell.cellX, cell.cellY);
-                        buffer.removeEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    } else if(state.currentIsOneOf(child, youth, adult)) {
-                        entity.remove(Immunity, Satiety, Thirst);
-                        entity.put(fabric.potatoGhost());
-                        state.pushState(death);
-                        buffer.bindEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    } else if(state.current() == death && state.previousIsOneOf(sleepingSeed, seed, sprout)) {
-                        grid.remove(cell.cellX, cell.cellY);
-                        buffer.removeEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    } else if(state.current() == death && state.previousIsOneOf(child, youth, adult)) {
-                        entity.remove(Immunity, Satiety, Thirst);
-                        entity.put(fabric.potatoGhost());
-                        state.pushState(death);
-                        buffer.bindEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    }
-                } else if(state.current() == death) {
-                    if(state.previousIsOneOf(child, youth, adult)) {
-                        entity.remove(Immunity, Satiety, Thirst);
-                        entity.put(fabric.potatoGhost());
-                        buffer.bindEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    } else if(state.previousIsOneOf(sleepingSeed, seed)) {
-                        grid.remove(cell.cellX, cell.cellY);
-                        buffer.removeEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    } else if(state.previous() == sprout) {
-                        entity.remove(Immunity, Satiety, Thirst);
-                        buffer.bindEntity(entity);
-                        eventManager.setFlag('gameStateWasChangedEvent');
-                    }
-                }
-            }
-        }
-
-        const elapsedTime = world.getGameLoop().getElapsedTime();
-        for(const entity of manager.select(this.ghostFilter)) {
-            const potatoGhost = entity.get(PotatoGhost);
-
-            potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
-            if(potatoGhost.timeInMillis == 0) {
-                const cellLink = entity.get(GardenBedCellLink);
-                grid.remove(cellLink.cellX, cellLink.cellY);
-                buffer.removeEntity(entity);
-                eventManager.setFlag('gameStateWasChangedEvent');
-            }
-        }
+        this.#updateExplodedPotatos(manager, grid, buffer, eventManager, fabric);
+        this.#updateDeadPotatos(manager, grid, buffer, eventManager, fabric);
+        this.#updatePotatoGhosts(manager, grid, buffer, eventManager, world.getGameLoop().getElapsedTime());
 
         manager.flush(buffer);
     }
+
+    #updateExplodedPotatos(manager, grid, buffer, eventManager, fabric) {
+        const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
+
+        for(let vegetable of manager.select(this.explodedFilter)) {
+            const meta = vegetable.get(VegetableMeta);
+            const state = vegetable.get(VegetableState);
+
+            if(meta.typeName == 'Potato') {
+                if(state.currentIsOneOf(sleepingSeed, seed, sprout) || 
+                   state.current() == death && state.previousIsOneOf(sleepingSeed, seed, sprout)) {
+                    this.#removePotato(vegetable, grid, buffer, eventManager);
+                } else if(state.currentIsOneOf(child, youth, adult)) {
+                    this.#makePotatoesGhost(vegetable, buffer, eventManager, fabric);
+                }
+            }
+        }
+    }
+
+    #updateDeadPotatos(manager, grid, buffer, eventManager, fabric) {
+        const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
+
+        for(let vegetable of manager.select(this.deadFilter)) {
+            const meta = vegetable.get(VegetableMeta);
+            const state = vegetable.get(VegetableState);
+
+            if(meta.typeName == 'Potato') {
+                if(state.currentIsOneOf(child, youth, adult)) {
+                    this.#makePotatoesGhost(vegetable, buffer, eventManager, fabric);
+                } else if(state.currentIsOneOf(sleepingSeed, seed)) {
+                    this.#removePotato(vegetable, grid, buffer, eventManager);
+                } else if(state.current() == sprout) {
+                    this.#makeDeadPotatoSprout(vegetable, buffer, eventManager);
+                }            
+            }
+        }
+    }
+
+    #updatePotatoGhosts(manager, grid, buffer, eventManager, elapsedTime) {
+        for(let vegetable of manager.select(this.ghostFilter)) {
+            const potatoGhost = vegetable.get(PotatoGhost);
+            potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
+            if(potatoGhost.timeInMillis == 0) this.#removePotato(vegetable, grid, buffer, eventManager);
+        }
+    }
+
+    #removePotato(vegetable, grid, buffer, eventManager) {
+        const cell = vegetable.get(GardenBedCellLink);
+
+        grid.remove(cell.cellX, cell.cellY);
+        buffer.removeEntity(vegetable);
+        eventManager.setFlag('gameStateWasChangedEvent');
+    }
+
+    #makePotatoesGhost(vegetable, buffer, eventManager, fabric) {
+        const state = vegetable.get(VegetableState);
+
+        vegetable.remove(Immunity, Satiety, Thirst);
+        vegetable.put(fabric.potatoGhost());
+        state.pushState(lifeCycleStates.death);
+        buffer.bindEntity(vegetable);
+        eventManager.setFlag('gameStateWasChangedEvent');
+    }
+
+    #makeDeadPotatoSprout(vegetable, buffer, eventManager) {
+        const state = vegetable.get(VegetableState);
+
+        vegetable.remove(Immunity, Satiety, Thirst);
+        state.pushState(lifeCycleStates.death);
+        buffer.bindEntity(vegetable);
+        eventManager.setFlag('gameStateWasChangedEvent');
+    }
+
 };

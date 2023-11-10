@@ -23,7 +23,7 @@ function beforeEachTest() {
     grid = new Grid(4, 3);
     manager.putSingletonEntity('fabric', {
         tomatoExplosion() {
-            return new TomatoExplosion(8, 1001);
+            return new TomatoExplosion(8, 1000);
         }
     });
     manager.putSingletonEntity('grid', grid);
@@ -53,32 +53,6 @@ function vegetableState(stateHistory) {
     return result;
 }
 
-function createAndPrepareTomato(cellX, cellY, currentState, previousState) {
-    let vegetable = manager.createEntity().put(
-        new VegetableMeta('Tomato'),
-        new GardenBedCellLink(cellX, cellY),
-        vegetableState([previousState, currentState]),
-        Immunity.of(60, 1, 0.2, 30),
-        Satiety.of(60, 1, 30),
-        Thirst.of(60, 1, 30)
-    );
-    manager.bindEntity(vegetable);
-    grid.write(cellX, cellY, vegetable);
-    return vegetable;
-}
-
-function createAndPrepareExplodedTomato(cellX, cellY, previousState, explosion) {
-    let vegetable = manager.createEntity().put(
-        new VegetableMeta('Tomato'),
-        new GardenBedCellLink(cellX, cellY),
-        vegetableState([previousState, death]),
-        new TomatoExplosion(explosion.neighboursNumber, explosion.timeInMillis)
-    ).addTags('exploded');
-    manager.bindEntity(vegetable);
-    grid.write(cellX, cellY, vegetable);
-    return vegetable;
-}
-
 function systemHandler(system) {
     return new SystemHandler('TomatoDeathSystem', 'update', system, 0, 1);
 }
@@ -86,130 +60,117 @@ function systemHandler(system) {
 describe.each([
     {
         initVegetablesState: [
-            {cellX: 0, cellY: 0, currentState: death, previousState: adult, explosion: null},
-            {cellX: 1, cellY: 0, currentState: death, previousState: youth, explosion: null},
-            {cellX: 0, cellY: 1, currentState: death, previousState: child, explosion: null},
-            {cellX: 1, cellY: 1, currentState: death, previousState: adult, explosion: null},
-            {cellX: 2, cellY: 1, currentState: sprout, previousState: seed, explosion: null},
-            {cellX: 1, cellY: 2, currentState: seed, previousState: sleepingSeed, explosion: null},
-            {cellX: 2, cellY: 2, currentState: sleepingSeed, previousState: sleepingSeed, explosion: null},
-            {cellX: 0, cellY: 2, currentState: death, previousState: sprout, explosion: null}
+            {cellX: 0, cellY: 0, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 0, stateHistory: [youth], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 0, cellY: 1, stateHistory: [child], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 1, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 2, cellY: 1, stateHistory: [seed, sprout], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 1, cellY: 2, stateHistory: [sleepingSeed, seed], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 2, cellY: 2, stateHistory: [sleepingSeed], hasGrowComps: false, isDead: false, explosion: null},
+            {cellX: 0, cellY: 2, stateHistory: [sprout, death], hasGrowComps: false, isDead: true, explosion: null}
         ],
-        elapsedTime: 1000,
+        elapsedTime: 999,
         expectedVegetablesState: [
             {cellX: 0, cellY: 0, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 1, cellY: 0, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 0, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 1, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false}
+            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true}
         ]
     },
     {
         initVegetablesState: [
-            {cellX: 0, cellY: 0, currentState: death, previousState: adult, explosion: null},
-            {cellX: 1, cellY: 0, currentState: death, previousState: youth, explosion: null},
-            {cellX: 0, cellY: 1, currentState: death, previousState: child, explosion: null},
-            {cellX: 1, cellY: 1, currentState: death, previousState: adult, explosion: null},
-            {cellX: 2, cellY: 1, currentState: sprout, previousState: seed, explosion: null},
-            {cellX: 1, cellY: 2, currentState: seed, previousState: sleepingSeed, explosion: null},
-            {cellX: 2, cellY: 2, currentState: sleepingSeed, previousState: sleepingSeed, explosion: null},
-            {cellX: 0, cellY: 2, currentState: death, previousState: sprout, explosion: null}
+            {cellX: 0, cellY: 0, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 0, stateHistory: [youth], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 0, cellY: 1, stateHistory: [child], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 1, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 2, cellY: 1, stateHistory: [seed, sprout], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 1, cellY: 2, stateHistory: [sleepingSeed, seed], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 2, cellY: 2, stateHistory: [sleepingSeed], hasGrowComps: false, isDead: false, explosion: null},
+            {cellX: 0, cellY: 2, stateHistory: [sprout, death], hasGrowComps: false, isDead: true, explosion: null}
+        ],
+        elapsedTime: 1000,
+        expectedVegetablesState: [
+            {cellX: 0, cellY: 0, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 0, isAlive: false, isCellEmpty: true},
+            {cellX: 0, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true}
+        ]
+    },
+    {
+        initVegetablesState: [
+            {cellX: 0, cellY: 0, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 0, stateHistory: [youth], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 0, cellY: 1, stateHistory: [child], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 1, cellY: 1, stateHistory: [adult], hasGrowComps: true, isDead: true, explosion: null},
+            {cellX: 2, cellY: 1, stateHistory: [seed, sprout], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 1, cellY: 2, stateHistory: [sleepingSeed, seed], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 2, cellY: 2, stateHistory: [sleepingSeed], hasGrowComps: false, isDead: false, explosion: null},
+            {cellX: 0, cellY: 2, stateHistory: [sprout, death], hasGrowComps: false, isDead: true, explosion: null}
         ],
         elapsedTime: 1001,
         expectedVegetablesState: [
-            {cellX: 0, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 0, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false}
+            {cellX: 0, cellY: 0, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 0, isAlive: false, isCellEmpty: true},
+            {cellX: 0, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true},
+            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true},
+            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true}
         ]
     },
     {
         initVegetablesState: [
-            {cellX: 0, cellY: 0, currentState: death, previousState: adult, explosion: {neighboursNumber: 8, timeInMillis: 2000}},
-            {cellX: 1, cellY: 0, currentState: death, previousState: youth, explosion: {neighboursNumber: 8, timeInMillis: 2000}},
-            {cellX: 0, cellY: 1, currentState: death, previousState: child, explosion: {neighboursNumber: 8, timeInMillis: 2000}},
-            {cellX: 1, cellY: 1, currentState: death, previousState: adult, explosion: null},
-            {cellX: 2, cellY: 1, currentState: sprout, previousState: seed, explosion: null},
-            {cellX: 1, cellY: 2, currentState: seed, previousState: sleepingSeed, explosion: null},
-            {cellX: 2, cellY: 2, currentState: sleepingSeed, previousState: sleepingSeed, explosion: null},
-            {cellX: 0, cellY: 2, currentState: death, previousState: sprout, explosion: null}
+            {cellX: 0, cellY: 0, stateHistory: [adult, death], hasGrowComps: false, isDead: true, explosion: {neighboursNumber: 8, timeInMillis: 1000}},
+            {cellX: 1, cellY: 0, stateHistory: [youth, death], hasGrowComps: false, isDead: true, explosion: {neighboursNumber: 8, timeInMillis: 1000}},
+            {cellX: 0, cellY: 1, stateHistory: [child, death], hasGrowComps: false, isDead: true, explosion: {neighboursNumber: 8, timeInMillis: 1000}},
+            {cellX: 1, cellY: 1, stateHistory: [adult, death], hasGrowComps: false, isDead: true, explosion: {neighboursNumber: 8, timeInMillis: 1000}},
+            {cellX: 2, cellY: 1, stateHistory: [seed, sprout], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 1, cellY: 2, stateHistory: [sleepingSeed, seed], hasGrowComps: true, isDead: false, explosion: null},
+            {cellX: 2, cellY: 2, stateHistory: [sleepingSeed], hasGrowComps: false, isDead: false, explosion: null},
+            {cellX: 0, cellY: 2, stateHistory: [sprout, death], hasGrowComps: false, isDead: true, explosion: null}
         ],
-        elapsedTime: 1001,
+        elapsedTime: 999,
         expectedVegetablesState: [
             {cellX: 0, cellY: 0, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 1, cellY: 0, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 0, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false}
-        ]
-    },
-    {
-        initVegetablesState: [
-            {cellX: 0, cellY: 0, currentState: death, previousState: adult, explosion: null},
-            {cellX: 1, cellY: 0, currentState: death, previousState: youth, explosion: null},
-            {cellX: 0, cellY: 1, currentState: death, previousState: child, explosion: null},
-            {cellX: 1, cellY: 1, currentState: death, previousState: adult, explosion: null},
-            {cellX: 2, cellY: 1, currentState: sprout, previousState: seed, explosion: null},
-            {cellX: 1, cellY: 2, currentState: seed, previousState: sleepingSeed, explosion: null},
-            {cellX: 2, cellY: 2, currentState: sleepingSeed, previousState: sleepingSeed, explosion: null},
-            {cellX: 0, cellY: 2, currentState: death, previousState: sprout, explosion: null}
-        ],
-        elapsedTime: 1002,
-        expectedVegetablesState: [
-            {cellX: 0, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 0, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 2, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 1, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 2, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false},
-            {cellX: 0, cellY: 2, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: false, hasGrowComps: false}
-        ]
-    },
-    {
-        initVegetablesState: [
-            {cellX: 0, cellY: 0, currentState: death, previousState: adult, explosion: {neighboursNumber: 8, timeInMillis: 999}},
-            {cellX: 1, cellY: 0, currentState: death, previousState: youth, explosion: {neighboursNumber: 8, timeInMillis: 999}},
-            {cellX: 0, cellY: 1, currentState: death, previousState: child, explosion: {neighboursNumber: 8, timeInMillis: 999}},
-            {cellX: 1, cellY: 1, currentState: death, previousState: adult, explosion: {neighboursNumber: 8, timeInMillis: 999}},
-            {cellX: 2, cellY: 1, currentState: sprout, previousState: seed, explosion: null},
-            {cellX: 1, cellY: 2, currentState: seed, previousState: sleepingSeed, explosion: null},
-            {cellX: 2, cellY: 2, currentState: sleepingSeed, previousState: sleepingSeed, explosion: null},
-            {cellX: 0, cellY: 2, currentState: death, previousState: sprout, explosion: null}
-        ],
-        elapsedTime: 1000,
-        expectedVegetablesState: [
-            {cellX: 0, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 0, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 0, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
-            {cellX: 1, cellY: 1, isAlive: false, isCellEmpty: true, hasTomatoExplosionComp: true, hasGrowComps: false},
+            {cellX: 1, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: true, hasGrowComps: false},
             {cellX: 2, cellY: 1, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
             {cellX: 1, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
-            {cellX: 2, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: true},
+            {cellX: 2, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: false},
             {cellX: 0, cellY: 2, isAlive: true, isCellEmpty: false, hasTomatoExplosionComp: false, hasGrowComps: false}
         ]
     }
-])(`update(groupName, world):`,
+])(`update(groupName, world): case $#`,
     ({initVegetablesState, elapsedTime, expectedVegetablesState}) => {
         beforeEach(beforeEachTest);
 
-        test(`initVegetablesState: [${JSON.stringify(initVegetablesState)}],
+        test(`initVegetablesState: ${JSON.stringify(initVegetablesState)},
             elapsedTime: ${elapsedTime},
-            => expectedVegetablesState: [${JSON.stringify(expectedVegetablesState)}]`,
+            => expectedVegetablesState: ${JSON.stringify(expectedVegetablesState)}`,
         () => {
             let vegetables = initVegetablesState.map(state => {
-                if(!state.explosion) return createAndPrepareTomato(state.cellX, state.cellY, state.currentState, state.previousState);
-                else return createAndPrepareExplodedTomato(state.cellX, state.cellY, state.previousState, state.explosion);
+                let vegetable = manager.createEntity();
+                vegetable.put(
+                    new VegetableMeta('Tomato'),
+                    new GardenBedCellLink(state.cellX, state.cellY),
+                    vegetableState(state.stateHistory)
+                );
+                if(state.explosion) vegetable.put(new TomatoExplosion(state.explosion.neighboursNumber, state.explosion.timeInMillis));
+                if(state.hasGrowComps) vegetable.put(Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30));
+                if(state.isDead) vegetable.addTags('dead');
+                manager.bindEntity(vegetable);
+                grid.write(state.cellX, state.cellY, vegetable);
+                return vegetable;
             });
             worldMock.elapsedTime = elapsedTime;
 
@@ -220,10 +181,12 @@ describe.each([
                 let vegetable = vegetables[index];
                 expect(manager.isAlive(vegetable)).toBe(expected.isAlive);
                 expect(grid.get(expected.cellX, expected.cellY) == null).toBe(expected.isCellEmpty);
-                expect(vegetable.hasComponents(TomatoExplosion)).toBe(expected.hasTomatoExplosionComp);
-                expect(vegetable.hasComponents(Immunity)).toBe(expected.hasGrowComps);
-                expect(vegetable.hasComponents(Satiety)).toBe(expected.hasGrowComps);
-                expect(vegetable.hasComponents(Thirst)).toBe(expected.hasGrowComps);
+                if(expected.isAlive) {
+                    expect(vegetable.hasComponents(TomatoExplosion)).toBe(expected.hasTomatoExplosionComp);
+                    expect(vegetable.hasComponents(Immunity)).toBe(expected.hasGrowComps);
+                    expect(vegetable.hasComponents(Satiety)).toBe(expected.hasGrowComps);
+                    expect(vegetable.hasComponents(Thirst)).toBe(expected.hasGrowComps);
+                }
             });
         });
     }

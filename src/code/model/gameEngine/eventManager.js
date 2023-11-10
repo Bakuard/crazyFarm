@@ -45,6 +45,11 @@ module.exports.EventManager = class EventManager {
         return this.#events[eventName]?.length ?? 0;
     }
 
+    events(eventName) {
+        let events = this.#events[eventName];
+        return events ? Array.from(events) : [];
+    }
+
     clearEventQueue(name, label) {
         if(this.#events[name] != undefined) {
             if(label == undefined) this.#events[name].length = 0;

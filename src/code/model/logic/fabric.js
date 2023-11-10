@@ -1,17 +1,27 @@
 'use strict'
 
-const {PotatoGhost} = require('./potatoDeath.js');
-const {Thirst} = require('./thirst.js');
-const {Satiety} = require('./satiety.js');
-const {Immunity} = require('./immunity.js');
+const {PotatoGhost, PotatoDeathSystem} = require('./potatoDeath.js');
+const {Thirst, ThirstSystem} = require('./thirst.js');
+const {Satiety, SatietySystem} = require('./satiety.js');
+const {Immunity, ImmunitySystem} = require('./immunity.js');
 const {UnknownVegetableType, FailToCreateVegetableMeta} = require('../exception/exceptions.js');
 const {Wallet} = require('./wallet.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
-const {VegetableState, StateDetail, lifeCycleStates} = require('./vegetableState.js');
+const {VegetableState, StateDetail, lifeCycleStates, GrowSystem} = require('./vegetableState.js');
 const {Grid} = require('./store/grid.js');
 const {GardenBedCellLink} = require('./gardenBedCellLink.js');
-const {TomatoExplosion} = require('./tomatoDeath.js');
+const {TomatoExplosion, TomatoDeathSystem} = require('./tomatoDeath.js');
 const {TimeUtil} = require('../gameEngine/timeUtil.js');
+const {World} = require('../gameEngine/world.js');
+const {InitSystem} = require('./init.js');
+const {LoadGameSystem} = require('./loadGame.js');
+const {GameCommandSystem} = require('./gameCommand.js');
+const {ShovelSystem} = require('./shovel.js');
+const {PlantNewVegetableSystem} = require('./plantNewVegetable.js');
+const {WorldLogger} = require('./worldLogger.js');
+const {OutputSystem} = require('./output.js');
+const {SaveGameSystem} = require('./saveGame.js');
+const {TutorialSystem} = require('./tutorial.js');
 
 const defaultSettings = {
     potato: {
@@ -304,13 +314,71 @@ module.exports.Fabric = class Fabric {
         return Math.random;
     }
 
-
-    setSettings(settings) {
-        this.settings = settings;
+    world() {
+        if(!this.worldObj) {
+            this.worldObj = new World(this.frameDurationInMillis(), this.timeUtil());
+        }
+        return this.worldObj;
     }
 
-    getSettings() {
-        return this.settings;
+    initSystem() {
+        return new InitSystem(this);
+    }
+
+    loadGameSystem(userId) {
+        return new LoadGameSystem(userId);
+    }
+
+    gameCommandSystem() {
+        return new GameCommandSystem();
+    }
+
+    shovelSystem() {
+        return new ShovelSystem();
+    }
+
+    plantNewVegetableSystem() {
+        return new PlantNewVegetableSystem(this.randomGenerator());
+    }
+
+    growSystem() {
+        return new GrowSystem(this.world().getEntityComponentManager());
+    }
+
+    thirstSystem() {
+        return new ThirstSystem(this.world().getEntityComponentManager());
+    }
+
+    satietySystem() {
+        return new SatietySystem(this.world().getEntityComponentManager());
+    }
+
+    immunitySystem() {
+        return new ImmunitySystem(this.world().getEntityComponentManager(), this.randomGenerator());
+    }
+
+    tomatoDeathSystem() {
+        return new TomatoDeathSystem(this.world().getEntityComponentManager(), this.randomGenerator());
+    }
+
+    potatoDeathSystem() {
+        return new PotatoDeathSystem(this.world().getEntityComponentManager());
+    }
+
+    tutorialSystem(user, userRepository) {
+        return new TutorialSystem(user, userRepository);
+    }
+
+    worldLogger(userId) {
+        return new WorldLogger(this.world().getEntityComponentManager(), userId);
+    }
+
+    outputSystem(outputCallback) {
+        return new OutputSystem(false, outputCallback);
+    }
+
+    saveGameSystem(userId, gameRepository) {
+        return new SaveGameSystem(userId, gameRepository, this.timeUtil());
     }
 
 

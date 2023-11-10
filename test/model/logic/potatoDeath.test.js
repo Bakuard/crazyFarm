@@ -41,14 +41,14 @@ function beforeEachTest() {
     };
 };
 
-function vegetableState(...states) {
+function vegetableState(stateHistory) {
     let result = VegetableState.of(
         StateDetail.of(10, lifeCycleStates.seed),
         StateDetail.of(10, lifeCycleStates.sprout),
         StateDetail.of(10, lifeCycleStates.child),
         StateDetail.of(10, lifeCycleStates.youth)
     );
-    result.history = states;
+    result.history = stateHistory;
 
     return result;
 }
@@ -88,155 +88,129 @@ describe.each([
 
 describe.each([
     {
-        state: sleepingSeed, previousState: sleepingSeed, isExploded: false, hasGrowComps: false, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [sleepingSeed], isExploded: false, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: sleepingSeed
     },
     {
-        state: seed, previousState: sleepingSeed, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [seed], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: seed
     },
     {
-        state: sprout, previousState: seed, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [sprout], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: sprout
     },
     {
-        state: child, previousState: sprout, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [child], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: child
     },
     {
-        state: youth, previousState: child, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [youth], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: youth
     },
     {
-        state: adult, previousState: youth, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
-    },
-
-
-    {
-        state: sleepingSeed, previousState: sleepingSeed, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: seed, previousState: sleepingSeed, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: sprout, previousState: seed, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: child, previousState: sprout, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
-    },
-    {
-        state: youth, previousState: child, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
-    },
-    {
-        state: adult, previousState: youth, isExploded: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [adult], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: adult
     },
 
 
     {
-        state: death, previousState: sleepingSeed, isExploded: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        stateHistory: [sleepingSeed], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
         expcetedAlive: false, expectedCellEmpty: true
     },
     {
-        state: death, previousState: seed, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        stateHistory: [seed], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
         expcetedAlive: false, expectedCellEmpty: true
     },
     {
-        state: death, previousState: sprout, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [sprout], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
     },
     {
-        state: death, previousState: child, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [child], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
     {
-        state: death, previousState: youth, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [youth], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
     {
-        state: death, previousState: adult, isExploded: false, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [adult], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [sleepingSeed, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [seed, death], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [sprout, death], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [child, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [youth, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [adult, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
 
 
     {
-        state: death, previousState: sleepingSeed, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: false,
+        stateHistory: [sleepingSeed], isExploded: false, isDead: true, hasGrowComps: false, alreadyHasGhostComp: false,
         expcetedAlive: false, expectedCellEmpty: true
     },
     {
-        state: death, previousState: seed, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        stateHistory: [seed], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
         expcetedAlive: false, expectedCellEmpty: true
     },
     {
-        state: death, previousState: sprout, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
+        stateHistory: [sprout], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
     {
-        state: death, previousState: child, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: true,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [child], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
     {
-        state: death, previousState: youth, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: true,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [youth], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     },
     {
-        state: death, previousState: adult, isExploded: true, hasGrowComps: false, alreadyHasGhostComp: true,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
-    },
-
-
-    {
-        state: death, previousState: sleepingSeed, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: death, previousState: seed, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: death, previousState: sprout, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expcetedAlive: false, expectedCellEmpty: true
-    },
-    {
-        state: death, previousState: child, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
-    },
-    {
-        state: death, previousState: youth, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
-    },
-    {
-        state: death, previousState: adult, isExploded: true, hasGrowComps: true, alreadyHasGhostComp: false,
-        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false
+        stateHistory: [adult], isExploded: false,  isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     }
 ])(`update(groupName, world):`,
-    ({state, previousState, isExploded, hasGrowComps, alreadyHasGhostComp,
-        expectedHasGrowComps, expectedHasGhostComp, expcetedAlive, expectedCellEmpty}) => {
+    ({stateHistory, isExploded, isDead, hasGrowComps, alreadyHasGhostComp,
+        expectedHasGrowComps, expectedHasGhostComp, expcetedAlive, expectedCellEmpty, expectedState}) => {
         beforeEach(beforeEachTest);
 
-        test(`state: ${state.name},
-              previousState: ${previousState.name},
+        test(`stateHistory: [${stateHistory.map(state => state.name)}],
               isExploded: ${isExploded},
+              isDead: ${isDead},
               hasGrowComps: ${hasGrowComps},
               alreadyHasGhostComp: ${alreadyHasGhostComp}
               => expectedHasGrowComps: ${expectedHasGrowComps},
                 expectedHasGhostComp: ${expectedHasGhostComp},
                 expcetedAlive: ${expcetedAlive},
-                expectedCellEmpty: ${expectedCellEmpty}`,
+                expectedCellEmpty: ${expectedCellEmpty},
+                expectedState: ${expectedState?.name}`,
         () => {
             let entity = manager.createEntity().put(
                 new VegetableMeta('Potato'),
                 new GardenBedCellLink(0, 0),
-                vegetableState(previousState, state)
+                vegetableState(stateHistory)
             );
             if(hasGrowComps) entity.put( Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30) );
             if(isExploded) entity.addTags('exploded');
+            if(isDead) entity.addTags('dead');
             if(alreadyHasGhostComp) entity.put( new PotatoGhost(10000) );
             manager.bindEntity(entity);
             grid.write(0, 0, entity);
@@ -256,6 +230,7 @@ describe.each([
                 expect(entityAfterUpdate.hasComponents(VegetableState)).toBe(true);
                 expect(entityAfterUpdate.hasComponents(GardenBedCellLink)).toBe(true);
                 expect(entityAfterUpdate.hasComponents(VegetableMeta)).toBe(true);
+                expect(entityAfterUpdate.get(VegetableState).current()).toBe(expectedState);
             }
         });
     }

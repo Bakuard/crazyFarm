@@ -16,6 +16,8 @@ beforeEach(async () => {
     await collection.deleteMany({});
 });
 
+afterAll(async () => dbConnector.closeConnection());
+
 test(`userRepository.add(user):
        user with such loggin already exists
        => exception`,

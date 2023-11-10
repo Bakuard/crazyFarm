@@ -1,52 +1,40 @@
 'use strict'
 
-const {World} = require('../gameEngine/world.js');
-const {PlantNewVegetableSystem} = require('./plantNewVegetable.js');
-const {ThirstSystem} = require('./thirst.js');
-const {SatietySystem} = require('./satiety.js');
-const {ImmunitySystem} = require('./immunity.js');
-const {PotatoDeathSystem} = require('./potatoDeath.js');
-const {TomatoDeathSystem} = require('./tomatoDeath.js');
 const {groups} = require('../gameEngine/gameLoop.js');
-const {GameCommandSystem} = require('./gameCommand.js');
-const {ShovelSystem} = require('./shovel.js');
-const {OutputSystem} = require('./output.js');
-const {GrowSystem} = require('./vegetableState.js');
-const {WorldLogger} = require('./worldLogger.js');
-const {InitSystem} = require('./init.js');
-const {LoadGameSystem} = require('./loadGame.js');
 const {newLogger} = require('../../conf/logConf.js');
-const {SaveGameSystem} = require('./saveGame.js');
 
 let logger = newLogger('info', 'game.js');
 
 module.exports.Game = class Game {
 
-    constructor(outputCallback, user, gameRepository, fabric) {
+    constructor(outputCallback, user, gameRepository, userRepository, fabric) {
         this.user = user;
         this.gameRepository = gameRepository;
-        this.world = new World(fabric.frameDurationInMillis(), fabric.timeUtil());
-        const manager = this.world.getEntityComponentManager();
+        this.world = fabric.world();
 
         this.world.getSystemManager().
-            putSystem('InitSystem', new InitSystem(fabric)).appendToGroup('InitSystem', groups.start).
-            putSystem('LoadGameSystem', new LoadGameSystem(user._id)).appendToGroup('LoadGameSystem', groups.start).
-            putSystem('GameCommandSystem', new GameCommandSystem()).appendToGroup('GameCommandSystem', groups.update).
-            putSystem('ShovelSystem', new ShovelSystem()).appendToGroup('ShovelSystem', groups.update).
-            putSystem('PlantNewVegetableSystem', new PlantNewVegetableSystem(fabric.randomGenerator())).
-                appendToGroup('PlantNewVegetableSystem', groups.update).
-            putSystem('GrowSystem', new GrowSystem(manager)).appendToGroup('GrowSystem', groups.update).
-            putSystem('ThirstSystem', new ThirstSystem(manager)).appendToGroup('ThirstSystem', groups.update).
-            putSystem('SatietySystem', new SatietySystem(manager)).appendToGroup('SatietySystem', groups.update).
-            putSystem('ImmunitySystem', new ImmunitySystem(manager, fabric.randomGenerator())).
-                appendToGroup('ImmunitySystem', groups.update).
-            putSystem('TomatoDeathSystem', new TomatoDeathSystem(manager, fabric.randomGenerator())).
-                appendToGroup('TomatoDeathSystem', groups.update).
-            putSystem('PotatoDeathSystem', new PotatoDeathSystem(manager)).appendToGroup('PotatoDeathSystem', groups.update).
-            putSystem('WorldLogger', new WorldLogger(manager, this.user._id)).appendToGroup('WorldLogger', groups.update).
-            putSystem('OutputSystem', new OutputSystem(false, outputCallback)).appendToGroup('OutputSystem', groups.update).
-            putSystem('SaveGameSystem', new SaveGameSystem(user._id, gameRepository, fabric.timeUtil())).
-                appendToGroup('SaveGameSystem', groups.stop);
+            putSystem('InitSystem', fabric.initSystem()).appendToGroup('InitSystem', groups.start).
+            putSystem('LoadGameSystem', fabric.loadGameSystem()).appendToGroup('LoadGameSystem', groups.start).
+            putSystem('GameCommandSystem', fabric.gameCommandSystem()).appendToGroup('GameCommandSystem', groups.update);
+        if(user.isTutorialFinished) {
+            this.world.getSystemManager().
+                putSystem('ShovelSystem', fabric.shovelSystem()).appendToGroup('ShovelSystem', groups.update).
+                putSystem('PlantNewVegetableSystem', fabric.plantNewVegetableSystem()).appendToGroup('PlantNewVegetableSystem', groups.update).
+                putSystem('GrowSystem', fabric.growSystem()).appendToGroup('GrowSystem', groups.update).
+                putSystem('ThirstSystem', fabric.thirstSystem()).appendToGroup('ThirstSystem', groups.update).
+                putSystem('SatietySystem', fabric.satietySystem()).appendToGroup('SatietySystem', groups.update).
+                putSystem('ImmunitySystem', fabric.immunitySystem()).appendToGroup('ImmunitySystem', groups.update).
+                putSystem('TomatoDeathSystem', fabric.tomatoDeathSystem()).appendToGroup('TomatoDeathSystem', groups.update).
+                putSystem('PotatoDeathSystem', fabric.potatoDeathSystem()).appendToGroup('PotatoDeathSystem', groups.update);
+        } else {
+            this.world.getSystemManager().
+                putSystem('TutorialSystem', fabric.tutorialSystem(user, userRepository)).appendToGroup('TutorialSystem', groups.update);
+        }
+
+        this.world.getSystemManager().
+            putSystem('WorldLogger', fabric.worldLogger(user._id)).appendToGroup('WorldLogger', groups.update).
+            putSystem('OutputSystem', fabric.outputSystem(outputCallback)).appendToGroup('OutputSystem', groups.update).
+            putSystem('SaveGameSystem', fabric.saveGameSystem(user._id, gameRepository)).appendToGroup('SaveGameSystem', groups.stop);
     }
 
     async start() {

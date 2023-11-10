@@ -1,15 +1,17 @@
 const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
-const {GameRepository} = require('../../src/code/dal/repositories.js');
+const {GameRepository, UserRepository} = require('../../src/code/dal/repositories.js');
 const {Fabric} = require('../../src/code/model/logic/fabric.js');
 const {OutputSystem} = require('../../src/code/model/logic/output.js');
 const {groups} = require('../../src/code/model/gameEngine/gameLoop.js');
+const {User} = require('../../src/code/model/auth/User.js');
 
 let game = null;
 let outputData = null;
 let randomGeneratorReturnedValue = null;
 let timeUtil = null;
+let dbConnector = null;
 
 function createTimeUtil() {
     return {
@@ -59,7 +61,7 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
 }
 
 async function beforeEachTestScenario() {
-    const dbConnector = new DBConnector();
+    dbConnector = new DBConnector();
     await clearDB(dbConnector);
 
     timeUtil = createTimeUtil();
@@ -68,8 +70,9 @@ async function beforeEachTestScenario() {
     fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
     game = new Game(
         () => {}, 
-        {_id: '123'}, 
+        new User({_id: 'userid-123', loggin: 'Me', email: 'me@mail.com', passwordHash: 'pass-hash', salt: 'salt', isTutorialFinished: true}), 
         new GameRepository(dbConnector),
+        new UserRepository(dbConnector),
         fabric
     );
 
@@ -84,6 +87,7 @@ async function beforeEachTestScenario() {
 describe(`grow some vegetables to 'sprout' then die,
           grow tomato to 'child' then die and explode 'child' potato`, () => {
     beforeAll(beforeEachTestScenario);
+    afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
         {
@@ -387,6 +391,7 @@ describe(`grow some vegetables to 'sprout' then die,
 
 describe(`grow vegetable to adult state and dig up this`, () => {
     beforeAll(beforeEachTestScenario);
+    afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
         {

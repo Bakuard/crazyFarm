@@ -4,7 +4,6 @@ const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/compo
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
-const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
@@ -36,18 +35,8 @@ function beforeEachTest() {
 
 function createVegetable(cellX, cellY, maxSatiety, currentSatiety, declineSatietyRatePerSeconds) {
     return manager.createEntity().put(
-        vegetableState(),
         new Satiety(maxSatiety, currentSatiety, declineSatietyRatePerSeconds, 1),
         new GardenBedCellLink(cellX, cellY)
-    );
-}
-
-function vegetableState() {
-    return VegetableState.of(
-        StateDetail.of(10, lifeCycleStates.seed),
-        StateDetail.of(10, lifeCycleStates.sprout),
-        StateDetail.of(10, lifeCycleStates.child),
-        StateDetail.of(10, lifeCycleStates.youth)
     );
 }
 
@@ -80,7 +69,7 @@ describe.each([
             for(let i = 0; i < updateNumber; i++) system.update(systemHandler(system), worldMock);
 
             expect(vegetable.get(Satiety).current).toBe(expectedSatiety);
-            expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
+            expect(vegetable.hasTags('dead')).toBe(isDeath);
         });
     }
 );
