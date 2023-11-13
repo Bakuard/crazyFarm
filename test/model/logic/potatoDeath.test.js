@@ -21,11 +21,6 @@ function beforeEachTest() {
     eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', {
-        potatoGhost() {
-            return new PotatoGhost(2000);
-        }
-    });
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -77,7 +72,7 @@ describe.each([
             grid.write(0, 0, entity);
             worldMock.elapsedTime = elapsedTime;
 
-            let system = new PotatoDeathSystem(manager);
+            let system = new PotatoDeathSystem(manager, () => new PotatoGhost(2000));
             system.update(systemHandler(system), worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
@@ -215,7 +210,7 @@ describe.each([
             manager.bindEntity(entity);
             grid.write(0, 0, entity);
 
-            let system = new PotatoDeathSystem(manager);
+            let system = new PotatoDeathSystem(manager, () => new PotatoGhost(2000));
             system.update(systemHandler(system), worldMock);
             let generator = manager.select(manager.createFilter().all(VegetableMeta));
             let entityAfterUpdate = [...generator][0];

@@ -21,11 +21,6 @@ function beforeEachTest() {
     eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', {
-        tomatoExplosion() {
-            return new TomatoExplosion(8, 1000);
-        }
-    });
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -174,7 +169,7 @@ describe.each([
             });
             worldMock.elapsedTime = elapsedTime;
 
-            let system  = new TomatoDeathSystem(manager, () => 0.1);
+            let system  = new TomatoDeathSystem(manager, () => 0.1, () => new TomatoExplosion(8, 1000));
             system.update(systemHandler(system), worldMock);
 
             expectedVegetablesState.forEach((expected, index) => {

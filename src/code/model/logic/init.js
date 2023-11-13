@@ -2,17 +2,17 @@
 
 module.exports.InitSystem = class InitSystem {
 
-    constructor(fabric) {
-        this.fabric = fabric;
+    constructor(gridFabric, walletFabric) {
+        this.gridFabric = gridFabric;
+        this.walletFabric = walletFabric;
     }
 
     update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
 
-        const grid = this.fabric.grid();
-        const wallet = manager.createEntity().put(this.fabric.wallet());
+        const grid = this.gridFabric();
+        const wallet = manager.createEntity().put(this.walletFabric());
 
-        manager.putSingletonEntity('fabric', this.fabric);
         manager.putSingletonEntity('grid', grid);
         manager.putSingletonEntity('wallet', wallet);
     }

@@ -16,8 +16,9 @@ class TomatoExplosion {
 module.exports.TomatoExplosion = TomatoExplosion;
 
 module.exports.TomatoDeathSystem = class TomatoDeathSystem {
-    constructor(entityComponentManager, randomGenerator) {
+    constructor(entityComponentManager, randomGenerator, tomatoExplosionFabric) {
         this.randomGenerator = randomGenerator;
+        this.tomatoExplosionFabric = tomatoExplosionFabric;
         this.recentlyDeadTomatoes = entityComponentManager.createFilter().
             all(VegetableMeta, VegetableState, GardenBedCellLink).
             none(TomatoExplosion).
@@ -30,11 +31,10 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
         const grid = manager.getSingletonEntity('grid');
-        const fabric = manager.getSingletonEntity('fabric');
         const elapsedTime = world.getGameLoop().getElapsedTime();
 
         const stack = this.#updateRecentlyDeadTomatoes(manager, grid, buffer, eventManager);
-        this.#updateExplosionChainReaction(stack, elapsedTime, grid, buffer, eventManager, fabric);
+        this.#updateExplosionChainReaction(stack, elapsedTime, grid, buffer, eventManager);
         this.#updateExplodedTomatos(manager, elapsedTime, grid, buffer, eventManager);
 
         manager.flush(buffer);
@@ -59,7 +59,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         return stack;
     }
 
-    #updateExplosionChainReaction(stack, elapsedTime, grid, buffer, eventManager, fabric) {
+    #updateExplosionChainReaction(stack, elapsedTime, grid, buffer, eventManager) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 
         const visited = [];
@@ -73,7 +73,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
                 if(state.currentIsOneOf(sleepingSeed, seed, sprout) || (state.current() == death && state.previous() == sprout)) {
                     this.#removeTomato(vegetable, grid, buffer, eventManager);
                 } else if(state.currentIsOneOf(child, youth, adult)) {
-                    this.#explodeTomato(vegetable, fabric, grid, buffer, eventManager, visited, stack, elapsedTime);
+                    this.#explodeTomato(vegetable, grid, buffer, eventManager, visited, stack, elapsedTime);
                 }
             } else {
                 vegetable.addTags('exploded');
@@ -107,10 +107,10 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
         eventManager.setFlag('gameStateWasChangedEvent');
     }
 
-    #explodeTomato(vegetable, fabric, grid, buffer, eventManager, visited, stack, elapsedTime) {
+    #explodeTomato(vegetable, grid, buffer, eventManager, visited, stack, elapsedTime) {
         const state = vegetable.get(VegetableState);
         const cell = vegetable.get(GardenBedCellLink);
-        const explosion = fabric.tomatoExplosion(state.current());
+        const explosion = this.tomatoExplosionFabric(state.current());
         const neighbours = grid.getRandomNeigboursFor(cell.cellX, cell.cellY, explosion.neighboursNumber, this.randomGenerator);
         neighbours.
             filter(({value: neighbour}) => neighbour && neighbour.hasComponents(VegetableMeta) && !visited.some(v => v.equals(neighbour))).

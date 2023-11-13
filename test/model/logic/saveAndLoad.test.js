@@ -176,7 +176,7 @@ describe.each([
                 return result;
             });
             let saveSystem = new SaveGameSystem(1, mockGameRepository, new TimeUtil());
-            let loadSystem = new LoadGameSystem(1);
+            let loadSystem = new LoadGameSystem(1, fabric.componentLoader());
             
             saveSystem.update(systemHandler('SaveGameSystem', saveSystem), worldMock);
             let fullGameState = mockGameRepository.fullGameState;

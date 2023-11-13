@@ -57,10 +57,9 @@ function beforeEachTest() {
     });
     eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    wallet = manager.createEntity().put(fabric.wallet());
+    wallet = manager.createEntity().put(fabric.wallet()());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('wallet', wallet);
-    manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -71,7 +70,7 @@ function beforeEachTest() {
 beforeEach(beforeEachTest);
 
 function createAndPrepareVegetable(cellX, cellY, currentState, previousState) {
-    let stateComp = fabric.vegetableState('Potato');
+    let stateComp = fabric.vegetableState()('Potato');
     stateComp.pushState(previousState);
     stateComp.pushState(currentState);
     let vegetable = manager.createEntity().put(
@@ -256,7 +255,7 @@ describe.each([
             if(event) eventManager.writeEvent(event.tool, event);
             wallet.get(Wallet).sum = money;
 
-            let system = new ShovelSystem(manager);
+            let system = new ShovelSystem(fabric.vegetablePrizeFactor());
             system.update(systemHandler(system), worldMock);
 
             expect(wallet.get(Wallet).sum).toEqual(expectedMoney);

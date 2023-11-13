@@ -3,7 +3,6 @@ const {EntityComponentManager} = require('../../../src/code/model/gameEngine/ent
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
-const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
 const {Immunity} = require('../../../src/code/model/logic/immunity.js');
 const {Satiety} = require('../../../src/code/model/logic/satiety.js');
@@ -12,36 +11,14 @@ const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
-let fabric = null;
 let manager = null;
 let eventManager = null;
 let worldMock = null;
 let grid = null;
 function beforeEachSetting() {
-    fabric = new Fabric({
-        potato: {
-            immunity: {
-                max: 60,
-                alertLevel1: 30,
-                declineRatePerSeconds: 1,
-                probability: 0.2
-            },
-            satiety: {
-                max: 60,
-                alertLevel1: 30,
-                declineRatePerSeconds: 1
-            },
-            thirst: {
-                max: 60,
-                alertLevel1: 30,
-                declineRatePerSeconds: 1
-            }
-        }
-    });
     eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('grid', grid);
     
     worldMock = {
@@ -150,7 +127,12 @@ describe.each([
             if(event) eventManager.writeEvent(event.tool, event);
             worldMock.elapsedTime = elapsedTime;
 
-            let system = new GrowSystem(manager);
+            let system = new GrowSystem(
+                manager, 
+                () => new Thirst(60, 60, 1, 30), 
+                () => new Satiety(60, 60, 1, 30), 
+                () => new Immunity(60, 60, false, 1, 0.5, 30)
+            );
             system.update(systemHandler(system), worldMock);
 
             expect(vegetable.get(VegetableState).current()).toBe(expectedVegetableState.nextState);
@@ -199,7 +181,12 @@ describe.each([
             manager.bindEntity(entity);
             worldMock.elapsedTime = elapsedTime;
     
-            let system = new GrowSystem(manager);
+            let system = new GrowSystem(
+                manager, 
+                () => new Thirst(60, 60, 1, 30), 
+                () => new Satiety(60, 60, 1, 30), 
+                () => new Immunity(60, 60, false, 1, 0.5, 30)
+            );
             system.update(systemHandler(system), worldMock);
     
             expect(entity.get(VegetableState).current()).toBe(nextState);

@@ -4,8 +4,9 @@ const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {Wallet} = require('./wallet.js');
 
 module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
-    constructor(randomGenerator) {
-        this.randomGenerator = randomGenerator;
+    constructor(vegetableMetaFabric, vegetableStateFabric) {
+        this.vegetableMetaFabric = vegetableMetaFabric;
+        this.vegetableStateFabric = vegetableStateFabric;
     }
 
     update(systemHandler, world) {
@@ -13,20 +14,14 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         const buffer = manager.createCommandBuffer();
         const eventManager = world.getEventManager();
         const wallet = manager.getSingletonEntity('wallet').get(Wallet);
-        const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
 
-        eventManager.forEachEvent('seeds', (event) => { 
+        eventManager.forEachEvent('seeds', event => { 
             if(!grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice) {
-                const vegetable = buffer.createEntity();
-                const metaComp = fabric.vegetableMeta(this.randomGenerator());
-                const cellLinkComp = new GardenBedCellLink(event.cellX, event.cellY);
-                const vegetableState = fabric.vegetableState(metaComp.typeName);
-                vegetable.put(metaComp, cellLinkComp, vegetableState);
+                const vegetable = this.#createNewVegetable(buffer, event);
                 grid.write(event.cellX, event.cellY, vegetable);
-                wallet.sum -= wallet.seedsPrice;
 
-                buffer.bindEntity(vegetable);
+                wallet.sum -= wallet.seedsPrice;
 
                 eventManager.setFlag('gameStateWasChangedEvent');
             }
@@ -34,5 +29,18 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
 
         manager.flush(buffer);
         eventManager.clearEventQueue('seeds');
+    }
+
+    #createNewVegetable(buffer, event) {
+        const vegetable = buffer.createEntity();
+
+        const metaComp = this.vegetableMetaFabric();
+        const cellLinkComp = new GardenBedCellLink(event.cellX, event.cellY);
+        const vegetableState = this.vegetableStateFabric(metaComp.typeName);
+        vegetable.put(metaComp, cellLinkComp, vegetableState);
+
+        buffer.bindEntity(vegetable);
+
+        return vegetable;
     }
 };

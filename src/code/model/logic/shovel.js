@@ -5,15 +5,14 @@ const {Wallet} = require('./wallet.js');
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
-    constructor() {
-        
+    constructor(vegetablePrizeFactorFabric) {
+        this.vegetablePrizeFactorFabric = vegetablePrizeFactorFabric;
     }
 
     update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const eventManager = world.getEventManager();
         const buffer = manager.createCommandBuffer();
-        const fabric = manager.getSingletonEntity('fabric');
         const wallet = manager.getSingletonEntity('wallet');
         const grid = manager.getSingletonEntity('grid');
 
@@ -25,7 +24,7 @@ module.exports.ShovelSystem = class ShovelSystem {
                 buffer.removeEntity(vegetable);
 
                 wallet.get(Wallet).sum += this.#calculatePrice(
-                    fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
+                    this.vegetablePrizeFactorFabric(vegetable.get(VegetableMeta).typeName),
                     vegetable.get(VegetableState).current()
                 );
 

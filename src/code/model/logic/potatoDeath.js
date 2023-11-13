@@ -15,7 +15,8 @@ class PotatoGhost {
 module.exports.PotatoGhost = PotatoGhost;
 
 module.exports.PotatoDeathSystem = class PotatoDeathSystem {
-    constructor(entityComponentManager) {
+    constructor(entityComponentManager, potatoGhostFabric) {
+        this.potatoGhostFabric = potatoGhostFabric;
         this.explodedFilter = entityComponentManager.createFilter().
             allTags('exploded').
             all(VegetableState, VegetableMeta, GardenBedCellLink).
@@ -32,17 +33,16 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
-        const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
 
-        this.#updateExplodedPotatos(manager, grid, buffer, eventManager, fabric);
-        this.#updateDeadPotatos(manager, grid, buffer, eventManager, fabric);
+        this.#updateExplodedPotatos(manager, grid, buffer, eventManager);
+        this.#updateDeadPotatos(manager, grid, buffer, eventManager);
         this.#updatePotatoGhosts(manager, grid, buffer, eventManager, world.getGameLoop().getElapsedTime());
 
         manager.flush(buffer);
     }
 
-    #updateExplodedPotatos(manager, grid, buffer, eventManager, fabric) {
+    #updateExplodedPotatos(manager, grid, buffer, eventManager) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 
         for(let vegetable of manager.select(this.explodedFilter)) {
@@ -54,13 +54,13 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
                    state.current() == death && state.previousIsOneOf(sleepingSeed, seed, sprout)) {
                     this.#removePotato(vegetable, grid, buffer, eventManager);
                 } else if(state.currentIsOneOf(child, youth, adult)) {
-                    this.#makePotatoesGhost(vegetable, buffer, eventManager, fabric);
+                    this.#makePotatoesGhost(vegetable, buffer, eventManager);
                 }
             }
         }
     }
 
-    #updateDeadPotatos(manager, grid, buffer, eventManager, fabric) {
+    #updateDeadPotatos(manager, grid, buffer, eventManager) {
         const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 
         for(let vegetable of manager.select(this.deadFilter)) {
@@ -69,7 +69,7 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
 
             if(meta.typeName == 'Potato') {
                 if(state.currentIsOneOf(child, youth, adult)) {
-                    this.#makePotatoesGhost(vegetable, buffer, eventManager, fabric);
+                    this.#makePotatoesGhost(vegetable, buffer, eventManager);
                 } else if(state.currentIsOneOf(sleepingSeed, seed)) {
                     this.#removePotato(vegetable, grid, buffer, eventManager);
                 } else if(state.current() == sprout) {
@@ -95,11 +95,11 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
         eventManager.setFlag('gameStateWasChangedEvent');
     }
 
-    #makePotatoesGhost(vegetable, buffer, eventManager, fabric) {
+    #makePotatoesGhost(vegetable, buffer, eventManager) {
         const state = vegetable.get(VegetableState);
 
         vegetable.remove(Immunity, Satiety, Thirst);
-        vegetable.put(fabric.potatoGhost());
+        vegetable.put(this.potatoGhostFabric());
         state.pushState(lifeCycleStates.death);
         buffer.bindEntity(vegetable);
         eventManager.setFlag('gameStateWasChangedEvent');

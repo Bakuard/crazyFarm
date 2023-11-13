@@ -7,8 +7,9 @@ const {newLogger} = require('../../conf/logConf.js');
 let logger = newLogger('info', 'loadGame.js');
 
 module.exports.LoadGameSystem = class LoadGameSystem {
-    constructor(userId) {
+    constructor(userId, componentLoader) {
         this.userId = userId;
+        this.componentLoader = componentLoader;
     }
 
     update(systemHandler, world) {
@@ -16,17 +17,16 @@ module.exports.LoadGameSystem = class LoadGameSystem {
         const manager = world.getEntityComponentManager();
         const entityManager = manager.getEntityManager();
 
-        const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
         const wallet = manager.getSingletonEntity('wallet');
         const fullGameState = manager.getSingletonEntity('fullGameState');
 
         const loadEntity = this.#loadEntity;
         if(fullGameState) {
-            wallet.put(fabric.restoreComponentBy('Wallet', fullGameState.wallet));
+            wallet.put(this.componentLoader('Wallet', fullGameState.wallet));
             let snapshot = {
-                liveEntities: fullGameState.liveEntities.map(e => loadEntity(fabric, e)),
-                deadEntities: fullGameState.deadEntities.map(e => loadEntity(fabric, e))
+                liveEntities: fullGameState.liveEntities.map(e => loadEntity(this.componentLoader, e)),
+                deadEntities: fullGameState.deadEntities.map(e => loadEntity(this.componentLoader, e))
             };
             entityManager.restore(snapshot);     
             snapshot.liveEntities.forEach(entity => {
@@ -45,11 +45,11 @@ module.exports.LoadGameSystem = class LoadGameSystem {
         }
     }
 
-    #loadEntity(fabric, entityLoadedImage) {
+    #loadEntity(componentLoader, entityLoadedImage) {
         let entity = new Entity(entityLoadedImage.personalId, entityLoadedImage.generation);
         entity.addTags(...entityLoadedImage.tags);
         for(let [compName, compLoadedImage] of Object.entries(entityLoadedImage.components)) {
-            entity.put(fabric.restoreComponentBy(compName, compLoadedImage));
+            entity.put(componentLoader(compName, compLoadedImage));
         }
         return entity;
     }
