@@ -4,7 +4,6 @@ const {settings} = require('../resources/settings.js');
 const {GameRepository, UserRepository} = require('../../src/code/dal/repositories.js');
 const {Fabric} = require('../../src/code/model/logic/fabric.js');
 const {OutputSystem} = require('../../src/code/model/logic/output.js');
-const {groups} = require('../../src/code/model/gameEngine/gameLoop.js');
 const {User} = require('../../src/code/model/auth/User.js');
 
 let game = null;
@@ -60,7 +59,7 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-async function beforeEachTestScenario() {
+async function beforeEachTestScenario(isTutorialFinished) {
     dbConnector = new DBConnector();
     await clearDB(dbConnector);
 
@@ -70,13 +69,13 @@ async function beforeEachTestScenario() {
     fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
     game = new Game(
         () => {}, 
-        new User({_id: 'userid-123', loggin: 'Me', email: 'me@mail.com', passwordHash: 'pass-hash', salt: 'salt', isTutorialFinished: true}), 
+        new User({_id: 'userid-123', loggin: 'Me', email: 'me@mail.com', passwordHash: 'pass-hash', salt: 'salt', isTutorialFinished}), 
         new GameRepository(dbConnector),
         new UserRepository(dbConnector),
         fabric
     );
 
-    game.world.getSystemManager().removeSystem('WorldLogger');
+    game.world.getSystemManager().putSystem('WorldLoggerSystem', { update() {} });
     game.world.getSystemManager().putSystem('OutputSystem',  
         new OutputSystem(true, (gameResponse) => outputData = gameResponse)
     );
@@ -86,7 +85,7 @@ async function beforeEachTestScenario() {
 
 describe(`grow some vegetables to 'sprout' then die,
           grow tomato to 'child' then die and explode 'child' potato`, () => {
-    beforeAll(beforeEachTestScenario);
+    beforeAll(async () => beforeEachTestScenario(true));
     afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
@@ -390,7 +389,7 @@ describe(`grow some vegetables to 'sprout' then die,
 });
 
 describe(`grow vegetable to adult state and dig up this`, () => {
-    beforeAll(beforeEachTestScenario);
+    beforeAll(async () => beforeEachTestScenario(true));
     afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
@@ -609,6 +608,103 @@ describe(`grow vegetable to adult state and dig up this`, () => {
               updateNumber: ${updateNumber},
               randomValue: ${randomValue},
               => expectedMoney: ${expectedMoney},
+              expectedGardenCells: ${JSON.stringify(expectedGardenCells, null, 4)}`, 
+        () => {
+            randomGeneratorReturnedValue = randomValue;
+            events.forEach(event => game.execute(event));
+            for(let i = 0; i < updateNumber; i++) timeUtil.advanceTime(elapsedMillis);
+    
+            expect(outputData.containers).toEqual(expectedGardenCells);
+            expect(outputData.player.cash).toEqual(expectedMoney);
+        });
+    });
+});
+
+describe(`tutorial`, () => {
+    beforeAll(async () => beforeEachTestScenario(false));
+    afterAll(async () => dbConnector.closeConnection());
+
+    describe.each([
+        {
+            events: [
+                {tool: 'seeds', cell: '0-0'}, {tool: 'seeds', cell: '0-1'}, {tool: 'seeds', cell: '1-1'}, {tool: 'seeds', cell: '2-1'},
+                {tool: 'seeds', cell: '1-2'}, {tool: 'seeds', cell: '2-2'}, {tool: 'seeds', cell: '2-3'}, {tool: 'seeds', cell: '3-2'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: 1,
+            expectedMoney: 200, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'seeds', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 2,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedTutorialStep: 3,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        }
+    ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedTutorialStep, expectedMoney, expectedGardenCells}) => {
+        test(`events: ${JSON.stringify(events)}, 
+              elapsedMillis: ${elapsedMillis},
+              updateNumber: ${updateNumber},
+              randomValue: ${randomValue},
+              => expectedTutorialStep: ${expectedTutorialStep},
+              expectedMoney: ${expectedMoney},
               expectedGardenCells: ${JSON.stringify(expectedGardenCells, null, 4)}`, 
         () => {
             randomGeneratorReturnedValue = randomValue;

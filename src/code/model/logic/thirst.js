@@ -20,7 +20,7 @@ module.exports.Thirst = Thirst;
 
 module.exports.ThirstSystem = class ThirstSystem {
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Thirst).noneTags('dead');
+        this.filter = entityComponentManager.createFilter().all(Thirst);
     }
 
     update(systemHandler, world) {
@@ -58,9 +58,6 @@ module.exports.ThirstSystem = class ThirstSystem {
     }
 
     #canPour(vegetable) {
-        return Boolean(
-            vegetable
-            && vegetable.hasComponents(Thirst)
-        );
+        return vegetable && vegetable.hasComponents(Thirst);
     }
 };

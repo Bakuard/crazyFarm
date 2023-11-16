@@ -22,6 +22,7 @@ const {WorldLogger} = require('./worldLogger.js');
 const {OutputSystem} = require('./output.js');
 const {SaveGameSystem} = require('./saveGame.js');
 const {TutorialSystem} = require('./tutorial.js');
+const {ClearEventsSystem} = require('./clearEvents.js');
 
 const defaultSettings = {
     potato: {
@@ -55,22 +56,10 @@ const defaultSettings = {
             typeName: 'Potato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 1,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 1,
+            sproutlInterval: 90,
+            childInterval: 90,
+            youthInterval: 90
         }
     },
     tomato: {
@@ -109,22 +98,10 @@ const defaultSettings = {
             typeName: 'Tomato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 1,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 90,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 1,
+            sproutInterval: 90,
+            childInterval: 90,
+            youthInterval: 90
         }
     },
     wallet: {
@@ -139,6 +116,39 @@ const defaultSettings = {
     },
     gameLoop: {
         frameDurationInMillis: 100
+    },
+    tutorial: {
+        activeCell: {
+            x: 1,
+            y: 0
+        },
+        vegetable: {
+            meta: {
+                typeName: 'Potato'
+            },
+            immunity: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1,
+                probability: 1
+            },
+            satiety: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            thirst: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            vegetableState: {
+                seedInterval: 1,
+                sproutInterval: 6,
+                childInterval: 6,
+                youthInterval: 6
+            }
+        }
     }
 };
 module.exports.defaultSettings = defaultSettings;
@@ -268,10 +278,10 @@ module.exports.Fabric = class Fabric {
                 seedsPrice: this.settings.wallet.seedsPrice,
                 priceCoff: vegetableSettings.price.coff,
                 growIntervals: [
-                    vegetableSettings.vegetableState.seedDetail.intervalInSecond,
-                    vegetableSettings.vegetableState.sproutDetail.intervalInSecond,
-                    vegetableSettings.vegetableState.chidlDetail.intervalInSecond,
-                    vegetableSettings.vegetableState.youthDetail.intervalInSecond
+                    vegetableSettings.vegetableState.seedInterval,
+                    vegetableSettings.vegetableState.sproutInterval,
+                    vegetableSettings.vegetableState.childInterval,
+                    vegetableSettings.vegetableState.youthInterval
                 ]
             };
         }
@@ -297,22 +307,10 @@ module.exports.Fabric = class Fabric {
             let vegetableSettings = this.#getSettingsByVegetableType(vegetableTypeName);
 
             return VegetableState.of(
-                StateDetail.of(
-                    vegetableSettings.vegetableState.seedDetail.intervalInSecond,
-                    lifeCycleStates.findByName(vegetableSettings.vegetableState.seedDetail.lifeCyleState)
-                ),
-                StateDetail.of(
-                    vegetableSettings.vegetableState.sproutDetail.intervalInSecond,
-                    lifeCycleStates.findByName(vegetableSettings.vegetableState.sproutDetail.lifeCyleState)
-                ),
-                StateDetail.of(
-                    vegetableSettings.vegetableState.chidlDetail.intervalInSecond,
-                    lifeCycleStates.findByName(vegetableSettings.vegetableState.chidlDetail.lifeCyleState)
-                ),
-                StateDetail.of(
-                    vegetableSettings.vegetableState.youthDetail.intervalInSecond,
-                    lifeCycleStates.findByName(vegetableSettings.vegetableState.youthDetail.lifeCyleState)
-                )
+                StateDetail.of(vegetableSettings.vegetableState.seedInterval, lifeCycleStates.seed),
+                StateDetail.of(vegetableSettings.vegetableState.sproutInterval, lifeCycleStates.sprout),
+                StateDetail.of(vegetableSettings.vegetableState.childInterval, lifeCycleStates.child),
+                StateDetail.of(vegetableSettings.vegetableState.youthInterval, lifeCycleStates.youth)
             );
         }
     }
@@ -385,12 +383,12 @@ module.exports.Fabric = class Fabric {
         return () => new PotatoDeathSystem(this.world()().getEntityComponentManager(), this.potatoGhost());
     }
 
-    tutorialSystem(user, userRepository) {
-        return () => new TutorialSystem(user, userRepository);
+    clearEventsSystem() {
+        return () => new ClearEventsSystem();
     }
 
     worldLogger() {
-        return (userId) => new WorldLogger(this.world()().getEntityComponentManager(), userId);
+        return (user) => new WorldLogger(this.world()().getEntityComponentManager(), user);
     }
 
     outputSystem() {
@@ -399,6 +397,52 @@ module.exports.Fabric = class Fabric {
 
     saveGameSystem() {
         return (userId, gameRepository) => new SaveGameSystem(userId, gameRepository, this.timeUtil());
+    }
+
+
+    activeCell() {
+        const cellSettings = this.settings.tutorial.activeCell;
+        return {
+            x: cellSettings.x,
+            y: cellSettings.y
+        };
+    }
+
+    plantNewVegetableSystemTutorial() {
+        return () => new PlantNewVegetableSystem(
+            () => new VegetableMeta(this.settings.tutorial.vegetable.meta.typeName), 
+            () => {
+                const states = this.settings.tutorial.vegetable.vegetableState;
+                return VegetableState.of(
+                    StateDetail.of(states.seedInterval, lifeCycleStates.seed),
+                    StateDetail.of(states.sproutInterval, lifeCycleStates.sprout),
+                    StateDetail.of(states.childInterval, lifeCycleStates.child),
+                    StateDetail.of(states.youthInterval, lifeCycleStates.youth)
+                );
+            }
+        );
+    }
+    
+    growSystemTutorial() {
+        return () => {
+            const vs = this.settings.tutorial.vegetable;
+            return new GrowSystem(
+                this.world()().getEntityComponentManager(), 
+                () => Thirst.of(vs.thirst.max, vs.thirst.declineRatePerSeconds, vs.thirst.alarmLevel1),
+                () => Satiety.of(vs.satiety.max, vs.satiety.declineRatePerSeconds, vs.satiety.alarmLevel1), 
+                () => Immunity.of(vs.immunity.max, vs.immunity.declineRatePerSeconds, vs.immunity.probability, vs.immunity.alarmLevel1)
+            );
+        }
+    }
+
+    tutorialSystem() {
+        return (user, userRepository) => new TutorialSystem(
+            user, 
+            userRepository,
+            this.activeCell(),
+            this.plantNewVegetableSystemTutorial(),
+            this.growSystemTutorial()
+        );
     }
 
 

@@ -32,22 +32,10 @@ module.exports.settings = {
             typeName: 'Potato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 3,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
         }
     },
     tomato: {
@@ -86,22 +74,10 @@ module.exports.settings = {
             typeName: 'Tomato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 3,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
         }
     },
     wallet: {
@@ -116,5 +92,38 @@ module.exports.settings = {
     },
     gameLoop: {
         frameDurationInMillis: 100
+    },
+    tutorial: {
+        activeCell: {
+            x: 1,
+            y: 0
+        },
+        vegetable: {
+            meta: {
+                typeName: 'Potato'
+            },
+            immunity: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1,
+                probability: 1
+            },
+            satiety: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            thirst: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            vegetableState: {
+                seedInterval: 1,
+                sproutInterval: 6,
+                childInterval: 6,
+                youthInterval: 6
+            }
+        }
     }
-};
+}; 

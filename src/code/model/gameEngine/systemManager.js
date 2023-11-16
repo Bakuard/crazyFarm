@@ -2,8 +2,12 @@
 
 const exceptions = require('../exception/exceptions.js');
 
-const DEFAULT_GROUP = 'DEFAULT_GROUP';
-module.exports.DEFAULT_GROUP = DEFAULT_GROUP;
+class RegisteredSystem {
+    constructor(systemName, system) {
+        this.systemName = systemName;
+        this.system = system;
+    }
+}
 
 class SystemHandler {
     constructor(systemName, groupName, system, index, groupSize) {
@@ -30,20 +34,20 @@ module.exports.SystemManager = class SystemManager {
 
     #world;
     #groups;
+    #registeredSystems;
 
     constructor(world) {
         this.#groups = {};
-        this.#groups[DEFAULT_GROUP] = [];
+        this.#registeredSystems = [];
         this.#world = world;
     }
 
     putSystem(systemName, system) {
-        const systemHandler = this.#getSystemHandler(systemName);
-        if(!systemHandler) {
-            const group = this.#groups[DEFAULT_GROUP];
-            group.push(new SystemHandler(systemName, DEFAULT_GROUP, system, group.length, group.length + 1));
-            this.#updateIndexesOfGroup(DEFAULT_GROUP);
+        const registeredSystem = this.#getRegisteredSystem(systemName);
+        if(!registeredSystem) {
+            this.#registeredSystems.push(new RegisteredSystem(systemName, system));
         } else {
+            registeredSystem.system = system;
             for(let group of Object.values(this.#groups)) {
                 group.forEach(sh => {
                     if(sh.systemName == systemName) sh.system = system;
@@ -54,30 +58,41 @@ module.exports.SystemManager = class SystemManager {
         return this;
     }
 
-    appendToGroup(systemName, groupName) {
+    appendToGroup(groupName, systemName) {
         const system = this.#tryGetSystem(systemName);
-        const group = this.#groups[groupName] ?? (this.#groups[groupName] = []);
+        const group = this.#getOrCreateGroup(groupName);
         group.push(new SystemHandler(systemName, groupName, system, group.length, group.length + 1));
-        this.#updateIndexesOfGroup(groupName);
+        this.#updateIndexAndSizeForEachHandler(groupName);
 
         return this;
     }
 
-    insertSystem(systemName, groupName, index) {
+    insertIntoGroup(groupName, systemName, index) {
         const system = this.#tryGetSystem(systemName);
-        const group = this.#groups[groupName] ?? (this.#groups[groupName] = []);
+        const group = this.#getOrCreateGroup(groupName);
         this.#assertIndexInBound(index, group.length);
         group.splice(index, 0, new SystemHandler(systemName, groupName, system, index, group.length + 1));
-        this.#updateIndexesOfGroup(groupName);
+        this.#updateIndexAndSizeForEachHandler(groupName);
 
         return this;
+    }
+
+    resetGroup(groupName, ...systemsName) {
+        const group = [];
+        for(let i = 0; i < systemsName.length; ++i) {
+            const system = this.#tryGetSystem(systemsName[i]);
+            const systemHandler = new SystemHandler(systemsName[i], groupName, system, i, systemsName.length);
+            group.push(systemHandler);
+        }
+        this.#groups[groupName] = group;
     }
 
     removeSystem(systemName) {
         for(let groupName of Object.keys(this.#groups)) {
             this.#groups[groupName] = this.#groups[groupName].filter(systemHandler => systemHandler.systemName != systemName);
-            this.#updateIndexesOfGroup(groupName);
+            this.#updateIndexAndSizeForEachHandler(groupName);
         }
+        this.#registeredSystems = this.#registeredSystems.filter(registeredSystem => registeredSystem.systemName != systemName);
         return this;
     }
 
@@ -90,19 +105,23 @@ module.exports.SystemManager = class SystemManager {
     }
 
 
+    #getOrCreateGroup(groupName) {
+        return this.#groups[groupName] ?? (this.#groups[groupName] = []);
+    }
+
     #tryGetSystem(systemName) {
-        const system = this.#getSystemHandler(systemName)?.system;
-        if(!system) {
+        const registeredSystem = this.#getRegisteredSystem(systemName);
+        if(!registeredSystem) {
             throw new exceptions.UnknownSystemException(`There is not system with name '${systemName}'.`);
         }
-        return system;
+        return registeredSystem.system;
     }
 
-    #getSystemHandler(systemName) {
-        return this.#groups[DEFAULT_GROUP].find(systemHandler => systemHandler.systemName == systemName);
+    #getRegisteredSystem(systemName) {
+        return this.#registeredSystems.find(registeredSystem => registeredSystem.systemName == systemName);
     }
 
-    #updateIndexesOfGroup(groupName) {
+    #updateIndexAndSizeForEachHandler(groupName) {
         const group = this.#groups[groupName];
         for(let i = 0; i < group.length; i++) {
             const systemHandler = group[i];

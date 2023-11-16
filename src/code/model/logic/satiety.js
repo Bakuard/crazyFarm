@@ -22,7 +22,7 @@ module.exports.Satiety = Satiety;
 
 module.exports.SatietySystem = class SatietySystem {
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Satiety).noneTags('dead');
+        this.filter = entityComponentManager.createFilter().all(Satiety);
     }
 
     update(systemHandler, world) {
@@ -64,10 +64,8 @@ module.exports.SatietySystem = class SatietySystem {
     }
 
     #canFertilize(vegetable, wallet) {
-        return Boolean(
-            vegetable
+        return vegetable
             && vegetable.hasComponents(Satiety)
-            && wallet.sum >= wallet.fertilizerPrice
-        );
+            && wallet.sum >= wallet.fertilizerPrice;
     }
 };

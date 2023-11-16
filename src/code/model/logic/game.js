@@ -13,28 +13,41 @@ module.exports.Game = class Game {
         this.world = fabric.world()();
 
         this.world.getSystemManager().
-            putSystem('InitSystem', fabric.initSystem()()).appendToGroup('InitSystem', groups.start).
-            putSystem('LoadGameSystem', fabric.loadGameSystem()(user._id)).appendToGroup('LoadGameSystem', groups.start).
-            putSystem('GameCommandSystem', fabric.gameCommandSystem()()).appendToGroup('GameCommandSystem', groups.update);
+            putSystem('InitSystem', fabric.initSystem()()).appendToGroup(groups.start, 'InitSystem').
+            putSystem('LoadGameSystem', fabric.loadGameSystem()(user._id)).appendToGroup(groups.start, 'LoadGameSystem').
+            putSystem('GameCommandSystem', fabric.gameCommandSystem()()).
+            putSystem('ShovelSystem', fabric.shovelSystem()()).
+            putSystem('PlantNewVegetableSystem', fabric.plantNewVegetableSystem()()).
+            putSystem('GrowSystem', fabric.growSystem()()).
+            putSystem('ThirstSystem', fabric.thirstSystem()()).
+            putSystem('SatietySystem', fabric.satietySystem()()).
+            putSystem('ImmunitySystem', fabric.immunitySystem()()).
+            putSystem('TomatoDeathSystem', fabric.tomatoDeathSystem()()).
+            putSystem('PotatoDeathSystem', fabric.potatoDeathSystem()()).
+            putSystem('ClearEventsSystem', fabric.clearEventsSystem()()).
+            putSystem('WorldLoggerSystem', fabric.worldLogger()(user)).
+            putSystem('OutputSystem', fabric.outputSystem()(outputCallback)).
+            putSystem('TutorialSystem', fabric.tutorialSystem()(user, userRepository)).
+            putSystem('SaveGameSystem', fabric.saveGameSystem()(user._id, gameRepository)).appendToGroup(groups.stop, 'SaveGameSystem');
+        
         if(user.isTutorialFinished) {
             this.world.getSystemManager().
-                putSystem('ShovelSystem', fabric.shovelSystem()()).appendToGroup('ShovelSystem', groups.update).
-                putSystem('PlantNewVegetableSystem', fabric.plantNewVegetableSystem()()).appendToGroup('PlantNewVegetableSystem', groups.update).
-                putSystem('GrowSystem', fabric.growSystem()()).appendToGroup('GrowSystem', groups.update).
-                putSystem('ThirstSystem', fabric.thirstSystem()()).appendToGroup('ThirstSystem', groups.update).
-                putSystem('SatietySystem', fabric.satietySystem()()).appendToGroup('SatietySystem', groups.update).
-                putSystem('ImmunitySystem', fabric.immunitySystem()()).appendToGroup('ImmunitySystem', groups.update).
-                putSystem('TomatoDeathSystem', fabric.tomatoDeathSystem()()).appendToGroup('TomatoDeathSystem', groups.update).
-                putSystem('PotatoDeathSystem', fabric.potatoDeathSystem()()).appendToGroup('PotatoDeathSystem', groups.update);
+                appendToGroup(groups.update, 'GameCommandSystem').
+                appendToGroup(groups.update, 'ShovelSystem').
+                appendToGroup(groups.update, 'PlantNewVegetableSystem').
+                appendToGroup(groups.update, 'GrowSystem').
+                appendToGroup(groups.update, 'ThirstSystem').
+                appendToGroup(groups.update, 'SatietySystem').
+                appendToGroup(groups.update, 'ImmunitySystem').
+                appendToGroup(groups.update, 'TomatoDeathSystem').
+                appendToGroup(groups.update, 'PotatoDeathSystem').
+                appendToGroup(groups.update, 'ClearEventsSystem').
+                appendToGroup(groups.update, 'WorldLoggerSystem').
+                appendToGroup(groups.update, 'OutputSystem');
         } else {
             this.world.getSystemManager().
-                putSystem('TutorialSystem', fabric.tutorialSystem()(user, userRepository)).appendToGroup('TutorialSystem', groups.update);
+                appendToGroup(groups.update, 'TutorialSystem');
         }
-
-        this.world.getSystemManager().
-            putSystem('WorldLogger', fabric.worldLogger()(user._id)).appendToGroup('WorldLogger', groups.update).
-            putSystem('OutputSystem', fabric.outputSystem()(outputCallback)).appendToGroup('OutputSystem', groups.update).
-            putSystem('SaveGameSystem', fabric.saveGameSystem()(user._id, gameRepository)).appendToGroup('SaveGameSystem', groups.stop);
     }
 
     async start() {

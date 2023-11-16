@@ -25,7 +25,7 @@ module.exports.Immunity = Immunity;
 module.exports.ImmunitySystem = class ImmunitySystem {
     constructor(entityComponentManager, randomGenerator) {
         this.randomGenerator = randomGenerator;
-        this.filter = entityComponentManager.createFilter().all(Immunity).noneTags('dead');
+        this.filter = entityComponentManager.createFilter().all(Immunity);
     }
 
     update(systemHandler, world) {
@@ -70,10 +70,8 @@ module.exports.ImmunitySystem = class ImmunitySystem {
     }
 
     #canHeal(vegetable, wallet) {
-        return Boolean(
-            vegetable
+        return vegetable
             && vegetable.hasComponents(Immunity)
-            && wallet.sum >= wallet.sprayerPrice
-        );
+            && wallet.sum >= wallet.sprayerPrice;
     }
 };

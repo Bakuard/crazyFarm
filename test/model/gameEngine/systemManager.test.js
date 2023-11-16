@@ -1,4 +1,4 @@
-const {SystemManager, DEFAULT_GROUP, SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
+const {SystemManager} = require('../../../src/code/model/gameEngine/systemManager.js');
 const {UnknownSystemException} = require('../../../src/code/model/exception/exceptions.js');
 
 function system(updateMethod) {
@@ -7,40 +7,7 @@ function system(updateMethod) {
     };
 }
 
-test(`putSystem(systemName, system), updateGroup(DEFAULT_GROUP):
-        there is not system with such name,
-        add system to system manager
-        => updateGroup(DEFAULT_GROUP) must update this system`,
-    () => {
-        let worldMock = {};
-        let systemManager = new SystemManager(worldMock);
-        let systemMock = system(jest.fn());
-
-        systemManager.putSystem('system', systemMock);
-        systemManager.updateGroup(DEFAULT_GROUP);
-
-        expect(systemMock.update).toHaveBeenCalledTimes(1);
-    });
-
-test(`putSystem(systemName, system), updateGroup(DEFAULT_GROUP):
-        there is system with such name,
-        add system to system manager
-        => updateGroup(groupName) for any group must update new system and doesn't update old system`,
-    () => {
-        let worldMock = {};
-        let systemManager = new SystemManager(worldMock);
-        let oldSystemMock = system(jest.fn());
-        let newSystemMock = system(jest.fn());
-
-        systemManager.putSystem('system', oldSystemMock).
-                    putSystem('system', newSystemMock);
-        systemManager.updateGroup(DEFAULT_GROUP);
-
-        expect(oldSystemMock.update).toHaveBeenCalledTimes(0);
-        expect(newSystemMock.update).toHaveBeenCalledTimes(1);
-    });
-
-test(`putSystem(systemName, system), updateGroup(groupName), appendGroup(systemName, groupName):
+test(`putSystem(systemName, system), appendGroup(systemName, groupName):
         there is system with such name,
         system with such was added to several groups,
         add system to system manager
@@ -52,8 +19,8 @@ test(`putSystem(systemName, system), updateGroup(groupName), appendGroup(systemN
         let newSystemMock = system(jest.fn());
 
         systemManager.putSystem('system', oldSystemMock).
-                    appendToGroup('system', 'group1').
-                    appendToGroup('system', 'group2').
+                    appendToGroup('group1', 'system').
+                    appendToGroup('group2', 'system').
                     putSystem('system', newSystemMock);
         systemManager.updateGroup('group1');
         systemManager.updateGroup('group2');
@@ -62,23 +29,6 @@ test(`putSystem(systemName, system), updateGroup(groupName), appendGroup(systemN
         expect(newSystemMock.update).toHaveBeenCalledTimes(2);
         expect(newSystemMock.update.mock.calls[0][0].groupName).toEqual('group1');
         expect(newSystemMock.update.mock.calls[1][0].groupName).toEqual('group2');
-    });
-
-test(`putSystem(systemName, system), updateGroup(DEFAULT_GROUP):
-        add several systems to system manager
-        => updateGroup(DEFAULT_GROUP)  must call each system one time in correct order`,
-    () => {
-        let worldMock = {};
-        let systemManager = new SystemManager(worldMock);
-        let oldSystemMock = system(jest.fn());
-        let newSystemMock = system(jest.fn());
-
-        systemManager.putSystem('system', oldSystemMock).
-                    putSystem('system', newSystemMock);
-        systemManager.updateGroup(DEFAULT_GROUP);
-
-        expect(oldSystemMock.update).toHaveBeenCalledTimes(0);
-        expect(newSystemMock.update).toHaveBeenCalledTimes(1);
     });
 
 test(`appendToGroup(systemName, groupName):
@@ -100,9 +50,9 @@ test(`appendToGroup(systemName, groupName):
         let systemMock = system(jest.fn());
         systemManager.putSystem('system', systemMock);
 
-        systemManager.appendToGroup('system', 'group1');
-        systemManager.appendToGroup('system', 'group2');
-        systemManager.appendToGroup('system', 'group3');
+        systemManager.appendToGroup('group1', 'system');
+        systemManager.appendToGroup('group2', 'system');
+        systemManager.appendToGroup('group3', 'system');
         systemManager.updateGroup('group1');
         systemManager.updateGroup('group2');
         systemManager.updateGroup('group3');
@@ -124,9 +74,9 @@ test(`appendToGroup(systemName, groupName):
                     .putSystem('system2', systemMock2)
                     .putSystem('system3', systemMock3);
 
-        systemManager.appendToGroup('system1', 'group')
-                    .appendToGroup('system2', 'group')
-                    .appendToGroup('system3', 'group');
+        systemManager.appendToGroup('group', 'system1')
+                    .appendToGroup('group', 'system2')
+                    .appendToGroup('group', 'system3');
         systemManager.updateGroup('group');
 
         expect(actual).toEqual(['system1', 'system2', 'system3']);
@@ -141,9 +91,9 @@ test(`appendToGroup(systemName, groupName):
         let systemMock = system(jest.fn());
         systemManager.putSystem('system', systemMock);
 
-        systemManager.appendToGroup('system', 'group')
-                    .appendToGroup('system', 'group')
-                    .appendToGroup('system', 'group');
+        systemManager.appendToGroup('group', 'system')
+                    .appendToGroup('group', 'system')
+                    .appendToGroup( 'group', 'system');
         systemManager.updateGroup('group');
 
         expect(systemMock.update).toHaveBeenCalledTimes(3);
@@ -156,7 +106,7 @@ test(`updateGroup(groupName):
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
         let systemMock = system(jest.fn());
-        systemManager.putSystem('system1', systemMock).appendToGroup('system1', 'group1');
+        systemManager.putSystem('system1', systemMock).appendToGroup('group1', 'system1');
 
         systemManager.updateGroup('group2');
 
@@ -173,14 +123,14 @@ test(`removeSystem(name):
         let system2 = system(jest.fn());
         let system3 = system(jest.fn());
         systemManager.putSystem('system1', system1).
-                    appendToGroup('system1', 'group1').
-                    appendToGroup('system1', 'group2').
-                    appendToGroup('system1', 'group3');
+                    appendToGroup('group1', 'system1').
+                    appendToGroup('group2', 'system1').
+                    appendToGroup('group3', 'system1');
         systemManager.putSystem('system2', system2).
-                    appendToGroup('system2', 'group1').
-                    appendToGroup('system2', 'group2');
+                    appendToGroup('group1', 'system2').
+                    appendToGroup('group2', 'system2');
         systemManager.putSystem('system3', system3).
-                    appendToGroup('system3', 'group1');
+                    appendToGroup('group1', 'system3');
 
         systemManager.removeSystem('unknown system');
         systemManager.updateGroup('group1');
@@ -203,14 +153,14 @@ test(`removeSystem(name):
         let system2 = system(jest.fn());
         let system3 = system(jest.fn());
         systemManager.putSystem('system1', system1).
-                    appendToGroup('system1', 'group1').
-                    appendToGroup('system1', 'group2').
-                    appendToGroup('system1', 'group3');
+                    appendToGroup('group1', 'system1').
+                    appendToGroup('group2', 'system1').
+                    appendToGroup('group3', 'system1');
         systemManager.putSystem('system2', system2).
-                    appendToGroup('system2', 'group1').
-                    appendToGroup('system2', 'group2');
+                    appendToGroup('group1', 'system2').
+                    appendToGroup('group2', 'system2');
         systemManager.putSystem('system3', system3).
-                    appendToGroup('system3', 'group1');
+                    appendToGroup('group1', 'system3');
 
         systemManager.removeSystem('system2');
         systemManager.updateGroup('group1');

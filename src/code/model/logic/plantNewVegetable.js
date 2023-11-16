@@ -17,9 +17,8 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         const grid = manager.getSingletonEntity('grid');
 
         eventManager.forEachEvent('seeds', event => { 
-            if(!grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice) {
-                const vegetable = this.#createNewVegetable(buffer, event);
-                grid.write(event.cellX, event.cellY, vegetable);
+            if(this.#canPlant(grid, wallet, event)) {
+                this.#createNewVegetable(buffer, grid, event);
 
                 wallet.sum -= wallet.seedsPrice;
 
@@ -31,7 +30,11 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
         eventManager.clearEventQueue('seeds');
     }
 
-    #createNewVegetable(buffer, event) {
+    #canPlant(grid, wallet, event) {
+        return !grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice;
+    }
+
+    #createNewVegetable(buffer, grid, event) {
         const vegetable = buffer.createEntity();
 
         const metaComp = this.vegetableMetaFabric();
@@ -41,6 +44,6 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
 
         buffer.bindEntity(vegetable);
 
-        return vegetable;
+        grid.write(event.cellX, event.cellY, vegetable);
     }
 };
