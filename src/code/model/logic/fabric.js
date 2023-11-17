@@ -57,7 +57,7 @@ const defaultSettings = {
         },
         vegetableState: {
             seedInterval: 1,
-            sproutlInterval: 90,
+            sproutInterval: 90,
             childInterval: 90,
             youthInterval: 90
         }

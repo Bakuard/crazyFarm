@@ -37,6 +37,7 @@ module.exports.ShovelSystem = class ShovelSystem {
     }
 
     #calculatePrice(vegetablePrizeFactor, lifeCycleState) {
+        console.log(`prizeFactor: ${JSON.stringify(vegetablePrizeFactor, null, 4)}`);
         let price = 0;
 
         if(lifeCycleState.ordinal >= lifeCycleStates.child.ordinal && lifeCycleState.ordinal <= lifeCycleStates.adult.ordinal) {

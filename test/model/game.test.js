@@ -68,7 +68,7 @@ async function beforeEachTestScenario(isTutorialFinished, isDebugOutput) {
     fabric.timeUtil = () => timeUtil;
     fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
     game = new Game(
-        () => {}, 
+        null, 
         new User({_id: 'userid-123', loggin: 'Me', email: 'me@mail.com', passwordHash: 'pass-hash', salt: 'salt', isTutorialFinished}), 
         new GameRepository(dbConnector),
         new UserRepository(dbConnector),
