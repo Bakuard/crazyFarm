@@ -318,7 +318,7 @@ module.exports.TutorialSystem = class TutorialSystem {
 
         if(!grid.get(this.activeCell.x, this.activeCell.y)) {
             this.user.isTutorialFinished = true;
-            this.userRepository.add(this.user).then(() => logger.info('userId=%s has completed tutorial.', this.user._id));
+            this.userRepository.update(this.user).then(() => logger.info('userId=%s has completed tutorial.', this.user._id));
             
             systemManager.resetGroup(groups.update, 
                 'ClearTutorialData',

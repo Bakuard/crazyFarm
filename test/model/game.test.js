@@ -948,6 +948,30 @@ describe(`tutorial`, () => {
                 gardenBedCellDto(2, 2, false, null),
                 gardenBedCellDto(3, 2, false, null)
             ]
+        },
+        {
+            events: [
+                {tool: 'seeds', cell: '0-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: undefined,
+            expectedMoney: 252, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
         }
     ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedTutorialStep, expectedMoney, expectedGardenCells}) => {
         test(`events: ${JSON.stringify(events)}, 

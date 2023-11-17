@@ -28,6 +28,23 @@ module.exports.UserRepository = class UserRepository {
         }
     }
 
+    async update(user) {
+        try {
+            const mongo = await this.dbConnector.getConnection();
+            const db = mongo.db(process.env.MONGO_DB_NAME);
+            const collection = db.collection('users');
+            await collection.replaceOne({_id: user._id}, user);
+        } catch(err) {
+            if(err.code == 11000) {
+                throw new exceptions.DuplicateUserException(
+                    'User.logginOrEmail.notUnique',
+                    `User with loggin=${user.loggin} and email=${user.email} already exists`
+                );
+            }
+            throw err;
+        }
+    }
+
     async findById(userId) {
         const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
