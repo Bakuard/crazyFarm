@@ -71,6 +71,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step1(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
         const grid = manager.getSingletonEntity('grid');
 
         if(grid.get(this.activeCell.x, this.activeCell.y)) {
@@ -83,6 +84,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                 'WorldLoggerSystem',
                 'OutputSystem');
 
+            eventManager.setFlag('gameStateWasChangedEvent');
             manager.putSingletonEntity('tutorialCurrentStep', {
                 step: 2, isActive: true, blockedTools: ['seeds', 'shovel', 'fertilizer', 'sprayer'], activeCell: this.activeCell
             });
@@ -93,6 +95,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step2(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
@@ -106,6 +109,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
 
+                eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
                     step: 3, isActive: true, blockedTools: ['seeds', 'shovel', 'fertilizer', 'sprayer'], activeCell: this.activeCell
                 });
@@ -117,6 +121,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step3(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(Thirst))) {
             const thirst = vegetable.get(Thirst);
@@ -131,6 +136,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
 
+                eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
                     step: 4, isActive: true, blockedTools: ['bailer', 'shovel', 'seeds'], activeCell: this.activeCell
                 });
@@ -142,6 +148,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step4GrowToChild(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
         
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
@@ -156,6 +163,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
 
+                eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step4SatietyAndThirst;
             }
         }
@@ -164,6 +172,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step4SatietyAndThirst(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(Satiety, Immunity))) {
             const satiety = vegetable.get(Satiety);
@@ -188,6 +197,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
 
+                eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
                     step: 5, isActive: true, blockedTools: ['shovel'], activeCell: this.activeCell
                 });
@@ -199,6 +209,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step5GrowToYouth(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
         
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
@@ -214,6 +225,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
 
+                eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step5SatietyAndThirstAndImmunity;
             }
         }
@@ -222,6 +234,7 @@ module.exports.TutorialSystem = class TutorialSystem {
     step5SatietyAndThirstAndImmunity(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
+        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(Satiety, Immunity, Thirst))) {
             const satiety = vegetable.get(Satiety);
@@ -252,6 +265,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'WorldLoggerSystem',
                     'OutputSystem');
                     
+                eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
                     step: 6, isActive: true, blockedTools: ['bailer', 'seeds', 'fertilizer', 'sprayer'], activeCell: this.activeCell
                 });
