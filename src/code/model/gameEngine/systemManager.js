@@ -85,14 +85,23 @@ module.exports.SystemManager = class SystemManager {
             group.push(systemHandler);
         }
         this.#groups[groupName] = group;
+
+        return this;
+    }
+
+    removeFromGroup(groupName, systemName) {
+        this.#groups[groupName] = this.#groups[groupName].filter(systemHandler => systemHandler.systemName != systemName);
+        this.#updateIndexAndSizeForEachHandler(groupName);
+
+        return this;
     }
 
     removeSystem(systemName) {
         for(let groupName of Object.keys(this.#groups)) {
-            this.#groups[groupName] = this.#groups[groupName].filter(systemHandler => systemHandler.systemName != systemName);
-            this.#updateIndexAndSizeForEachHandler(groupName);
+            this.removeFromGroup(groupName, systemName);
         }
         this.#registeredSystems = this.#registeredSystems.filter(registeredSystem => registeredSystem.systemName != systemName);
+        
         return this;
     }
 

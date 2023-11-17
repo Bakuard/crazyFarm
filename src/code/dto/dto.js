@@ -106,13 +106,23 @@ class GardenBedCellResponse {
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
+class TutorialResponse {
+    constructor(tutorial) {
+        this.step = tutorial.step;
+        this.isActive = tutorial.isActive;
+        this.blockedTools = tutorial.blockedTools;
+    }
+}
+module.exports.TutorialResponse = TutorialResponse;
+
 class GameResponse {
-    constructor(grid, wallet) {
+    constructor(grid, wallet, tutorial) {
         this.player = {
             cash: wallet.sum
         };
         this.containers = [];
         grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value)));
+        this.tutorial = tutorial ? new TutorialResponse(tutorial) : null;
     }
 }
 module.exports.GameResponse = GameResponse;

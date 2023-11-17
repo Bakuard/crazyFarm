@@ -134,11 +134,15 @@ module.exports.TutorialSystem = class TutorialSystem {
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
             if(state.current() == lifeCycleStates.child) {
-                systemManager.removeSystem('GrowSystem').
-                    putSystem('SatietySystem', this.satietySystemFabric()).
-                    insertIntoGroup('SatietySystem', groups.update, 2).
-                    putSystem('ImmunitySystem', this.immunitySystemFabric()).
-                    insertIntoGroup('ImmunitySystem', groups.update, 3);
+                systemManager.resetGroup(groups.update, 
+                    'GameCommandSystem', 
+                    'TutorialEventFilter', //<----
+                    'SatietySystem', //<----
+                    'ImmunitySystem', //<----
+                    'TutorialSystem', //<----
+                    'ClearEventsSystem',
+                    'WorldLoggerSystem',
+                    'OutputSystem');
                 this.currentStep = this.step4SatietyAndThirst;
             }
         }
@@ -147,7 +151,6 @@ module.exports.TutorialSystem = class TutorialSystem {
     step4SatietyAndThirst(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
-        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(Satiety, Immunity))) {
             const satiety = vegetable.get(Satiety);
@@ -155,16 +158,22 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(satiety.isAlarm()) this.step4Condition = 1;
             if(this.step4Condition === 1 && !satiety.isAlarm()) {
                 this.step4Condition = 2;
-                systemManager.removeSystem('SatietySystem');
+                systemManager.removeFromGroup(groups.update, 'SatietySystem');
             }
             if(immunity.isAlarm()) this.step4Condition2 = 1;
             if(this.step4Condition2 === 1 && !immunity.isAlarm()) {
                 this.step4Condition2 = 2;
-                systemManager.removeSystem('ImmunitySystem');
+                systemManager.removeFromGroup(groups.update, 'ImmunitySystem');
             }
             if(this.step4Condition === 2 && this.step4Condition2 === 2) {
-                systemManager.putSystem('GrowSystem', this.growSystemTutorialFabric()).
-                                insertIntoGroup('GrowSystem', groups.update, 2);
+                systemManager.resetGroup(groups.update, 
+                    'GameCommandSystem', 
+                    'TutorialEventFilter', //<----
+                    'GrowSystemTutorial', //<----
+                    'TutorialSystem', //<----
+                    'ClearEventsSystem',
+                    'WorldLoggerSystem',
+                    'OutputSystem');
                 manager.putSingletonEntity('tutorialCurrentStep', {step: 5, isActive: true, blockedTools: ['shovel']});
                 this.currentStep = this.step5GrowToYouth;
             }
@@ -178,14 +187,17 @@ module.exports.TutorialSystem = class TutorialSystem {
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
             if(state.current() == lifeCycleStates.youth) {
-                systemManager.removeSystem('GrowSystem').
-                    putSystem('SatietySystem', this.satietySystemFabric()).
-                    insertIntoGroup('SatietySystem', groups.update, 2).
-                    putSystem('ImmunitySystem', this.immunitySystemFabric()).
-                    insertIntoGroup('ImmunitySystem', groups.update, 3).
-                    putSystem('ThirstSystem', this.thirstSystemFabric()).
-                    insertIntoGroup('ThirstSystem', groups.update, 4);
-                this.currentStep = step5SatietyAndThirstAndImmunity;
+                systemManager.resetGroup(groups.update, 
+                    'GameCommandSystem', 
+                    'TutorialEventFilter', //<----
+                    'SatietySystem', //<----
+                    'ImmunitySystem', //<----
+                    'ThirstSystem', //<----
+                    'TutorialSystem', //<----
+                    'ClearEventsSystem',
+                    'WorldLoggerSystem',
+                    'OutputSystem');
+                this.currentStep = this.step5SatietyAndThirstAndImmunity;
             }
         }
     }
@@ -193,7 +205,6 @@ module.exports.TutorialSystem = class TutorialSystem {
     step5SatietyAndThirstAndImmunity(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
-        const eventManager = world.getEventManager();
 
         for(let vegetable of manager.select(manager.createFilter().all(Satiety, Immunity, Thirst))) {
             const satiety = vegetable.get(Satiety);
@@ -202,21 +213,27 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(satiety.isAlarm()) this.step5Condition = 1;
             if(this.step5Condition === 1 && !satiety.isAlarm()) {
                 this.step5Condition = 2;
-                systemManager.removeSystem('SatietySystem');
+                systemManager.removeFromGroup(groups.update, 'SatietySystem');
             }
             if(immunity.isAlarm()) this.step5Condition2 = 1;
             if(this.step5Condition2 === 1 && !immunity.isAlarm()) {
                 this.step5Condition2 = 2;
-                systemManager.removeSystem('ImmunitySystem');
+                systemManager.removeFromGroup(groups.update, 'ImmunitySystem');
             }
             if(thirst.isAlarm()) this.step5Condition3 = 1;
             if(this.step5Condition3 === 1 && !thirst.isAlarm()) {
                 this.step5Condition3 = 2;
-                systemManager.removeSystem('ThirstSystem');
+                systemManager.removeFromGroup(groups.update, 'ThirstSystem');
             }
             if(this.step5Condition === 2 && this.step5Condition2 === 2 && this.step5Condition3 === 2) {
-                systemManager.putSystem('GrowSystem', this.growSystemTutorialFabric()).
-                                insertIntoGroup('GrowSystem', groups.update, 2);
+                systemManager.resetGroup(groups.update, 
+                    'GameCommandSystem', 
+                    'TutorialEventFilter', //<----
+                    'GrowSystemTutorial', //<----
+                    'TutorialSystem', //<----
+                    'ClearEventsSystem',
+                    'WorldLoggerSystem',
+                    'OutputSystem');
                 manager.putSingletonEntity('tutorialCurrentStep', {step: 6, isActive: true, blockedTools: ['bailer', 'seeds', 'fertilizer', 'sprayer']});
                 this.currentStep = this.step6GrowToAdult;
             }
@@ -230,10 +247,15 @@ module.exports.TutorialSystem = class TutorialSystem {
         for(let vegetable of manager.select(manager.createFilter().all(VegetableState))) {
             const state = vegetable.get(VegetableState);
             if(state.current() == lifeCycleStates.adult) {
-                systemManager.removeSystem('GrowSystem').
-                    putSystem('ShovelSystem', this.shovelSystemFabric()).
-                    insertIntoGroup('ShovelSystem', groups.update, 2)
-                this.currentStep = step6DigUp;
+                systemManager.resetGroup(groups.update, 
+                    'GameCommandSystem', 
+                    'TutorialEventFilter', //<----
+                    'ShovelSystem', //<----
+                    'TutorialSystem', //<----
+                    'ClearEventsSystem',
+                    'WorldLoggerSystem',
+                    'OutputSystem');
+                this.currentStep = this.step6DigUp;
             }
         }
     }
@@ -247,16 +269,19 @@ module.exports.TutorialSystem = class TutorialSystem {
             this.user.isTutorialFinished = true;
             this.userRepository.add(this.user).then(() => logger.info('userId=%s has completed tutorial.', this.user._id));
             
-            systemManager.putSystem('PlantNewVegetableSystem', this.plantNewVegetableSystemFabric()).
-                insertIntoGroup('PlantNewVegetableSystem', groups.update, 3).
-                putSystem('GrowSystem', this.growSystemFabric()).insertIntoGroup('GrowSystem', groups.update, 4).
-                putSystem('ThirstSystem', this.thirstSystemFabric()).insertIntoGroup('ThirstSystem', groups.update, 5).
-                putSystem('SatietySystem', this.satietySystemFabric()).insertIntoGroup('SatietySystem', groups.update, 6).
-                putSystem('ImmunitySystem', this.immunitySystemFabric()).insertIntoGroup('ImmunitySystem', groups.update, 7).
-                putSystem('TomatoDeathSystem', this.tomatoDeathSystemFabric()).insertIntoGroup('TomatoDeathSystem', groups.update, 8).
-                putSystem('PotatoDeathSystem', this.potatoDeathSystemFabric()).insertIntoGroup('PotatoDeathSystem', groups.update, 9).
-                removeSystem('TutorialSystem').
-                removeSystem('TutorialEventFilter');
+            systemManager.resetGroup(groups.update, 
+                'GameCommandSystem', 
+                'ShovelSystem',
+                'PlantNewVegetableSystem',
+                'GrowSystem',
+                'ThirstSystem',
+                'SatietySystem',
+                'ImmunitySystem',
+                'TomatoDeathSystem',
+                'PotatoDeathSystem',
+                'ClearEventsSystem',
+                'WorldLoggerSystem',
+                'OutputSystem');
             
             manager.putSingletonEntity('tutorialCurrentStep', {step: 6, isActive: false, blockedTools: []});
         }
