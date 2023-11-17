@@ -46,7 +46,8 @@ module.exports.Game = class Game {
                 appendToGroup(groups.update, 'OutputSystem');
         } else {
             this.world.getSystemManager().
-                appendToGroup(groups.update, 'TutorialSystem');
+                appendToGroup(groups.update, 'TutorialSystem').
+                appendToGroup(groups.update, 'OutputSystem');
         }
     }
 
