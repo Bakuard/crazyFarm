@@ -59,7 +59,7 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-async function beforeEachTestScenario(isTutorialFinished) {
+async function beforeEachTestScenario(isTutorialFinished, isDebugOutput) {
     dbConnector = new DBConnector();
     await clearDB(dbConnector);
 
@@ -77,7 +77,7 @@ async function beforeEachTestScenario(isTutorialFinished) {
 
     game.world.getSystemManager().putSystem('WorldLoggerSystem', { update() {} });
     game.world.getSystemManager().putSystem('OutputSystem',  
-        new OutputSystem(true, (gameResponse) => outputData = gameResponse)
+        new OutputSystem(isDebugOutput, (gameResponse) => outputData = gameResponse)
     );
 
     await game.start();
@@ -85,7 +85,7 @@ async function beforeEachTestScenario(isTutorialFinished) {
 
 describe(`grow some vegetables to 'sprout' then die,
           grow tomato to 'child' then die and explode 'child' potato`, () => {
-    beforeAll(async () => beforeEachTestScenario(true));
+    beforeAll(async () => beforeEachTestScenario(true, true));
     afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
@@ -360,7 +360,7 @@ describe(`grow some vegetables to 'sprout' then die,
                 gardenBedCellDto(1, 0, false, null),
                 gardenBedCellDto(2, 0, false, null),
                 gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, true, vegetableDto('potato', 7)),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 7)),
                 gardenBedCellDto(1, 1, false, vegetableDto('tomato', 6)),
                 gardenBedCellDto(2, 1, false, null),
                 gardenBedCellDto(3, 1, false, null),
@@ -389,7 +389,7 @@ describe(`grow some vegetables to 'sprout' then die,
 });
 
 describe(`grow vegetable to adult state and dig up this`, () => {
-    beforeAll(async () => beforeEachTestScenario(true));
+    beforeAll(async () => beforeEachTestScenario(true, true));
     afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
@@ -621,8 +621,9 @@ describe(`grow vegetable to adult state and dig up this`, () => {
 });
 
 describe(`tutorial`, () => {
-    beforeAll(async () => beforeEachTestScenario(false));
+    beforeAll(async () => beforeEachTestScenario(false, false));
     afterAll(async () => process.nextTick(() => dbConnector.closeConnection()));
+    beforeEach(() => outputData = null);
 
     describe.each([
         {
@@ -636,18 +637,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 1,
             expectedMoney: 200, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, null),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -660,18 +661,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 2,
             expectedMoney: 197, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 0)),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -684,18 +685,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 3,
             expectedMoney: 197, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -706,18 +707,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 3,
             expectedMoney: 197, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 1, 'THIRST')),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -730,18 +731,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 4,
             expectedMoney: 197, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 2)),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -752,18 +753,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 4,
             expectedMoney: 197, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'HUNGER', 'SICKNESS')),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -776,18 +777,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 5,
             expectedMoney: 193, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 3)),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -798,18 +799,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 5,
             expectedMoney: 193, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER', 'SICKNESS')),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -822,18 +823,18 @@ describe(`tutorial`, () => {
             expectedTutorialStep: 6,
             expectedMoney: 189, 
             expectedGardenCells: [
-                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(0, 0, true, null),
                 gardenBedCellDto(1, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(2, 0, false, null),
-                gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, false, null),
-                gardenBedCellDto(1, 1, false, null),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
-                gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
             ]
         },
         {
@@ -875,7 +876,7 @@ describe(`tutorial`, () => {
     
             expect(outputData.containers).toEqual(expectedGardenCells);
             expect(outputData.player.cash).toEqual(expectedMoney);
-            expect(outputData.tutorial.step).toEqual(expectedTutorialStep);
+            expect(outputData.tutorial.currentStep).toEqual(expectedTutorialStep);
         });
     });
 });

@@ -57,9 +57,9 @@ module.exports.TutorialSystem = class TutorialSystem {
             'TutorialEventFilter', //<---- 
             'PlantNewVegetableSystemTutorial', //<----
             'TutorialSystem', //<----
-            'ClearEventsSystem',
             'WorldLoggerSystem',
-            'OutputSystem');
+            'OutputSystem',
+            'ClearEventsSystem');
 
         eventManager.setFlag('gameStateWasChangedEvent');
         manager.putSingletonEntity('tutorialCurrentStep', {
@@ -80,9 +80,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                 'TutorialEventFilter', //<----
                 'GrowSystemTutorial', //<----
                 'TutorialSystem', //<----
-                'ClearEventsSystem',
                 'WorldLoggerSystem',
-                'OutputSystem');
+                'OutputSystem',
+                'ClearEventsSystem');
 
             eventManager.setFlag('gameStateWasChangedEvent');
             manager.putSingletonEntity('tutorialCurrentStep', {
@@ -105,9 +105,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'TutorialEventFilter', //<----
                     'ThirstSystem', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
@@ -132,9 +132,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
@@ -159,9 +159,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'SatietySystem', //<----
                     'ImmunitySystem', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step4SatietyAndThirst;
@@ -193,9 +193,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
@@ -221,9 +221,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'ImmunitySystem', //<----
                     'ThirstSystem', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step5SatietyAndThirstAndImmunity;
@@ -261,9 +261,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
                     
                 eventManager.setFlag('gameStateWasChangedEvent');
                 manager.putSingletonEntity('tutorialCurrentStep', {
@@ -287,9 +287,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'TutorialEventFilter', //<----
                     'ShovelSystem', //<----
                     'TutorialSystem', //<----
-                    'ClearEventsSystem',
                     'WorldLoggerSystem',
-                    'OutputSystem');
+                    'OutputSystem',
+                    'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step6DigUp;
@@ -317,7 +317,6 @@ module.exports.TutorialSystem = class TutorialSystem {
                 'ImmunitySystem',
                 'TomatoDeathSystem',
                 'PotatoDeathSystem',
-                'ClearEventsSystem',
                 'WorldLoggerSystem',
                 'OutputSystem');
             

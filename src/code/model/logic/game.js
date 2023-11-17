@@ -24,9 +24,9 @@ module.exports.Game = class Game {
             putSystem('ImmunitySystem', fabric.immunitySystem()()).
             putSystem('TomatoDeathSystem', fabric.tomatoDeathSystem()()).
             putSystem('PotatoDeathSystem', fabric.potatoDeathSystem()()).
-            putSystem('ClearEventsSystem', fabric.clearEventsSystem()()).
             putSystem('WorldLoggerSystem', fabric.worldLogger()(user)).
             putSystem('OutputSystem', fabric.outputSystem()(outputCallback)).
+            putSystem('ClearEventsSystem', fabric.clearEventsSystem()()).
             putSystem('TutorialSystem', fabric.tutorialSystem()(user, userRepository)).
             putSystem('SaveGameSystem', fabric.saveGameSystem()(user._id, gameRepository)).appendToGroup(groups.stop, 'SaveGameSystem');
         
@@ -41,7 +41,6 @@ module.exports.Game = class Game {
                 appendToGroup(groups.update, 'ImmunitySystem').
                 appendToGroup(groups.update, 'TomatoDeathSystem').
                 appendToGroup(groups.update, 'PotatoDeathSystem').
-                appendToGroup(groups.update, 'ClearEventsSystem').
                 appendToGroup(groups.update, 'WorldLoggerSystem').
                 appendToGroup(groups.update, 'OutputSystem');
         } else {
