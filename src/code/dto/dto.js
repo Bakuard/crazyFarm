@@ -97,9 +97,9 @@ class VegetableResponse {
 module.exports.VegetableResponse = VegetableResponse;
 
 class GardenBedCellResponse {
-    constructor(x, y, vegetable) {
+    constructor(x, y, vegetable, activeCell) {
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.hasComponents(PotatoGhost));
+        this.isBlocked = Boolean(activeCell && (activeCell.x != x || activeCell.y != y));
         this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
     }
@@ -108,7 +108,7 @@ module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
 class TutorialResponse {
     constructor(tutorial) {
-        this.step = tutorial.step;
+        this.currentStep = tutorial.step;
         this.isActive = tutorial.isActive;
         this.blockedTools = tutorial.blockedTools;
     }
@@ -121,7 +121,7 @@ class GameResponse {
             cash: wallet.sum
         };
         this.containers = [];
-        grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value)));
+        grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value, tutorial?.activeCell)));
         this.tutorial = tutorial ? new TutorialResponse(tutorial) : null;
     }
 }
