@@ -321,7 +321,7 @@ module.exports.Fabric = class Fabric {
 
     timeUtil() {
         if(!this.timeUtilObj) this.timeUtilObj = new TimeUtil();
-        return () => this.timeUtilObj;
+        return this.timeUtilObj;
     }
 
     frameDurationInMillis() {
