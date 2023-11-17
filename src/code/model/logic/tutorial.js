@@ -23,6 +23,18 @@ class TutorialEventFilter {
     }
 }
 
+class ClearTutorialData {
+    constructor() {}
+
+    update(systemHandler, world) {
+        const manager = world.getEntityComponentManager();
+        const systemManager = world.getSystemManager();
+
+        manager.putSingletonEntity('tutorialCurrentStep', null);
+        systemManager.removeFromGroup(groups.update, 'ClearTutorialData');
+    }
+}
+
 module.exports.TutorialSystem = class TutorialSystem {
 
     constructor(user, 
@@ -50,7 +62,8 @@ module.exports.TutorialSystem = class TutorialSystem {
 
         systemManager.putSystem('PlantNewVegetableSystemTutorial', this.plantNewVegetableSystemTutorialFabric()).
             putSystem('GrowSystemTutorial', this.growSystemTutorialFabric()).
-            putSystem('TutorialEventFilter', new TutorialEventFilter(this.activeCell));
+            putSystem('TutorialEventFilter', new TutorialEventFilter(this.activeCell)).
+            putSystem('ClearTutorialData', new ClearTutorialData());
 
         systemManager.resetGroup(groups.update, 
             'GameCommandSystem', 
@@ -137,15 +150,12 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
-                manager.putSingletonEntity('tutorialCurrentStep', {
-                    step: 4, isActive: true, blockedTools: ['bailer', 'shovel', 'seeds'], activeCell: this.activeCell
-                });
-                this.currentStep = this.step4GrowToChild;
+                this.currentStep = this.step3GrowToChild;
             }
         }
     }
 
-    step4GrowToChild(world) {
+    step3GrowToChild(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
         const eventManager = world.getEventManager();
@@ -163,6 +173,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'OutputSystem',
                     'ClearEventsSystem');
 
+                manager.putSingletonEntity('tutorialCurrentStep', {
+                    step: 4, isActive: true, blockedTools: ['bailer', 'shovel', 'seeds'], activeCell: this.activeCell
+                });
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step4SatietyAndThirst;
             }
@@ -198,15 +211,12 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'ClearEventsSystem');
 
                 eventManager.setFlag('gameStateWasChangedEvent');
-                manager.putSingletonEntity('tutorialCurrentStep', {
-                    step: 5, isActive: true, blockedTools: ['shovel'], activeCell: this.activeCell
-                });
-                this.currentStep = this.step5GrowToYouth;
+                this.currentStep = this.step4GrowToYouth;
             }
         }
     }
 
-    step5GrowToYouth(world) {
+    step4GrowToYouth(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
         const eventManager = world.getEventManager();
@@ -225,6 +235,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'OutputSystem',
                     'ClearEventsSystem');
 
+                manager.putSingletonEntity('tutorialCurrentStep', {
+                    step: 5, isActive: true, blockedTools: ['shovel'], activeCell: this.activeCell
+                });
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step5SatietyAndThirstAndImmunity;
             }
@@ -266,15 +279,12 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'ClearEventsSystem');
                     
                 eventManager.setFlag('gameStateWasChangedEvent');
-                manager.putSingletonEntity('tutorialCurrentStep', {
-                    step: 6, isActive: true, blockedTools: ['bailer', 'seeds', 'fertilizer', 'sprayer'], activeCell: this.activeCell
-                });
-                this.currentStep = this.step6GrowToAdult;
+                this.currentStep = this.step5GrowToAdult;
             }
         }
     }
 
-    step6GrowToAdult(world) {
+    step5GrowToAdult(world) {
         const manager = world.getEntityComponentManager();
         const systemManager = world.getSystemManager();
         const eventManager = world.getEventManager();
@@ -291,6 +301,9 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'OutputSystem',
                     'ClearEventsSystem');
 
+                manager.putSingletonEntity('tutorialCurrentStep', {
+                    step: 6, isActive: true, blockedTools: ['bailer', 'seeds', 'fertilizer', 'sprayer'], activeCell: this.activeCell
+                });
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step6DigUp;
             }
@@ -308,6 +321,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             this.userRepository.add(this.user).then(() => logger.info('userId=%s has completed tutorial.', this.user._id));
             
             systemManager.resetGroup(groups.update, 
+                'ClearTutorialData',
                 'GameCommandSystem', 
                 'ShovelSystem',
                 'PlantNewVegetableSystem',
@@ -322,7 +336,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             
             eventManager.setFlag('gameStateWasChangedEvent');
             manager.putSingletonEntity('tutorialCurrentStep', {
-                step: 6, isActive: false, blockedTools: [], activeCell: null
+                step: 7, isActive: true, blockedTools: [], activeCell: null
             });
         }
     }

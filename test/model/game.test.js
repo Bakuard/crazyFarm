@@ -621,7 +621,7 @@ describe(`grow vegetable to adult state and dig up this`, () => {
 });
 
 describe(`tutorial`, () => {
-    beforeAll(async () => beforeEachTestScenario(false, false));
+    beforeAll(async () => beforeEachTestScenario(false, true));
     afterAll(async () => process.nextTick(() => dbConnector.closeConnection()));
     beforeEach(() => outputData = null);
 
@@ -726,7 +726,29 @@ describe(`tutorial`, () => {
                 {tool: 'bailer', cell: '1-0'}
             ], 
             elapsedMillis: 100, 
-            updateNumber: 61,
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 3,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
             randomValue: 0.3, 
             expectedTutorialStep: 4,
             expectedMoney: 197, 
@@ -772,7 +794,29 @@ describe(`tutorial`, () => {
                 {tool: 'fertilizer', cell: '1-0'}, {tool: 'sprayer', cell: '1-0'}
             ], 
             elapsedMillis: 100, 
-            updateNumber: 61,
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 4,
+            expectedMoney: 193, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
             randomValue: 0.3, 
             expectedTutorialStep: 5,
             expectedMoney: 193, 
@@ -818,7 +862,29 @@ describe(`tutorial`, () => {
                 {tool: 'bailer', cell: '1-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'sprayer', cell: '1-0'}
             ], 
             elapsedMillis: 100, 
-            updateNumber: 61,
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 5,
+            expectedMoney: 189, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
             randomValue: 0.3, 
             expectedTutorialStep: 6,
             expectedMoney: 189, 
@@ -842,9 +908,9 @@ describe(`tutorial`, () => {
                 {tool: 'shovel', cell: '1-0'}
             ], 
             elapsedMillis: 100, 
-            updateNumber: 1000,
+            updateNumber: 1,
             randomValue: 0.3, 
-            expectedTutorialStep: 6,
+            expectedTutorialStep: 7,
             expectedMoney: 189 + 66, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, null),
@@ -861,6 +927,28 @@ describe(`tutorial`, () => {
                 gardenBedCellDto(3, 2, false, null)
             ]
         },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: undefined,
+            expectedMoney: 189 + 66, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        }
     ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedTutorialStep, expectedMoney, expectedGardenCells}) => {
         test(`events: ${JSON.stringify(events)}, 
               elapsedMillis: ${elapsedMillis},
@@ -876,7 +964,7 @@ describe(`tutorial`, () => {
     
             expect(outputData.containers).toEqual(expectedGardenCells);
             expect(outputData.player.cash).toEqual(expectedMoney);
-            expect(outputData.tutorial.currentStep).toEqual(expectedTutorialStep);
+            expect(outputData.tutorial?.currentStep).toEqual(expectedTutorialStep);
         });
     });
 });
