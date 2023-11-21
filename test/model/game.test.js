@@ -1,15 +1,16 @@
 const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
-const {GameRepository} = require('../../src/code/dal/repositories.js');
+const {GameRepository, UserRepository} = require('../../src/code/dal/repositories.js');
 const {Fabric} = require('../../src/code/model/logic/fabric.js');
 const {OutputSystem} = require('../../src/code/model/logic/output.js');
-const {groups} = require('../../src/code/model/gameEngine/gameLoop.js');
+const {User} = require('../../src/code/model/auth/User.js');
 
 let game = null;
 let outputData = null;
 let randomGeneratorReturnedValue = null;
 let timeUtil = null;
+let dbConnector = null;
 
 function createTimeUtil() {
     return {
@@ -58,8 +59,8 @@ function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
     };
 }
 
-async function beforeEachTestScenario() {
-    const dbConnector = new DBConnector();
+async function beforeEachTestScenario(isTutorialFinished, isDebugOutput) {
+    dbConnector = new DBConnector();
     await clearDB(dbConnector);
 
     timeUtil = createTimeUtil();
@@ -67,22 +68,25 @@ async function beforeEachTestScenario() {
     fabric.timeUtil = () => timeUtil;
     fabric.randomGenerator = () => () => randomGeneratorReturnedValue;
     game = new Game(
-        () => {}, 
-        {_id: '123'}, 
+        null, 
+        new User({_id: 'userid-123', loggin: 'Me', email: 'me@mail.com', passwordHash: 'pass-hash', salt: 'salt', isTutorialFinished}), 
         new GameRepository(dbConnector),
+        new UserRepository(dbConnector),
         fabric
     );
 
-    let outputSystem = new OutputSystem(true, (gameResponse) => outputData = gameResponse);
-    game.world.getSystemManager().removeSystem('WorldLogger');
-    game.world.getSystemManager().putSystem('OutputSystem', outputSystem.update.bind(outputSystem), groups.update);
+    game.world.getSystemManager().putSystem('WorldLoggerSystem', { update() {} });
+    game.world.getSystemManager().putSystem('OutputSystem',  
+        new OutputSystem(isDebugOutput, (gameResponse) => outputData = gameResponse)
+    );
 
     await game.start();
 }
 
 describe(`grow some vegetables to 'sprout' then die,
           grow tomato to 'child' then die and explode 'child' potato`, () => {
-    beforeAll(beforeEachTestScenario);
+    beforeAll(async () => beforeEachTestScenario(true, true));
+    afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
         {
@@ -356,7 +360,7 @@ describe(`grow some vegetables to 'sprout' then die,
                 gardenBedCellDto(1, 0, false, null),
                 gardenBedCellDto(2, 0, false, null),
                 gardenBedCellDto(3, 0, false, null),
-                gardenBedCellDto(0, 1, true, vegetableDto('potato', 7)),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 7)),
                 gardenBedCellDto(1, 1, false, vegetableDto('tomato', 6)),
                 gardenBedCellDto(2, 1, false, null),
                 gardenBedCellDto(3, 1, false, null),
@@ -385,7 +389,8 @@ describe(`grow some vegetables to 'sprout' then die,
 });
 
 describe(`grow vegetable to adult state and dig up this`, () => {
-    beforeAll(beforeEachTestScenario);
+    beforeAll(async () => beforeEachTestScenario(true, true));
+    afterAll(async () => dbConnector.closeConnection());
 
     describe.each([
         {
@@ -611,6 +616,379 @@ describe(`grow vegetable to adult state and dig up this`, () => {
     
             expect(outputData.containers).toEqual(expectedGardenCells);
             expect(outputData.player.cash).toEqual(expectedMoney);
+        });
+    });
+});
+
+describe(`tutorial`, () => {
+    beforeAll(async () => beforeEachTestScenario(false, true));
+    afterAll(async () => process.nextTick(() => dbConnector.closeConnection()));
+    beforeEach(() => outputData = null);
+
+    describe.each([
+        {
+            events: [
+                {tool: 'seeds', cell: '0-0'}, {tool: 'seeds', cell: '0-1'}, {tool: 'seeds', cell: '1-1'}, {tool: 'seeds', cell: '2-1'},
+                {tool: 'seeds', cell: '1-2'}, {tool: 'seeds', cell: '2-2'}, {tool: 'seeds', cell: '2-3'}, {tool: 'seeds', cell: '3-2'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: 1,
+            expectedMoney: 200, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'seeds', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 2,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedTutorialStep: 3,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 20,
+            randomValue: 0.3, 
+            expectedTutorialStep: 3,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1, 'THIRST')),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 3,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 1)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
+            randomValue: 0.3, 
+            expectedTutorialStep: 4,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 20,
+            randomValue: 0.3, 
+            expectedTutorialStep: 4,
+            expectedMoney: 197, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'HUNGER', 'SICKNESS')),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'fertilizer', cell: '1-0'}, {tool: 'sprayer', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 4,
+            expectedMoney: 193, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
+            randomValue: 0.3, 
+            expectedTutorialStep: 5,
+            expectedMoney: 193, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 20,
+            randomValue: 0.3, 
+            expectedTutorialStep: 5,
+            expectedMoney: 193, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER', 'SICKNESS')),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'bailer', cell: '1-0'}, {tool: 'fertilizer', cell: '1-0'}, {tool: 'sprayer', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 5,
+            expectedMoney: 189, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 60,
+            randomValue: 0.3, 
+            expectedTutorialStep: 6,
+            expectedMoney: 189, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, true, null),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 4)),
+                gardenBedCellDto(2, 0, true, null),
+                gardenBedCellDto(3, 0, true, null),
+                gardenBedCellDto(0, 1, true, null),
+                gardenBedCellDto(1, 1, true, null),
+                gardenBedCellDto(2, 1, true, null),
+                gardenBedCellDto(3, 1, true, null),
+                gardenBedCellDto(0, 2, true, null),
+                gardenBedCellDto(1, 2, true, null),
+                gardenBedCellDto(2, 2, true, null),
+                gardenBedCellDto(3, 2, true, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'shovel', cell: '1-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1,
+            randomValue: 0.3, 
+            expectedTutorialStep: 7,
+            expectedMoney: 189 + 66, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: undefined,
+            expectedMoney: 189 + 66, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        },
+        {
+            events: [
+                {tool: 'seeds', cell: '0-0'}
+            ], 
+            elapsedMillis: 100, 
+            updateNumber: 1000,
+            randomValue: 0.3, 
+            expectedTutorialStep: undefined,
+            expectedMoney: 252, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, vegetableDto('potato', 0)),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, null)
+            ]
+        }
+    ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedTutorialStep, expectedMoney, expectedGardenCells}) => {
+        test(`events: ${JSON.stringify(events)}, 
+              elapsedMillis: ${elapsedMillis},
+              updateNumber: ${updateNumber},
+              randomValue: ${randomValue},
+              => expectedTutorialStep: ${expectedTutorialStep},
+              expectedMoney: ${expectedMoney},
+              expectedGardenCells: ${JSON.stringify(expectedGardenCells, null, 4)}`, 
+        () => {
+            randomGeneratorReturnedValue = randomValue;
+            events.forEach(event => game.execute(event));
+            for(let i = 0; i < updateNumber; i++) timeUtil.advanceTime(elapsedMillis);
+    
+            expect(outputData.containers).toEqual(expectedGardenCells);
+            expect(outputData.player.cash).toEqual(expectedMoney);
+            expect(outputData.tutorial?.currentStep).toEqual(expectedTutorialStep);
         });
     });
 });

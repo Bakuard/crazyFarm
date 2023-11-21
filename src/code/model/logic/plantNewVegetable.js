@@ -4,29 +4,23 @@ const {GardenBedCellLink} = require('./gardenBedCellLink.js');
 const {Wallet} = require('./wallet.js');
 
 module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
-    constructor(randomGenerator) {
-        this.randomGenerator = randomGenerator;
+    constructor(vegetableMetaFabric, vegetableStateFabric) {
+        this.vegetableMetaFabric = vegetableMetaFabric;
+        this.vegetableStateFabric = vegetableStateFabric;
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
         const eventManager = world.getEventManager();
         const wallet = manager.getSingletonEntity('wallet').get(Wallet);
-        const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
 
-        eventManager.forEachEvent('seeds', (event) => { 
-            if(!grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice) {
-                const vegetable = buffer.createEntity();
-                const metaComp = fabric.vegetableMeta(this.randomGenerator());
-                const cellLinkComp = new GardenBedCellLink(event.cellX, event.cellY);
-                const vegetableState = fabric.vegetableState(metaComp.typeName);
-                vegetable.put(metaComp, cellLinkComp, vegetableState);
-                grid.write(event.cellX, event.cellY, vegetable);
-                wallet.sum -= wallet.seedsPrice;
+        eventManager.forEachEvent('seeds', event => { 
+            if(this.#canPlant(grid, wallet, event)) {
+                this.#createNewVegetable(buffer, grid, event);
 
-                buffer.bindEntity(vegetable);
+                wallet.sum -= wallet.seedsPrice;
 
                 eventManager.setFlag('gameStateWasChangedEvent');
             }
@@ -34,5 +28,22 @@ module.exports.PlantNewVegetableSystem = class PlantNewVegetableSystem {
 
         manager.flush(buffer);
         eventManager.clearEventQueue('seeds');
+    }
+
+    #canPlant(grid, wallet, event) {
+        return !grid.get(event.cellX, event.cellY) && wallet.sum >= wallet.seedsPrice;
+    }
+
+    #createNewVegetable(buffer, grid, event) {
+        const vegetable = buffer.createEntity();
+
+        const metaComp = this.vegetableMetaFabric();
+        const cellLinkComp = new GardenBedCellLink(event.cellX, event.cellY);
+        const vegetableState = this.vegetableStateFabric(metaComp.typeName);
+        vegetable.put(metaComp, cellLinkComp, vegetableState);
+
+        buffer.bindEntity(vegetable);
+
+        grid.write(event.cellX, event.cellY, vegetable);
     }
 };

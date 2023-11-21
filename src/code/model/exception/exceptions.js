@@ -75,3 +75,15 @@ module.exports.FailToCreateVegetableMeta = class FailToCreateVegetableMeta exten
         super(logMessage);
     }
 }
+
+module.exports.UnknownSystemException = class UnknownSystemException extends Error {
+    constructor(logMessage) {
+        super(logMessage);
+    }
+}
+
+module.exports.IndexOutOfBoundException = class IndexOutOfBoundException extends Error {
+    constructor(logMessage) {
+        super(logMessage);
+    }
+}

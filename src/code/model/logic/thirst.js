@@ -1,7 +1,5 @@
 'use strict'
 
-const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
-
 class Thirst {
     static of(max, declineRatePerSeconds, alarmLevel) {
         return new Thirst(max, max, declineRatePerSeconds, alarmLevel);
@@ -22,14 +20,15 @@ module.exports.Thirst = Thirst;
 
 module.exports.ThirstSystem = class ThirstSystem {
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Thirst, VegetableState);
+        this.filter = entityComponentManager.createFilter().all(Thirst);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const eventManager = world.getEventManager();
         const elapsedTime = world.getGameLoop().getElapsedTime();
         const grid = manager.getSingletonEntity('grid');
+        const buffer = manager.createCommandBuffer();
 
         for(let entity of manager.select(this.filter)) {
             const thirst = entity.get(Thirst);
@@ -37,7 +36,10 @@ module.exports.ThirstSystem = class ThirstSystem {
 
             thirst.current = Math.max(0, thirst.current - elapsedTime / 1000 / thirst.declineRatePerSeconds);
 
-            if(thirst.current == 0) entity.get(VegetableState).pushState(lifeCycleStates.death);
+            if(thirst.current == 0) {
+                entity.addTags('dead');
+                buffer.bindEntity(entity);
+            }
 
             if(thirst.isAlarm() != isAlarm) eventManager.setFlag('gameStateWasChangedEvent');
         }
@@ -51,14 +53,11 @@ module.exports.ThirstSystem = class ThirstSystem {
             }
         });
 
+        manager.flush(buffer);
         eventManager.clearEventQueue('bailer');
     }
 
     #canPour(vegetable) {
-        return Boolean(
-            vegetable
-            && vegetable.hasComponents(Thirst, VegetableState)
-            && vegetable.get(VegetableState).current() != lifeCycleStates.death
-        );
+        return vegetable && vegetable.hasComponents(Thirst);
     }
 };

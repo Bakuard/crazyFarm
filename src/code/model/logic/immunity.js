@@ -1,7 +1,6 @@
 'use strict'
 
 const {Wallet} = require('./wallet.js');
-const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Immunity {
     static of(max, declineRatePerSeconds, probability, alarmLevel) {
@@ -26,15 +25,16 @@ module.exports.Immunity = Immunity;
 module.exports.ImmunitySystem = class ImmunitySystem {
     constructor(entityComponentManager, randomGenerator) {
         this.randomGenerator = randomGenerator;
-        this.filter = entityComponentManager.createFilter().all(Immunity, VegetableState);
+        this.filter = entityComponentManager.createFilter().all(Immunity);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const grid = manager.getSingletonEntity('grid');
         const wallet = manager.getSingletonEntity('wallet').get(Wallet);
         const elapsedTime = world.getGameLoop().getElapsedTime();
+        const buffer = manager.createCommandBuffer();
         
         for(let vegetable of manager.select(this.filter)) {
             const immunity = vegetable.get(Immunity);
@@ -44,7 +44,10 @@ module.exports.ImmunitySystem = class ImmunitySystem {
 
             if(immunity.isSick) immunity.current = Math.max(0, immunity.current - elapsedTime / 1000 / immunity.declineRatePerSeconds);
 
-            if(immunity.current == 0) vegetable.get(VegetableState).pushState(lifeCycleStates.death);
+            if(immunity.current == 0) {
+                vegetable.addTags('dead');
+                buffer.bindEntity(vegetable);
+            }
 
             if(immunity.isAlarm() != isAlarm) eventManager.setFlag('gameStateWasChangedEvent');
         }
@@ -62,15 +65,13 @@ module.exports.ImmunitySystem = class ImmunitySystem {
             }
         });
 
+        manager.flush(buffer);
         eventManager.clearEventQueue('sprayer');
     }
 
     #canHeal(vegetable, wallet) {
-        return Boolean(
-            vegetable
-            && vegetable.hasComponents(Immunity, VegetableState)
-            && vegetable.get(VegetableState).current() != lifeCycleStates.death
-            && wallet.sum >= wallet.sprayerPrice
-        );
+        return vegetable
+            && vegetable.hasComponents(Immunity)
+            && wallet.sum >= wallet.sprayerPrice;
     }
 };

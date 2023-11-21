@@ -4,23 +4,24 @@ const {VegetableMeta} = require('./vegetableMeta');
 const {newLogger} = require('../../conf/logConf.js');
 const {Wallet} = require('./wallet.js');
 
-let logger = newLogger('info', 'worldLogger.js');
+const logger = newLogger('info', 'worldLogger.js');
 
 module.exports.WorldLogger = class WorldLogger {
-    constructor(entityComponentManager, userId) {
+    constructor(entityComponentManager, user) {
         this.filter = entityComponentManager.createFilter().all(VegetableMeta);
-        this.userId = userId;
+        this.user = user;
     }
 
-    update(systemName, groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let gameLoop = world.getGameLoop();
-        let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+    update(systemHandler, world) {
+        const manager = world.getEntityComponentManager();
+        const gameLoop = world.getGameLoop();
+        const wallet = manager.getSingletonEntity('wallet').get(Wallet);
 
         let empty = true;
         for(let vegetable of manager.select(this.filter)) {
-            logger.info(`userId=%s; tick=%s; wallet=%s; %s}`, 
-                            this.userId, 
+            logger.info(`userId=%s; isTutorial=%s; tick=%s; wallet=%s; %s}`, 
+                            this.user._id, 
+                            !this.user.isTutorialFinished,
                             gameLoop.getFrameNumberSinceStart(), 
                             wallet.sum,
                             vegetable.toDetailString()
@@ -30,8 +31,9 @@ module.exports.WorldLogger = class WorldLogger {
         }
 
         if(empty) {
-            logger.info('userId=%s; tick=%s; wallet=%s; there are not vegetables', 
-                            this.userId,  
+            logger.info('userId=%s; isTutorial=%s; tick=%s; wallet=%s; there are not vegetables', 
+                            this.user._id,
+                            !this.user.isTutorialFinished,  
                             gameLoop.getFrameNumberSinceStart(),
                             wallet.sum
             );

@@ -1,7 +1,6 @@
 'use strict'
 
 const {Wallet} = require('./wallet.js');
-const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 class Satiety {
     static of(max, declineRatePerSeconds, alarmLevel) {
@@ -23,15 +22,16 @@ module.exports.Satiety = Satiety;
 
 module.exports.SatietySystem = class SatietySystem {
     constructor(entityComponentManager) {
-        this.filter = entityComponentManager.createFilter().all(Satiety, VegetableState);
+        this.filter = entityComponentManager.createFilter().all(Satiety);
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
         const eventManager = world.getEventManager();
         const elapsedTime = world.getGameLoop().getElapsedTime();
         const grid = manager.getSingletonEntity('grid');
         const wallet = manager.getSingletonEntity('wallet').get(Wallet);
+        const buffer = manager.createCommandBuffer();
         
         for(let entity of manager.select(this.filter)) {
             const satiety = entity.get(Satiety);
@@ -39,7 +39,10 @@ module.exports.SatietySystem = class SatietySystem {
 
             satiety.current = Math.max(0, satiety.current - elapsedTime / 1000 / satiety.declineRatePerSeconds);
 
-            if(satiety.current == 0) entity.get(VegetableState).pushState(lifeCycleStates.death);
+            if(satiety.current == 0) {
+                entity.addTags('dead');
+                buffer.bindEntity(entity);
+            }
 
             if(satiety.isAlarm() != isAlarm) eventManager.setFlag('gameStateWasChangedEvent');
         }
@@ -56,15 +59,13 @@ module.exports.SatietySystem = class SatietySystem {
             }
         });
 
+        manager.flush(buffer);
         eventManager.clearEventQueue('fertilizer');
     }
 
     #canFertilize(vegetable, wallet) {
-        return Boolean(
-            vegetable
-            && vegetable.hasComponents(Satiety, VegetableState)
-            && vegetable.get(VegetableState).current() != lifeCycleStates.death
-            && wallet.sum >= wallet.fertilizerPrice
-        );
+        return vegetable
+            && vegetable.hasComponents(Satiety)
+            && wallet.sum >= wallet.fertilizerPrice;
     }
 };
