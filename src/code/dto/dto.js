@@ -86,6 +86,12 @@ class VegetableResponse {
         else if(state.current() == lifeCycleStates.death && 
                 this.type == 'potato' && 
                 vegetable.hasTags('exploded')) this.stage = 7;
+        else if(state.current() == lifeCycleStates.death &&
+                this.type == 'onion' &&
+                !vegetable.hasTags('exploded')) this.stage = 6;
+        else if(state.current() == lifeCycleStates.death &&
+                this.type == 'onion' &&
+                vegetable.hasTags('exploded')) this.stage = 7;    
 
         if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
             if(vegetable.get(Thirst).isAlarm()) this.needs.push('THIRST');

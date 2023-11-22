@@ -4,7 +4,7 @@ const {PotatoGhost, PotatoDeathSystem} = require('./potatoDeath.js');
 const {Thirst, ThirstSystem} = require('./thirst.js');
 const {Satiety, SatietySystem} = require('./satiety.js');
 const {Immunity, ImmunitySystem} = require('./immunity.js');
-const {UnknownVegetableType, FailToCreateVegetableMeta} = require('../exception/exceptions.js');
+const {UnknownVegetableType, FailToCreateVegetableMeta, IncorrectVegetableState} = require('../exception/exceptions.js');
 const {Wallet} = require('./wallet.js');
 const {VegetableMeta} = require('./vegetableMeta.js');
 const {VegetableState, StateDetail, lifeCycleStates, GrowSystem} = require('./vegetableState.js');
@@ -23,6 +23,8 @@ const {OutputSystem} = require('./output.js');
 const {SaveGameSystem} = require('./saveGame.js');
 const {TutorialSystem} = require('./tutorial.js');
 const {ClearEventsSystem} = require('./clearEvents.js');
+const {OnionHealer, OnionHealSystem} = require('./onionHeal.js');
+const {OnionDeathSystem} = require('./onionDeath.js');
 
 const defaultSettings = {
     potato: {
@@ -50,7 +52,7 @@ const defaultSettings = {
         },
         seedProbability: {
             min: 0,
-            max: 0.7
+            max: 0.5
         },
         meta: {
             typeName: 'Potato'
@@ -91,11 +93,51 @@ const defaultSettings = {
             coff: 2
         },
         seedProbability: {
-            min: 0.7,
+            min: 0.5,
             max: 1
         },
         meta: {
             typeName: 'Tomato'
+        },
+        vegetableState: {
+            seedInterval: 1,
+            sproutInterval: 90,
+            childInterval: 90,
+            youthInterval: 90
+        }
+    },
+    onion: {
+        healer: {
+            cellNumberForChild: 1,
+            cellNumberForYouth: 2,
+            cellNumberForAdult: 3,
+            cellNumberForDeath: 3
+        },
+        immunity: {
+            max: 80,
+            alarmLevel1: 40,
+            declineRatePerSeconds: 1,
+            probability: 0.005
+        },
+        satiety: {
+            max: 80,
+            alarmLevel1: 40,
+            declineRatePerSeconds: 1
+        },
+        thirst: {
+            max: 80,
+            alarmLevel1: 40,
+            declineRatePerSeconds: 1
+        },
+        price: {
+            coff: 1.2
+        },
+        seedProbability: {
+            min: 1,
+            max: 1
+        },
+        meta: {
+            typeName: 'Onion'
         },
         vegetableState: {
             seedInterval: 1,
@@ -177,6 +219,13 @@ module.exports.Fabric = class Fabric {
                 props.declineRatePerSeconds, 
                 props.probability,
                 props.alarmLevel
+            );
+            this.loadedComponents['OnionHealer'] = props => new OnionHealer(
+                props.cells, 
+                props.currentCellNumber, 
+                props.cellNumberForChild,
+                props.cellNumberForYouth, 
+                props.cellNumberForAdult
             );
             this.loadedComponents['PotatoGhost'] = props => new PotatoGhost(props.timeInMillis);
             this.loadedComponents['Satiety'] = props => new Satiety(props.max, props.current, props.declineRatePerSeconds, props.alarmLevel);
@@ -340,11 +389,14 @@ module.exports.Fabric = class Fabric {
     }
 
     initSystem() {
-        return () => new InitSystem(this.grid(), this.wallet());
+        const gridFabric = this.grid();
+        const walletFabric = this.wallet();
+        return () => new InitSystem(gridFabric, walletFabric);
     }
 
     loadGameSystem() {
-        return (userId) => new LoadGameSystem(userId, this.componentLoader());
+        const componentLoaderFabric = this.componentLoader();
+        return (userId) => new LoadGameSystem(userId, componentLoaderFabric);
     }
 
     gameCommandSystem() {
@@ -352,35 +404,90 @@ module.exports.Fabric = class Fabric {
     }
 
     shovelSystem() {
-        return () => new ShovelSystem(this.vegetablePrizeFactor());
+        const vegetablePrizeFactorFabric = this.vegetablePrizeFactor();
+        return () => new ShovelSystem(vegetablePrizeFactorFabric);
     }
 
     plantNewVegetableSystem() {
-        return () => new PlantNewVegetableSystem(this.vegetableMeta(), this.vegetableState());
+        const vegetableMetaFabric = this.vegetableMeta();
+        const vegetableStateFabric = this.vegetableState();
+        return () => new PlantNewVegetableSystem(vegetableMetaFabric, vegetableStateFabric);
     }
 
     growSystem() {
-        return () => new GrowSystem(this.world()().getEntityComponentManager(), this.thirst(), this.satiety(), this.immunity());
+        const worldFabric = this.world();
+        const thirstFabric = this.thirst();
+        const satietyFabric = this.satiety();
+        const immunityFabric = this.immunity();
+        return () => new GrowSystem(worldFabric().getEntityComponentManager(), thirstFabric, satietyFabric, immunityFabric);
     }
 
     thirstSystem() {
-        return () => new ThirstSystem(this.world()().getEntityComponentManager());
+        const worldFabric = this.world();
+        return () => new ThirstSystem(worldFabric().getEntityComponentManager());
     }
 
     satietySystem() {
-        return () => new SatietySystem(this.world()().getEntityComponentManager());
+        const worldFabric = this.world();
+        return () => new SatietySystem(worldFabric().getEntityComponentManager());
     }
 
     immunitySystem() {
-        return () => new ImmunitySystem(this.world()().getEntityComponentManager(), this.randomGenerator());
+        const worldFabric = this.world();
+        const randomGenerator = this.randomGenerator();
+        return () => new ImmunitySystem(worldFabric().getEntityComponentManager(), randomGenerator);
     }
 
     tomatoDeathSystem() {
-        return () => new TomatoDeathSystem(this.world()().getEntityComponentManager(), this.randomGenerator(), this.tomatoExplosion());
+        const worldFabric = this.world();
+        const randomGenerator = this.randomGenerator();
+        const tomatoExplosionFabric = this.tomatoExplosion();
+        return () => new TomatoDeathSystem(worldFabric().getEntityComponentManager(), randomGenerator, tomatoExplosionFabric);
     }
 
     potatoDeathSystem() {
-        return () => new PotatoDeathSystem(this.world()().getEntityComponentManager(), this.potatoGhost());
+        const worldFabric = this.world();
+        const potatoGhostFabric = this.potatoGhost();
+        return () => new PotatoDeathSystem(worldFabric().getEntityComponentManager(), potatoGhostFabric);
+    }
+
+    onionHealer() {
+        const randomGenerator = this.randomGenerator();
+        return (state, grid, cell) => {
+            const settings = this.settings.onion.healer;
+            let currentCellNumber = 0;
+
+            if(state == lifeCycleStates.child) currentCellNumber = settings.cellNumberForChild;
+            else if(state == lifeCycleStates.youth) currentCellNumber = settings.cellNumberForYouth;
+            else if(state == lifeCycleStates.adult) currentCellNumber = settings.cellNumberForAdult;
+            else throw new IncorrectVegetableState(`Expected states for OnionHiller: child, youth, adult; Actual: ${state.name}`);
+
+            return new OnionHealer(
+                grid.getRandomNeigboursFor(cell.x, cell.y, currentCellNumber, randomGenerator),
+                currentCellNumber,
+                settings.cellNumberForChild,
+                settings.cellNumberForYouth,
+                settings.cellNumberForAdult,
+                settings.cellNumberForDeath
+            );
+        }
+    }
+
+    onionHealSystem() {
+        const worldFabric = this.world();
+        const onionHealerFabric = this.onionHealer();
+        return () => new OnionHealSystem(
+            worldFabric().getEntityComponentManager(),
+            onionHealerFabric
+        );
+    }
+
+    onionDeathSystem() {
+        const randomGenerator = this.randomGenerator();
+        return () => new OnionDeathSystem(
+            this.world()().getEntityComponentManager(),
+            randomGenerator
+        );
     }
 
     clearEventsSystem() {
@@ -388,7 +495,11 @@ module.exports.Fabric = class Fabric {
     }
 
     worldLogger() {
-        return (user) => new WorldLogger(this.world()().getEntityComponentManager(), user);
+        const worldFabric = this.world();
+        return (user) => new WorldLogger(
+            worldFabric().getEntityComponentManager(), 
+            user
+        );
     }
 
     outputSystem() {
@@ -396,7 +507,8 @@ module.exports.Fabric = class Fabric {
     }
 
     saveGameSystem() {
-        return (userId, gameRepository) => new SaveGameSystem(userId, gameRepository, this.timeUtil());
+        const timeUtil = this.timeUtil();
+        return (userId, gameRepository) => new SaveGameSystem(userId, gameRepository, timeUtil);
     }
 
 
@@ -409,23 +521,23 @@ module.exports.Fabric = class Fabric {
     }
 
     plantNewVegetableSystemTutorial() {
+        const vegetableSettings = this.settings.tutorial.vegetable;
         return () => new PlantNewVegetableSystem(
-            () => new VegetableMeta(this.settings.tutorial.vegetable.meta.typeName), 
+            () => new VegetableMeta(vegetableSettings.meta.typeName), 
             () => {
-                const states = this.settings.tutorial.vegetable.vegetableState;
                 return VegetableState.of(
-                    StateDetail.of(states.seedInterval, lifeCycleStates.seed),
-                    StateDetail.of(states.sproutInterval, lifeCycleStates.sprout),
-                    StateDetail.of(states.childInterval, lifeCycleStates.child),
-                    StateDetail.of(states.youthInterval, lifeCycleStates.youth)
+                    StateDetail.of(vegetableSettings.vegetableState.seedInterval, lifeCycleStates.seed),
+                    StateDetail.of(vegetableSettings.vegetableState.sproutInterval, lifeCycleStates.sprout),
+                    StateDetail.of(vegetableSettings.vegetableState.childInterval, lifeCycleStates.child),
+                    StateDetail.of(vegetableSettings.vegetableState.youthInterval, lifeCycleStates.youth)
                 );
             }
         );
     }
     
     growSystemTutorial() {
+        const vs = this.settings.tutorial.vegetable;
         return () => {
-            const vs = this.settings.tutorial.vegetable;
             return new GrowSystem(
                 this.world()().getEntityComponentManager(), 
                 () => Thirst.of(vs.thirst.max, vs.thirst.declineRatePerSeconds, vs.thirst.alarmLevel1),
@@ -436,12 +548,15 @@ module.exports.Fabric = class Fabric {
     }
 
     tutorialSystem() {
+        const plantNewVegetableSystemTutorialFabric = this.plantNewVegetableSystemTutorial();
+        const growSystemTutorialFabric = this.growSystemTutorial();
+        const activeCell = this.activeCell();
         return (user, userRepository) => new TutorialSystem(
             user, 
             userRepository,
-            this.activeCell(),
-            this.plantNewVegetableSystemTutorial(),
-            this.growSystemTutorial()
+            activeCell,
+            plantNewVegetableSystemTutorialFabric,
+            growSystemTutorialFabric
         );
     }
 
@@ -451,6 +566,7 @@ module.exports.Fabric = class Fabric {
 
         if(vegetableTypeName == 'Potato') vegetableSettings = this.settings.potato;
         else if(vegetableTypeName == 'Tomato') vegetableSettings = this.settings.tomato;
+        else if(vegetableTypeName == 'Onion') vegetableSettings = this.settings.onion;
         else throw new UnknownVegetableType(`Uknown vegetable type ${vegetableTypeName}`);
 
         return vegetableSettings;

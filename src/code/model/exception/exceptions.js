@@ -70,6 +70,12 @@ module.exports.UnknownVegetableType = class UnknownVegetableType extends Error {
     }
 }
 
+module.exports.IncorrectVegetableState = class IncorrectVegetableState extends Error {
+    constructor(logMessage) {
+        super(logMessage);
+    }
+}
+
 module.exports.FailToCreateVegetableMeta = class FailToCreateVegetableMeta extends Error {
     constructor(logMessage) {
         super(logMessage);

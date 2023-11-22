@@ -328,9 +328,11 @@ module.exports.TutorialSystem = class TutorialSystem {
                 'GrowSystem',
                 'ThirstSystem',
                 'SatietySystem',
+                'OnionHealSystem',
                 'ImmunitySystem',
                 'TomatoDeathSystem',
                 'PotatoDeathSystem',
+                'OnionDeathSystem',
                 'WorldLoggerSystem',
                 'OutputSystem');
             

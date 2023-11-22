@@ -21,9 +21,11 @@ module.exports.Game = class Game {
             putSystem('GrowSystem', fabric.growSystem()()).
             putSystem('ThirstSystem', fabric.thirstSystem()()).
             putSystem('SatietySystem', fabric.satietySystem()()).
+            putSystem('OnionHealSystem', fabric.onionHealSystem()()).
             putSystem('ImmunitySystem', fabric.immunitySystem()()).
             putSystem('TomatoDeathSystem', fabric.tomatoDeathSystem()()).
             putSystem('PotatoDeathSystem', fabric.potatoDeathSystem()()).
+            putSystem('OnionDeathSystem', fabric.onionDeathSystem()()).
             putSystem('WorldLoggerSystem', fabric.worldLogger()(user)).
             putSystem('OutputSystem', fabric.outputSystem()(outputCallback)).
             putSystem('ClearEventsSystem', fabric.clearEventsSystem()()).
@@ -38,9 +40,11 @@ module.exports.Game = class Game {
                 appendToGroup(groups.update, 'GrowSystem').
                 appendToGroup(groups.update, 'ThirstSystem').
                 appendToGroup(groups.update, 'SatietySystem').
+                appendToGroup(groups.update, 'OnionHealSystem').
                 appendToGroup(groups.update, 'ImmunitySystem').
                 appendToGroup(groups.update, 'TomatoDeathSystem').
                 appendToGroup(groups.update, 'PotatoDeathSystem').
+                appendToGroup(groups.update, 'OnionDeathSystem').
                 appendToGroup(groups.update, 'WorldLoggerSystem').
                 appendToGroup(groups.update, 'OutputSystem');
         } else {
