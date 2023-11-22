@@ -26,7 +26,7 @@ module.exports.settings = {
         },
         seedProbability: {
             min: 0,
-            max: 0.7
+            max: 0.5
         },
         meta: {
             typeName: 'Potato'
@@ -67,11 +67,51 @@ module.exports.settings = {
             coff: 2
         },
         seedProbability: {
-            min: 0.7,
-            max: 1
+            min: 0.5,
+            max: 0.75
         },
         meta: {
             typeName: 'Tomato'
+        },
+        vegetableState: {
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
+        }
+    },
+    onion: {
+        healer: {
+            cellNumberForChild: 1,
+            cellNumberForYouth: 2,
+            cellNumberForAdult: 3,
+            cellNumberForDeath: 3
+        },
+        immunity: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1,
+            probability: 0.2
+        },
+        satiety: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        thirst: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        price: {
+            coff: 1.2
+        },
+        seedProbability: {
+            min: 0.75,
+            max: 1
+        },
+        meta: {
+            typeName: 'Onion'
         },
         vegetableState: {
             seedInterval: 3,
