@@ -84,15 +84,17 @@ class StateDetail {
 module.exports.StateDetail = StateDetail;
 
 module.exports.GrowSystem = class GrowSystem {
-    constructor(entityComponentManager) {
+    constructor(entityComponentManager, thirstFabric, satietyFabric, immunityFabric) {
         this.filter = entityComponentManager.createFilter().all(VegetableState);
+        this.thirstFabric = thirstFabric;
+        this.satietyFabric = satietyFabric;
+        this.immunityFabric = immunityFabric;
     }
 
-    update(systemName, groupName, world) {
+    update(systemHandler, world) {
         const eventManager = world.getEventManager();
         const manager = world.getEntityComponentManager();
         const buffer = manager.createCommandBuffer();
-        const fabric = manager.getSingletonEntity('fabric');
         const grid = manager.getSingletonEntity('grid');
 
         const elapsedTime = world.getGameLoop().getElapsedTime();
@@ -114,9 +116,9 @@ module.exports.GrowSystem = class GrowSystem {
                 const vegetableState = vegetable.get(VegetableState);
 
                 vegetable.put(
-                    fabric.thirst(meta.typeName),
-                    fabric.satiety(meta.typeName),
-                    fabric.immunity(meta.typeName)
+                    this.thirstFabric(meta.typeName),
+                    this.satietyFabric(meta.typeName),
+                    this.immunityFabric(meta.typeName)
                 );
                 vegetableState.pushState(lifeCycleStates.seed);
                 this.#nextState(vegetableState, elapsedTime, eventManager);

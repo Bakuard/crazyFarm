@@ -26,28 +26,16 @@ module.exports.settings = {
         },
         seedProbability: {
             min: 0,
-            max: 0.7
+            max: 0.5
         },
         meta: {
             typeName: 'Potato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 3,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
         }
     },
     tomato: {
@@ -79,29 +67,57 @@ module.exports.settings = {
             coff: 2
         },
         seedProbability: {
-            min: 0.7,
-            max: 1
+            min: 0.5,
+            max: 0.75
         },
         meta: {
             typeName: 'Tomato'
         },
         vegetableState: {
-            seedDetail: {
-                intervalInSecond: 3,
-                lifeCyleState: 'seed'
-            },
-            sproutDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'sprout'
-            },
-            chidlDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'child'
-            },
-            youthDetail: {
-                intervalInSecond: 100,
-                lifeCyleState: 'youth'
-            }
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
+        }
+    },
+    onion: {
+        healer: {
+            cellNumberForChild: 1,
+            cellNumberForYouth: 2,
+            cellNumberForAdult: 3,
+            cellNumberForDeath: 3
+        },
+        immunity: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1,
+            probability: 0.2
+        },
+        satiety: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        thirst: {
+            max: 60,
+            alarmLevel1: 30,
+            declineRatePerSeconds: 1
+        },
+        price: {
+            coff: 1.2
+        },
+        seedProbability: {
+            min: 0.75,
+            max: 1
+        },
+        meta: {
+            typeName: 'Onion'
+        },
+        vegetableState: {
+            seedInterval: 3,
+            sproutInterval: 100,
+            childInterval: 100,
+            youthInterval: 100
         }
     },
     wallet: {
@@ -116,5 +132,38 @@ module.exports.settings = {
     },
     gameLoop: {
         frameDurationInMillis: 100
+    },
+    tutorial: {
+        activeCell: {
+            x: 1,
+            y: 0
+        },
+        vegetable: {
+            meta: {
+                typeName: 'Potato'
+            },
+            immunity: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1,
+                probability: 1
+            },
+            satiety: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            thirst: {
+                max: 4,
+                alarmLevel1: 2,
+                declineRatePerSeconds: 1
+            },
+            vegetableState: {
+                seedInterval: 1,
+                sproutInterval: 6,
+                childInterval: 6,
+                youthInterval: 6
+            }
+        }
     }
-};
+}; 

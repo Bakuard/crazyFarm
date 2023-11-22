@@ -1,3 +1,4 @@
+const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {PlantNewVegetableSystem} = require('../../../src/code/model/logic/plantNewVegetable.js');
 const {EntityComponentManager} = require('../../../src/code/model/gameEngine/entityComponentManager.js');
 const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/componentIdGenerator.js');
@@ -5,98 +6,26 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js');
-const {VegetableState} = require('../../../src/code/model/logic/vegetableState.js');
-const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
-let fabric = null;
 let manager = null;
 let eventManager = null;
 let wallet = null;
 let grid = null;
 function beforeEachTest() {
-    fabric = new Fabric({
-        potato: {
-            seedProbability: {
-                min: 0.5,
-                max: 1
-            },
-            meta: {
-                typeName: 'Potato'
-            },
-            vegetableState: {
-                seedDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'seed'
-                },
-                sproutDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'sprout'
-                },
-                chidlDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'child'
-                },
-                youthDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'youth'
-                }
-            }
-        },
-        tomato: {
-            seedProbability: {
-                min: 0,
-                max: 0.5
-            },
-            meta: {
-                typeName: 'Tomato'
-            },
-            vegetableState: {
-                seedDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'seed'
-                },
-                sproutDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'sprout'
-                },
-                chidlDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'child'
-                },
-                youthDetail: {
-                    intervalInSecond: 10,
-                    lifeCyleState: 'youth'
-                }
-            }
-        },
-        wallet: {
-            sum: 20,
-            fertilizerPrice: 2,
-            sprayerPrice: 2,
-            seedsPrice: 3
-        }
-    });
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    wallet = manager.createEntity().put(fabric.wallet());
+    wallet = manager.createEntity().put(new Wallet(20, 2, 2, 3));
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('wallet', wallet);
     manager.putSingletonEntity('grid', grid);
 
     eventManager = new EventManager();
     
     worldMock = {
-        elapsedTime: 1000000,
         getEntityComponentManager: () => manager,
-        getEventManager: () => eventManager,
-        getGameLoop: function() {
-            const et = this.elapsedTime;
-            return {
-                getElapsedTime: () => et
-            }
-        },
+        getEventManager: () => eventManager
     };
 };
 
@@ -104,13 +33,29 @@ function p(x, y) {
     return {x, y, toString() {return `{x: ${this.x}, y: ${this.y}}`}};
 }
 
+function createVegetableState() {
+    let result = VegetableState.of(
+        StateDetail.of(3, lifeCycleStates.seed),
+        StateDetail.of(40, lifeCycleStates.sprout),
+        StateDetail.of(40, lifeCycleStates.child),
+        StateDetail.of(40, lifeCycleStates.youth)
+    );
+    result.pushState(lifeCycleStates.sleepingSeed);
+
+    return result;
+}
+
 function createVegetable(x, y) {
     let metaComp = new VegetableMeta('Potato');
     let cellLinkComp = new GardenBedCellLink(x, y);
-    let vegetableState = fabric.vegetableState(metaComp.typeName);
+    let vegetableState = createVegetableState();
     let vegetable = manager.createEntity().put(metaComp, cellLinkComp, vegetableState);
     manager.bindEntity(vegetable);
     return vegetable;
+}
+
+function systemHandler(system) {
+    return new SystemHandler('PlantNewVegetableSystem', 'update', system, 0, 1);
 }
 
 describe.each([
@@ -161,8 +106,8 @@ describe.each([
             wallet.get(Wallet).seedsPrice = seedsPrice;
             let gridClone = grid.clone(entity => entity);
 
-            let system = new PlantNewVegetableSystem(() => 0.1);
-            system.update('PlantNewVegetableSystem', 'update', worldMock);
+            let system = new PlantNewVegetableSystem(() => new VegetableMeta('Potato'), () => createVegetableState());
+            system.update(systemHandler(system), worldMock);
 
             expectedNewVegetablesCoordinates.forEach(pos => {
                 expect(grid.get(pos.x, pos.y)).not.toBe(gridClone.get(pos.x, pos.y));

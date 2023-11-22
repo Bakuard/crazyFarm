@@ -4,7 +4,6 @@ const dto = require('../dto/dto.js');
 const ms = require('ms');
 const {newLogger} = require('../conf/logConf.js');
 const {Game} = require('../model/logic/game.js');
-const {TimeUtil} = require('../model/gameEngine/timeUtil.js');
 const {Fabric} = require('../model/logic/fabric.js');
 
 const logger = newLogger('info', 'gameController.js');
@@ -45,6 +44,7 @@ module.exports.GameController = class GameController {
             (gameResponse) => clientSocket.send(JSON.stringify(gameResponse, null, 4)), 
             req.user,
             this.#gameRepository,
+            this.#userRepository,
             new Fabric()
         );
 

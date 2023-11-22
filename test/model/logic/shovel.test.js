@@ -9,6 +9,8 @@ const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCell
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
+const {settings} = require('../../resources/settings.js');
 
 let fabric = null;
 let manager = null;
@@ -17,49 +19,12 @@ let wallet = null;
 let worldMock = null;
 let grid = null;
 function beforeEachTest() {
-    fabric = new Fabric({
-        potato: {
-            satiety: {
-                alarmLevel1: 30
-            },
-            immunity: {
-                alarmLevel1: 30
-            },
-            price: {
-                coff: 1.5
-            },
-            vegetableState: {
-                seedDetail: {
-                    intervalInSecond: 3,
-                    lifeCyleState: 'seed'
-                },
-                sproutDetail: {
-                    intervalInSecond: 40,
-                    lifeCyleState: 'sprout'
-                },
-                chidlDetail: {
-                    intervalInSecond: 40,
-                    lifeCyleState: 'child'
-                },
-                youthDetail: {
-                    intervalInSecond: 40,
-                    lifeCyleState: 'youth'
-                }
-            }
-        },
-        wallet: {
-            sum: 10,
-            fertilizerPrice: 2,
-            sprayerPrice: 2,
-            seedsPrice: 3
-        }
-    });
+    fabric = new Fabric(settings);
     eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
-    wallet = manager.createEntity().put(fabric.wallet());
+    wallet = manager.createEntity().put(fabric.wallet()());
     grid = new Grid(4, 3);
     manager.putSingletonEntity('wallet', wallet);
-    manager.putSingletonEntity('fabric', fabric);
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -70,7 +35,7 @@ function beforeEachTest() {
 beforeEach(beforeEachTest);
 
 function createAndPrepareVegetable(cellX, cellY, currentState, previousState) {
-    let stateComp = fabric.vegetableState('Potato');
+    let stateComp = fabric.vegetableState()('Potato');
     stateComp.pushState(previousState);
     stateComp.pushState(currentState);
     let vegetable = manager.createEntity().put(
@@ -81,6 +46,10 @@ function createAndPrepareVegetable(cellX, cellY, currentState, previousState) {
     grid.write(cellX, cellY, vegetable);
     manager.bindEntity(vegetable);
     return vegetable;
+}
+
+function systemHandler(system) {
+    return new SystemHandler('ShovelSystem', 'update', system, 0, 1);
 }
 
 describe.each([
@@ -204,7 +173,7 @@ describe.each([
         },
         event: {tool: 'shovel', cellX: 2, cellY: 1},
         money: 10, 
-        expectedMoney: 24,
+        expectedMoney: 36,
         expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
     },
     {
@@ -216,7 +185,7 @@ describe.each([
         },
         event: {tool: 'shovel', cellX: 2, cellY: 1},
         money: 10, 
-        expectedMoney: 32,
+        expectedMoney: 56,
         expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
     },
     {
@@ -228,7 +197,7 @@ describe.each([
         },
         event: {tool: 'shovel', cellX: 2, cellY: 1},
         money: 10, 
-        expectedMoney: 40,
+        expectedMoney: 76,
         expectedCellState: { cellX: 2, cellY: 1, isEmpty: true, isAlive: false}
     }
 ])(`update(groupName, world):`,
@@ -251,8 +220,8 @@ describe.each([
             if(event) eventManager.writeEvent(event.tool, event);
             wallet.get(Wallet).sum = money;
 
-            let system = new ShovelSystem(manager);
-            system.update('ShovelSystem', 'update', worldMock);
+            let system = new ShovelSystem(fabric.vegetablePrizeFactor());
+            system.update(systemHandler(system), worldMock);
 
             expect(wallet.get(Wallet).sum).toEqual(expectedMoney);
             expect(grid.get(expectedCellState.cellX, expectedCellState.cellY) == null).toBe(expectedCellState.isEmpty);

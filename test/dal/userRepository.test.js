@@ -16,6 +16,8 @@ beforeEach(async () => {
     await collection.deleteMany({});
 });
 
+afterAll(async () => dbConnector.closeConnection());
+
 test(`userRepository.add(user):
        user with such loggin already exists
        => exception`,
@@ -50,4 +52,24 @@ test(`userRepository.assertUnique(user):
         });
 
         return userRepository.add(nullUser).catch(e => expect(e).toBeNull());
+    });
+
+test(`userRepository.update(user):
+        there is not other user with such email and loggin
+        => update user`,
+    async () => {
+        let userRepository = new UserRepository(dbConnector);
+        let user = User.createNewUser({
+            loggin: 'Me', 
+            email: 'me@mail.com', 
+            password: 'password'
+        });
+        await userRepository.add(user);
+
+        user.loggin = 'He';
+        user.email = 'he@mail.com';
+        await userRepository.update(user);
+        let actualUser = await userRepository.findById(user._id);
+
+        expect(actualUser).toEqual(user);
     });

@@ -14,7 +14,8 @@ module.exports.User = class User {
             loggin,
             email,
             passwordHash,
-            salt
+            salt,
+            isTutorialFinished: false
         });
     }
 
@@ -23,13 +24,15 @@ module.exports.User = class User {
     email;
     passwordHash;
     salt;
+    isTutorialFinished;
 
-    constructor({_id, loggin, email, passwordHash, salt}) {
+    constructor({_id, loggin, email, passwordHash, salt, isTutorialFinished}) {
         this._id = _id;
         this.loggin = loggin?.trim();
         this.email = email;
         this.passwordHash = passwordHash;
         this.salt = salt;
+        this.isTutorialFinished = isTutorialFinished;
     }
 
     assertCorrectPassword(password) {
