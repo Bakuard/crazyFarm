@@ -33,7 +33,7 @@ module.exports.UserRepository = class UserRepository {
             const mongo = await this.dbConnector.getConnection();
             const db = mongo.db(process.env.MONGO_DB_NAME);
             const collection = db.collection('users');
-            await collection.replaceOne({_id: user._id}, user);
+            await collection.replaceOne({_id: new ObjectID(user._id)}, user);
         } catch(err) {
             if(err.code == 11000) {
                 throw new exceptions.DuplicateUserException(
@@ -122,10 +122,12 @@ module.exports.GameRepository = class GameRepository {
     }
 
     async save(fullGameState) {
+        fullGameState.userId = new ObjectID(fullGameState.userId);
+
         const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
-        await collection.deleteOne({userId: fullGameState.userId});
+        await collection.deleteOne({userId: new ObjectID(fullGameState.userId)});
         await collection.insertOne(fullGameState);
     }
 
@@ -133,7 +135,7 @@ module.exports.GameRepository = class GameRepository {
         const mongo = await this.dbConnector.getConnection();
         const db = mongo.db(process.env.MONGO_DB_NAME);
         const collection = db.collection('games');
-        const result = await collection.findOne({userId: userId});
+        const result = await collection.findOne({userId: new ObjectID(userId)});
 
         return result;
     }

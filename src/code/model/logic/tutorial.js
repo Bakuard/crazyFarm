@@ -67,6 +67,7 @@ module.exports.TutorialSystem = class TutorialSystem {
 
         systemManager.resetGroup(groups.update, 
             'GameCommandSystem', 
+            'ResetGameSystem',
             'TutorialEventFilter', //<---- 
             'PlantNewVegetableSystemTutorial', //<----
             'TutorialSystem', //<----
@@ -90,6 +91,7 @@ module.exports.TutorialSystem = class TutorialSystem {
         if(grid.get(this.activeCell.x, this.activeCell.y)) {
             systemManager.resetGroup(groups.update, 
                 'GameCommandSystem', 
+                'ResetGameSystem',
                 'TutorialEventFilter', //<----
                 'GrowSystemTutorial', //<----
                 'TutorialSystem', //<----
@@ -115,6 +117,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(state.current() == lifeCycleStates.sprout) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'ThirstSystem', //<----
                     'TutorialSystem', //<----
@@ -142,6 +145,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(this.step3Condition === 1 && !thirst.isAlarm()) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
@@ -165,6 +169,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(state.current() == lifeCycleStates.child) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'SatietySystem', //<----
                     'ImmunitySystem', //<----
@@ -203,6 +208,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(this.step4Condition === 2 && this.step4Condition2 === 2) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
@@ -226,6 +232,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(state.current() == lifeCycleStates.youth) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'SatietySystem', //<----
                     'ImmunitySystem', //<----
@@ -236,7 +243,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                     'ClearEventsSystem');
 
                 manager.putSingletonEntity('tutorialCurrentStep', {
-                    step: 5, isActive: true, blockedTools: ['shovel'], activeCell: this.activeCell
+                    step: 5, isActive: true, blockedTools: ['shovel', 'seeds'], activeCell: this.activeCell
                 });
                 eventManager.setFlag('gameStateWasChangedEvent');
                 this.currentStep = this.step5SatietyAndThirstAndImmunity;
@@ -271,6 +278,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(this.step5Condition === 2 && this.step5Condition2 === 2 && this.step5Condition3 === 2) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'GrowSystemTutorial', //<----
                     'TutorialSystem', //<----
@@ -294,6 +302,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             if(state.current() == lifeCycleStates.adult) {
                 systemManager.resetGroup(groups.update, 
                     'GameCommandSystem', 
+                    'ResetGameSystem',
                     'TutorialEventFilter', //<----
                     'ShovelSystem', //<----
                     'TutorialSystem', //<----
@@ -323,6 +332,7 @@ module.exports.TutorialSystem = class TutorialSystem {
             systemManager.resetGroup(groups.update, 
                 'ClearTutorialData',
                 'GameCommandSystem', 
+                'ResetGameSystem',
                 'ShovelSystem',
                 'PlantNewVegetableSystem',
                 'GrowSystem',

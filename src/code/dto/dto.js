@@ -140,3 +140,10 @@ class CommandRequest {
     }
 }
 module.exports.CommandRequest = CommandRequest;
+
+class ControllGameCommandRequest {
+    constructor(commandName) {
+        this.commandName = commandName;
+    }
+}
+module.exports.ControllGameCommandRequest = ControllGameCommandRequest;

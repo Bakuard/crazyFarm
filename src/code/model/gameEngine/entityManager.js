@@ -28,6 +28,11 @@ module.exports.EntityManager = class EntityManager {
         }
     }
 
+    clear() {
+        this.#entities = [];
+        this.#reusableEntityId = [];
+    }
+
     isAlive(entity) {
         return entity.equals(this.#entities[entity.personalId]);
     }
