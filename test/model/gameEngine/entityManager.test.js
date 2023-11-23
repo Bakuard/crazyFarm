@@ -243,3 +243,21 @@ test(`restore():
 
         expect(actual).toEqual([new Entity(0, 1), new Entity(3, 1), new Entity(4, 1), new Entity(10, 0), new Entity(11, 0)]);
     });
+
+test(`clear():
+        there are live entities,
+        there are dead entities
+        => clear`,
+    () => {
+        let manager = new EntityManager();
+        let entities = createEntitiesWithManager(manager, 100);
+        for(let i = 0; i < entities.length; i += 2) manager.remove(entities[i]);
+
+        manager.clear();
+        let actual = manager.snapshot();
+
+        expect(actual).toEqual({
+            liveEntities: [],
+            deadEntities: []
+        });
+    });

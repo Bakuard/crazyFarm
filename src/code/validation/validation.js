@@ -25,7 +25,7 @@ const registerUserSchema = Joi.object({
 });
 const existedUserSchema = registerUserSchema.fork(['email'], schema => schema.optional());
 
-const gameCommandSchema = Joi.object({
+const gameToolCommandSchema = Joi.object({
     tool: Joi.string().valid('shovel', 'bailer', 'fertilizer', 'sprayer', 'seeds').required().messages({
         'string.valid': 'GameCommand.tool.unknown',
         'any.required': 'GameCommand.tool.notEmpty'
@@ -34,6 +34,15 @@ const gameCommandSchema = Joi.object({
         'object.regex': 'GameCommand.coordinates.format'
     })
 });
+
+const controlGameCommandSchema = Joi.object({
+    commandName: Joi.string().valid('resetGame').required().messages({
+        'string.valid': 'ResetGame.tool.unknown',
+        'any.required': 'ResetGame.tool.notEmpty'
+    })
+});
+
+const gameCommandScheme = Joi.alternatives(gameToolCommandSchema, controlGameCommandSchema);
 
 function exstractKeys(joiError, domainException) {
     for(let key of joiError.details) {
@@ -67,7 +76,7 @@ module.exports.checkExistedUser = function(user) {
 }
 
 module.exports.checkRawGameCommand = function(rawCommand) {
-    let {error, value} = gameCommandSchema.validate(rawCommand, {abortEarly: false});
+    let {error, value} = gameCommandScheme.validate(rawCommand, {abortEarly: false});
     if(error) {
         throw exstractKeys(
             error,
