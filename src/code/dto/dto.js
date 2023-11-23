@@ -7,8 +7,6 @@ const {i18next} = require('../conf/i18nConf.js');
 const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
-const {PotatoGhost} = require('../model/logic/potatoDeath.js');
-const {TomatoExplosion} = require('../model/logic/tomatoDeath.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
 

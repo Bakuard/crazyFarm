@@ -39,8 +39,6 @@ module.exports.LoadGameSystem = class LoadGameSystem {
 
             manager.putSingletonEntity('fullGameState', null);
 
-            eventManager.setFlag('gameStateWasChangedEvent');
-
             logger.info('Load game for user %s', this.userId);
         }
     }

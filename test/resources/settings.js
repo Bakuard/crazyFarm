@@ -3,7 +3,7 @@
 module.exports.settings = {
     potato: {
         ghost: {
-            timeInMillis: 10000
+            timeInMillis: 100000
         },
         immunity: {
             max: 60,

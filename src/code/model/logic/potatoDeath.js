@@ -81,6 +81,11 @@ module.exports.PotatoDeathSystem = class PotatoDeathSystem {
 
     #updatePotatoGhosts(manager, grid, buffer, eventManager, elapsedTime) {
         for(let vegetable of manager.select(this.ghostFilter)) {
+            if(vegetable.hasTags('exploded')) {
+                vegetable.removeTags('exploded');
+                buffer.bindEntity(vegetable);
+            }
+
             const potatoGhost = vegetable.get(PotatoGhost);
             potatoGhost.timeInMillis = Math.max(0, potatoGhost.timeInMillis - elapsedTime);
             if(potatoGhost.timeInMillis == 0) this.#removePotato(vegetable, grid, buffer, eventManager);
