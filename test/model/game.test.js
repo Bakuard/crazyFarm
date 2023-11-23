@@ -648,6 +648,48 @@ describe(`grow some vegetables to 'sprout' then die,
                 gardenBedCellDto(3, 2, false, vegetableDto('potato', 0))
             ]
         },
+        {
+            events: [],
+            elapsedMillis: 100, 
+            updateNumber: 490,
+            randomValue: 0.3, 
+            expectedMoney: 109, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, vegetableDto('potato', 6)),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, vegetableDto('potato', 0))
+            ]
+        },
+        {
+            events: [],
+            elapsedMillis: 100, 
+            updateNumber: 10,
+            randomValue: 0.3, 
+            expectedMoney: 109, 
+            expectedGardenCells: [
+                gardenBedCellDto(0, 0, false, null),
+                gardenBedCellDto(1, 0, false, null),
+                gardenBedCellDto(2, 0, false, null),
+                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(0, 1, false, null),
+                gardenBedCellDto(1, 1, false, null),
+                gardenBedCellDto(2, 1, false, null),
+                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(0, 2, false, null),
+                gardenBedCellDto(1, 2, false, null),
+                gardenBedCellDto(2, 2, false, null),
+                gardenBedCellDto(3, 2, false, vegetableDto('potato', 0))
+            ]
+        },
     ])(`step $#`, ({events, elapsedMillis, updateNumber, randomValue, expectedMoney, expectedGardenCells}) => {
         test(`events: ${JSON.stringify(events)}, 
               elapsedMillis: ${elapsedMillis},

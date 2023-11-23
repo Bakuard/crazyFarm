@@ -9,12 +9,14 @@ module.exports.InitSystem = class InitSystem {
 
     update(systemHandler, world) {
         const manager = world.getEntityComponentManager();
+        const eventManager = world.getEventManager();
 
         const grid = this.gridFabric();
         const wallet = manager.createEntity().put(this.walletFabric());
 
         manager.putSingletonEntity('grid', grid);
         manager.putSingletonEntity('wallet', wallet);
+        eventManager.setFlag('gameStateWasChangedEvent');
     }
 
 };
