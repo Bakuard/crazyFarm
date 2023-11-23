@@ -210,6 +210,13 @@ module.exports.EntityComponentManager = class EntityComponentManager {
         return new EntityFilter(this.#componentsIdGenerator);
     }
 
+    clear() {
+        this.#entityManager.clear();
+        this.#arhytypes = [];
+        this.#archytypesByEntityId = [];
+        this.#singletonEntities = {};
+    }
+
     getEntityManager() {
         return this.#entityManager;
     }

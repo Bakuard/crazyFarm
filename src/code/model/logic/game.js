@@ -16,6 +16,7 @@ module.exports.Game = class Game {
             putSystem('InitSystem', fabric.initSystem()()).appendToGroup(groups.start, 'InitSystem').
             putSystem('LoadGameSystem', fabric.loadGameSystem()(user._id)).appendToGroup(groups.start, 'LoadGameSystem').
             putSystem('GameCommandSystem', fabric.gameCommandSystem()()).
+            putSystem('ResetGameSystem', fabric.resetGameSystem()()).
             putSystem('ShovelSystem', fabric.shovelSystem()()).
             putSystem('PlantNewVegetableSystem', fabric.plantNewVegetableSystem()()).
             putSystem('GrowSystem', fabric.growSystem()()).
@@ -35,6 +36,7 @@ module.exports.Game = class Game {
         if(user.isTutorialFinished) {
             this.world.getSystemManager().
                 appendToGroup(groups.update, 'GameCommandSystem').
+                appendToGroup(groups.update, 'ResetGameSystem').
                 appendToGroup(groups.update, 'ShovelSystem').
                 appendToGroup(groups.update, 'PlantNewVegetableSystem').
                 appendToGroup(groups.update, 'GrowSystem').
@@ -49,6 +51,7 @@ module.exports.Game = class Game {
                 appendToGroup(groups.update, 'OutputSystem');
         } else {
             this.world.getSystemManager().
+                appendToGroup(groups.update, 'ResetGameSystem').
                 appendToGroup(groups.update, 'TutorialSystem').
                 appendToGroup(groups.update, 'OutputSystem');
         }

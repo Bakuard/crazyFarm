@@ -25,6 +25,7 @@ const {TutorialSystem} = require('./tutorial.js');
 const {ClearEventsSystem} = require('./clearEvents.js');
 const {OnionHealer, OnionHealSystem} = require('./onionHeal.js');
 const {OnionDeathSystem} = require('./onionDeath.js');
+const {ResetGameSystem} = require('./resetGame.js');
 
 const defaultSettings = {
     potato: {
@@ -401,6 +402,12 @@ module.exports.Fabric = class Fabric {
 
     gameCommandSystem() {
         return () => new GameCommandSystem();
+    }
+
+    resetGameSystem() {
+        const gridFabric = this.grid();
+        const walletFabric = this.wallet();
+        return () => new ResetGameSystem(gridFabric, walletFabric);
     }
 
     shovelSystem() {

@@ -139,7 +139,6 @@ test(`select(entityFilter):
             let entity1 = manager.createEntity();
             let entity2 = manager.createEntity();
             let entity3 = manager.createEntity();
-            let entity4 = manager.createEntity();
             entity1.put(new A(), new B(), new C());
             entity2.put(new A(), new C());
             entity3.put(new A(), new B(), new C(), new D());
@@ -195,4 +194,33 @@ test(`bindEntity(entity) and select(entityFilter):
             let actual = [...generator];
 
             expect(actual).containsEntities(entity1, entity2, entity3);
+        });
+
+test(`clear():
+        there are several entities in manager,
+        there are severla signleton entities in manager
+        => clear all`,
+        () => {
+            let entity1 = manager.createEntity();
+            let entity2 = manager.createEntity();
+            let entity3 = manager.createEntity();
+            let entity4 = manager.createEntity();
+            entity1.put(new A(), new B(), new C()).addTags('tagA', 'tagB', 'tagC');
+            entity2.put(new A(), new C()).addTags('tagA', 'tagB', 'tagD');
+            entity3.put(new A(), new B(), new C(), new D()).addTags('tagA', 'tagB', 'tagE');
+            manager.bindEntity(entity1); 
+            manager.bindEntity(entity2); 
+            manager.bindEntity(entity3); 
+            manager.bindEntity(entity4);
+            manager.putSingletonEntity('singleton1', 'somve data 1');
+            manager.putSingletonEntity('singleton2', 'somve data 2');
+
+            manager.clear();
+            let filter = manager.createFilter();
+            let generator = manager.select(filter);
+            let actual = [...generator];
+
+            expect(actual).toHaveLength(0);
+            expect(manager.getSingletonEntity('singleton1')).toBe(undefined);
+            expect(manager.getSingletonEntity('singleton2')).toBe(undefined);
         });
