@@ -134,6 +134,7 @@ module.exports.settings = {
         frameDurationInMillis: 100
     },
     tutorial: {
+        version: 1,
         activeCell: {
             x: 1,
             y: 0

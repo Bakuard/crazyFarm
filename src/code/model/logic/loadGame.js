@@ -23,6 +23,7 @@ module.exports.LoadGameSystem = class LoadGameSystem {
 
         const loadEntity = this.#loadEntity;
         if(fullGameState) {
+            manager.putSingletonEntity('tutorialCurrentStep', fullGameState.tutorialCurrentStep);
             wallet.put(this.componentLoader('Wallet', fullGameState.wallet));
             let snapshot = {
                 liveEntities: fullGameState.liveEntities.map(e => loadEntity(this.componentLoader, e)),

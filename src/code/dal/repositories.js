@@ -21,7 +21,7 @@ module.exports.UserRepository = class UserRepository {
             if(err.code == 11000) {
                 throw new exceptions.DuplicateUserException(
                     'User.logginOrEmail.notUnique',
-                    `User with loggin=${user.loggin} and email=${user.email} already exists`
+                    `User with loggin='${user.loggin}' and email='${user.email}' already exists`
                 );
             }
             throw err;
@@ -38,7 +38,7 @@ module.exports.UserRepository = class UserRepository {
             if(err.code == 11000) {
                 throw new exceptions.DuplicateUserException(
                     'User.logginOrEmail.notUnique',
-                    `User with loggin=${user.loggin} and email=${user.email} already exists`
+                    `User with loggin='${user.loggin}' and email='${user.email}' already exists`
                 );
             }
             throw err;
@@ -72,7 +72,7 @@ module.exports.UserRepository = class UserRepository {
         if(!user) {
             throw new exceptions.UnknownUserException(
                 'User.loggin.unknown',
-                `User with loggin=${loggin} doesn't exist`
+                `User with loggin='${loggin}' doesn't exist`
             );
         }
         return user;
@@ -94,7 +94,7 @@ module.exports.UserRepository = class UserRepository {
         if(!user) {
             throw new exceptions.UnknownUserException(
                 'User.email.unknown',
-                `User with email=${email} doesn't exist`
+                `User with email='${email}' doesn't exist`
             );
         }
         return user;

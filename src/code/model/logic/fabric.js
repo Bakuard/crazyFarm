@@ -161,6 +161,7 @@ const defaultSettings = {
         frameDurationInMillis: 100
     },
     tutorial: {
+        version: 1,
         activeCell: {
             x: 1,
             y: 0
@@ -558,7 +559,9 @@ module.exports.Fabric = class Fabric {
         const plantNewVegetableSystemTutorialFabric = this.plantNewVegetableSystemTutorial();
         const growSystemTutorialFabric = this.growSystemTutorial();
         const activeCell = this.activeCell();
+        const version = this.settings.tutorial.version;
         return (user, userRepository) => new TutorialSystem(
+            version,
             user, 
             userRepository,
             activeCell,

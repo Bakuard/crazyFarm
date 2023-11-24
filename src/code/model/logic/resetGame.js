@@ -17,6 +17,7 @@ module.exports.ResetGameSystem = class ResetGameSystem {
             manager.clear();
             manager.putSingletonEntity('grid', grid);
             manager.putSingletonEntity('wallet', wallet);
+            manager.putSingletonEntity('tutorialCurrentStep', null);
 
             eventManager.clearEventQueue('resetGame');
             eventManager.setFlag('gameStateWasChangedEvent');
