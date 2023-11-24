@@ -387,6 +387,7 @@ module.exports.TutorialSystem = class TutorialSystem {
                         'ShovelSystem',
                         'PlantNewVegetableSystem',
                         'GrowSystem',
+                        'NeedsOfAdultVegetables',
                         'ThirstSystem',
                         'SatietySystem',
                         'OnionHealSystem',

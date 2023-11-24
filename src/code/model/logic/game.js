@@ -20,6 +20,7 @@ module.exports.Game = class Game {
             putSystem('ShovelSystem', fabric.shovelSystem()()).
             putSystem('PlantNewVegetableSystem', fabric.plantNewVegetableSystem()()).
             putSystem('GrowSystem', fabric.growSystem()()).
+            putSystem('NeedsOfAdultVegetables', fabric.needsOfAdultVegetables()()).
             putSystem('ThirstSystem', fabric.thirstSystem()()).
             putSystem('SatietySystem', fabric.satietySystem()()).
             putSystem('OnionHealSystem', fabric.onionHealSystem()()).
@@ -40,6 +41,7 @@ module.exports.Game = class Game {
                 appendToGroup(groups.update, 'ShovelSystem').
                 appendToGroup(groups.update, 'PlantNewVegetableSystem').
                 appendToGroup(groups.update, 'GrowSystem').
+                appendToGroup(groups.update, 'NeedsOfAdultVegetables').
                 appendToGroup(groups.update, 'ThirstSystem').
                 appendToGroup(groups.update, 'SatietySystem').
                 appendToGroup(groups.update, 'OnionHealSystem').
