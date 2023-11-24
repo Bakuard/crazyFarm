@@ -10,6 +10,15 @@ const {Immunity} = require('../model/logic/immunity.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
 
+class UserRequest {
+    constructor({loggin, email, password}) {
+        this.loggin = loggin?.trim();
+        this.email = email?.trim();
+        this.password = password;
+    }
+}
+module.exports.UserRequest = UserRequest;
+
 class UserResponse {
     constructor({_id, loggin, email}) {
         this.userId = _id;

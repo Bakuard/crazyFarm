@@ -26,52 +26,53 @@ module.exports.UserController = class UserController {
     }
 
     async enter(req, res, next) { 
-        logger.info('enter(): user %s is trying to enter', req.body.loggin);
+        const userRequest = new dto.UserRequest(req.body);
+        logger.info(`enter(): user '%s' is trying to enter`, userRequest);
 
-        validator.checkExistedUser(req.body);
-        let user = await this.#userRepository.tryFindByLoggin(req.body.loggin);
-        user.assertCorrectPassword(req.body.password);
-        let jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));
+        validator.checkExistedUser(userRequest);
+        const user = await this.#userRepository.tryFindByLoggin(userRequest.loggin);
+        user.assertCorrectPassword(userRequest.password);
+        const jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));
         res.send(new dto.JwsResponse(jws, user));
     }
 
     async registrationFirstStep(req, res, next) {
-        logger.info('registrationFirstStep(): register new user {loggin: %s, email: %s}', req.body.loggin, req.body.email);
+        const userRequest = new dto.UserRequest(req.body);
+        logger.info('registrationFirstStep(): register new user {loggin: %s, email: %s}', userRequest.loggin, userRequest.email);
 
         await exceptions.tryExecuteAll(
-            () => validator.checkNewUser(req.body),
-            async () => this.#userRepository.assertUnique(req.body)
+            () => validator.checkNewUser(userRequest),
+            async () => this.#userRepository.assertUnique(userRequest)
         );
-        validator.checkNewUser(req.body);
-        await this.#userRepository.assertUnique(req.body);
-        let user = User.createNewUser(req.body); 
-        let jws = this.#jwsService.generateJws(user, 'registration', ms(process.env.JWS_REGISTER_LIFETIME_DAYS));
+        const user = User.createNewUser(userRequest); 
+        const jws = this.#jwsService.generateJws(user, 'registration', ms(process.env.JWS_REGISTER_LIFETIME_DAYS));
         await mailService.sendMailForRegistration(user.email, jws, req.language);
         res.send(i18next.t('register.firstStep', {lng: req.language}));
     }
 
     async registrationFinalStep(req, res, next) {
-        let user = this.#jwsService.parseJws(req.headers.authorization, 'registration');
+        const rawUserFromJws = this.#jwsService.parseJws(req.headers.authorization, 'registration');
+        const user = new User(rawUserFromJws);
         logger.info('registrationFinalStep(): register new user {loggin: %s, email: %s}.', user.loggin, user.email);
         await this.#userRepository.add(user);
-        let jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));
+        const jws = this.#jwsService.generateJws(user._id, 'common', ms(process.env.JWS_COMMON_LIFETIME_DAYS));
         res.send(new dto.JwsResponse(jws, user));
     }
 
     async enterGoogle(req, res, next) {
-        let jwtAndUser = await this.#googleAuthService.enter(req.headers.authorization);
+        const jwtAndUser = await this.#googleAuthService.enter(req.headers.authorization);
         res.send(new dto.JwsResponse(jwtAndUser.jws, jwtAndUser.user));
     }
 
     async registrationGoogle(req, res, next) {
-        let jwtAndUser = await this.#googleAuthService.registration(req.headers.authorization);
+        const jwtAndUser = await this.#googleAuthService.registration(req.headers.authorization);
         res.send(new dto.JwsResponse(jwtAndUser.jws, jwtAndUser.user));
     }
 
     async getByJws(req, res, next) {
         logger.info('getByJws(): User with id=%s is trying to get self credential', req.jwsBody);
 
-        let user = await this.#userRepository.findById(req.jwsBody);
+        const user = await this.#userRepository.findById(req.jwsBody);
         res.send(new dto.UserResponse(user));
     }
 
