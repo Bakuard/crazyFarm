@@ -75,7 +75,7 @@ class OnionHealSystem {
             const onionHealer = vegetable.get(OnionHealer);
             const cells = onionHealer.cells.slice(0, onionHealer.currentCellNumber);
 
-            for(let cell of onionHealer.cells) {
+            for(let cell of cells) {
                 const vegetable = grid.get(cell.x, cell.y);
                 if(this.#canBeHealed(vegetable)) {
                     const immuntity = vegetable.get(Immunity);
