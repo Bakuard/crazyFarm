@@ -68,7 +68,7 @@ const defaultSettings = {
         },
         seedProbability: {
             min: 0.5,
-            max: 1
+            max: 0.75
         },
         meta: {
             typeName: 'Tomato'
@@ -107,7 +107,7 @@ const defaultSettings = {
             coff: 1.2
         },
         seedProbability: {
-            min: 1,
+            min: 0.75,
             max: 1
         },
         meta: {
