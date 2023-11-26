@@ -1,5 +1,5 @@
 const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
-const {UserRepository} = require('../../src/code/dal/repositories.js');
+const {UserRepository} = require('../../src/code/dal/userRepository.js');
 const {User} = require('../../src/code/model/auth/User.js');
 const {DuplicateUserException} = require('../../src/code/model/exception/exceptions.js');
 
