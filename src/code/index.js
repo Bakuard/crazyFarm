@@ -13,7 +13,8 @@ const {GameController} = require('./controller/gameController.js');
 const {exceptionHandler} = require('./controller/exceptionHandler.js');
 const {newLogger} = require('./conf/logConf.js');
 const {i18next,i18nMiddleware} = require('./conf/i18nConf.js');
-const { GoogleAuthService } = require('./service/googleAuthService.js');
+const {GoogleAuthService} = require('./service/googleAuthService.js');
+const {MailAuthService} = require('./service/mailAuthService.js');
 
 const logger = newLogger('info', 'index.js');
 const app = express();
@@ -24,7 +25,8 @@ const dbConnector = new DBConnector();
 const userRepository = new UserRepository(dbConnector);
 const gameRepository = new GameRepository(dbConnector);
 const googleAuthService = new GoogleAuthService(userRepository, jwsService);
-const userController = new UserController(jwsService, userRepository, googleAuthService);
+const mailAuthService = new MailAuthService(jwsService, userRepository);
+const userController = new UserController(userRepository, googleAuthService, mailAuthService);
 const gameController = new GameController(jwsService, wsServer, userRepository, gameRepository);
 
 app.use(express.json());
