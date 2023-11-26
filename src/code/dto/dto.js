@@ -138,10 +138,14 @@ class GameResponse {
 
         const gridResponse = grid.map((x, y, vegetable) => new GardenBedCellResponse(x, y, vegetable, tutorial?.activeCell));
         grid.forEach((x, y, vegetable) => {
-            vegetable?.get(OnionHealer)?.cells.forEach(cell => {
-                const cellResponse = gridResponse.get(cell.x, cell.y);
-                if(!cellResponse.effects.some(e => e == 'health')) cellResponse.effects.push('health');
-            });
+            const onionHealer = vegetable?.get(OnionHealer);
+            onionHealer?.cells.
+                slice(0, onionHealer.currentCellNumber).
+                forEach(cell => {
+                    const cellResponse = gridResponse.get(cell.x, cell.y);
+                    if(!cellResponse.effects.some(e => e == 'health')) cellResponse.effects.push('health');
+                }
+            );
         });
         this.containers = gridResponse.toArray();
         

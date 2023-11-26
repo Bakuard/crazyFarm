@@ -309,7 +309,7 @@ module.exports.Fabric = class Fabric {
             else throw new IncorrectVegetableState(`Expected states for OnionHiller: child, youth, adult; Actual: ${state.name}`);
 
             return new OnionHealer(
-                grid.getRandomNeigboursFor(cell.x, cell.y, currentCellNumber, randomGenerator),
+                grid.getRandomNeigboursFor(cell.x, cell.y, 8, randomGenerator),
                 currentCellNumber,
                 settings.cellNumberForChild,
                 settings.cellNumberForYouth,
