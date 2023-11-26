@@ -82,10 +82,10 @@ module.exports.settings = {
     },
     onion: {
         healer: {
-            cellNumberForChild: 1,
-            cellNumberForYouth: 2,
-            cellNumberForAdult: 3,
-            cellNumberForDeath: 3
+            cellNumberForChild: 8,
+            cellNumberForYouth: 8,
+            cellNumberForAdult: 8,
+            cellNumberForDeath: 8
         },
         immunity: {
             max: 60,

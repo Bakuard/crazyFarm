@@ -86,6 +86,7 @@ module.exports.OnionDeathSystem = class OnionDeathSystem {
         const state = vegetable.get(VegetableState);
 
         vegetable.addTags('exploding');
+        vegetable.remove(OnionHealer);
         state.pushState(lifeCycleStates.death);
         buffer.bindEntity(vegetable);
     }

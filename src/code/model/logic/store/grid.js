@@ -2,7 +2,7 @@
 
 module.exports.Grid = class Grid {
     static of(width, height, ...items) {
-        let grid = new Grid(width, height);
+        const grid = new Grid(width, height);
         for(let i = 0; i < grid.cellsNumber() && i < items.length; i++) {
             grid.#data[i] = items[i];
         }
@@ -53,12 +53,12 @@ module.exports.Grid = class Grid {
     }
 
     getNeigboursFor(x, y) {
-        let result = [];
+        const result = [];
 
         for(let deltaY = -1; deltaY <= 1; deltaY++) {
             for(let deltaX = -1; deltaX <= 1; deltaX++) {
-                let neighbourX = x + deltaX;
-                let neighbourY = y + deltaY;
+                const neighbourX = x + deltaX;
+                const neighbourY = y + deltaY;
                 if((neighbourX != x || neighbourY != y) && this.inBound(neighbourX, neighbourY)) {
                     result.push({
                         x: neighbourX,
@@ -73,7 +73,7 @@ module.exports.Grid = class Grid {
     }
 
     getRandomNeigboursFor(x, y, neigboursNumber, randomGenerator) {
-        let neigbours = this.getNeigboursFor(x, y);
+        const neigbours = this.getNeigboursFor(x, y);
         neigboursNumber = Math.min(neigboursNumber, neigbours.length);
 
         for(let i = 0; i < neigboursNumber; i++) {
@@ -98,10 +98,14 @@ module.exports.Grid = class Grid {
         }
     }
 
-    clone(itemCloner) {
-        let grid = new Grid(this.#width, this.#height);
-        this.forEach((x, y, value) => grid.write(x, y, itemCloner(value)));
-        return grid;
+    map(mapper) {
+        const newGrid = new Grid(this.#width, this.#height);
+        this.forEach((x, y, value) => newGrid.write(x, y, mapper(x, y, value)));
+        return newGrid;
+    }
+
+    toArray() {
+        return Array.from(this.#data);
     }
 
     equals(otherGrid, itemComparator) {
@@ -113,7 +117,7 @@ module.exports.Grid = class Grid {
     }
 
     toString(itemStringConverter) {
-        let items = [];
+        const items = [];
         this.forEach((x, y, item) => items.push(`{x: ${x}, y: ${y}, item: ${itemStringConverter(item)}}`));
         return `Grid{width: ${this.#width}, height: ${this.#height}, items: [${items.join(', ')}]}`;
     }
