@@ -160,7 +160,9 @@ describe.each([
                     new GardenBedCellLink(state.cellX, state.cellY),
                     vegetableState(state.stateHistory)
                 );
-                if(state.explosion) vegetable.put(new TomatoExplosion(state.explosion.neighboursNumber, state.explosion.timeInMillis));
+                if(state.explosion) {
+                    vegetable.put(new TomatoExplosion(state.explosion.neighboursNumber, state.explosion.timeInMillis));
+                }
                 if(state.hasGrowComps) vegetable.put(Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30));
                 if(state.isDead) vegetable.addTags('dead');
                 manager.bindEntity(vegetable);

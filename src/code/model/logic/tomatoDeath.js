@@ -121,6 +121,7 @@ module.exports.TomatoDeathSystem = class TomatoDeathSystem {
             state.pushState(lifeCycleStates.death);
             vegetable.remove(Immunity, Satiety, Thirst);
             vegetable.put(explosion)
+            vegetable.addTags('impossibleToDigUp');
             buffer.bindEntity(vegetable);
         } else {
             this.#removeTomato(vegetable, grid, buffer, eventManager);
