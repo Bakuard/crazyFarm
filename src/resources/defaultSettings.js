@@ -6,19 +6,19 @@ const defaultSettings = {
             timeInMillis: 180000
         },
         immunity: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 100,
+            alarmLevel1: 50,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 90,
+            alarmLevel1: 45,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 80,
-            alarmLevel1: 40,
+            max: 60,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         price: {
@@ -33,7 +33,7 @@ const defaultSettings = {
         },
         vegetableState: {
             seedInterval: 1,
-            sproutInterval: 45,
+            sproutInterval: 70,
             childInterval: 90,
             youthInterval: 120
         }
@@ -48,19 +48,19 @@ const defaultSettings = {
             timeInMillis: 1001
         },
         immunity: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 110,
+            alarmLevel1: 55,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 80,
+            alarmLevel1: 40,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 80,
-            alarmLevel1: 40,
+            max: 60,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         price: {
@@ -75,7 +75,7 @@ const defaultSettings = {
         },
         vegetableState: {
             seedInterval: 1,
-            sproutInterval: 45,
+            sproutInterval: 70,
             childInterval: 90,
             youthInterval: 120
         }
@@ -88,19 +88,19 @@ const defaultSettings = {
             cellNumberForDeath: 3
         },
         immunity: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 90,
+            alarmLevel1: 45,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 120,
-            alarmLevel1: 60,
+            max: 100,
+            alarmLevel1: 50,
             declineRatePerSeconds: 1
         },
         thirst: {
-            max: 80,
-            alarmLevel1: 40,
+            max: 60,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         price: {
@@ -115,14 +115,14 @@ const defaultSettings = {
         },
         vegetableState: {
             seedInterval: 1,
-            sproutInterval: 45,
+            sproutInterval: 70,
             childInterval: 90,
             youthInterval: 120
         }
     },
     wallet: {
         sum: 100,
-        fertilizerPrice: 2,
+        fertilizerPrice: 1,
         sprayerPrice: 2,
         seedsPrice: 3
     },
