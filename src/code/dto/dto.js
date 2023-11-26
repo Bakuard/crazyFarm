@@ -9,6 +9,7 @@ const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
+const {OnionHealer} = require('../model/logic/onionHeal.js');
 
 class UserRequest {
     constructor({loggin, email, password}) {
@@ -115,6 +116,7 @@ class GardenBedCellResponse {
         this.isBlocked = Boolean(activeCell && (activeCell.x != x || activeCell.y != y));
         this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
+        this.effects = [];
     }
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
@@ -133,8 +135,16 @@ class GameResponse {
         this.player = {
             cash: wallet.sum
         };
-        this.containers = [];
-        grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value, tutorial?.activeCell)));
+
+        const gridResponse = grid.map((x, y, vegetable) => new GardenBedCellResponse(x, y, vegetable, tutorial?.activeCell));
+        grid.forEach((x, y, vegetable) => {
+            vegetable?.get(OnionHealer)?.cells.forEach(cell => {
+                const cellResponse = gridResponse.get(cell.x, cell.y);
+                if(!cellResponse.effects.some(e => e == 'health')) cellResponse.effects.push('health');
+            });
+        });
+        this.containers = gridResponse.toArray();
+        
         this.tutorial = tutorial ? new TutorialResponse(tutorial) : null;
     }
 }

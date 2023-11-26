@@ -50,12 +50,13 @@ function vegetableDto(vegetableType, vegetableStateNumber, ...needs) {
     };
 }
 
-function gardenBedCellDto(x, y, isBlocked, vegetableDto) {
+function gardenBedCellDto(x, y, isBlocked, vegetableDto, ...effects) {
     return {
         isEmpty: !vegetableDto,
         name: x + '-' + y,
         isBlocked,
-        character: vegetableDto
+        character: vegetableDto,
+        effects: effects ? effects : []
     };
 }
 
@@ -250,17 +251,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 145, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0)),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -279,17 +280,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 135, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0)),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -308,17 +309,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 125, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0)),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -337,17 +338,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 115, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0)),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -366,17 +367,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 105, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0)),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 0), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 4)),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4)),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -389,17 +390,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 105, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 1, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 1, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 4)),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4)),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -412,17 +413,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 103, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 1, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 1, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 4)),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4)),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -433,17 +434,17 @@ describe(`grow some vegetables to 'sprout' then die,
             expectedMoney: 103, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 5), 'health'),
                 gardenBedCellDto(2, 0, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 0, false, null),
+                gardenBedCellDto(3, 0, false, null, 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 5)),
-                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, null),
-                gardenBedCellDto(3, 1, false, null),
+                gardenBedCellDto(1, 1, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, null, 'health'),
+                gardenBedCellDto(3, 1, false, null, 'health'),
                 gardenBedCellDto(0, 2, false, vegetableDto('tomato', 4)),
-                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4)),
+                gardenBedCellDto(1, 2, false, vegetableDto('tomato', 4), 'health'),
                 gardenBedCellDto(2, 2, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0))
+                gardenBedCellDto(3, 2, false, vegetableDto('tomato', 0), 'health')
             ]
         },
         {
@@ -708,17 +709,17 @@ describe(`reset game`, () => {
             expectedMoney: 160, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {
@@ -901,17 +902,17 @@ describe(`grow vegetable to adult state and dig up this`, () => {
             expectedMoney: 160, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {
@@ -931,17 +932,17 @@ describe(`grow vegetable to adult state and dig up this`, () => {
             expectedMoney: 144, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 2, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {
@@ -961,17 +962,17 @@ describe(`grow vegetable to adult state and dig up this`, () => {
             expectedMoney: 128, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {
@@ -991,17 +992,17 @@ describe(`grow vegetable to adult state and dig up this`, () => {
             expectedMoney: 112, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER')),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER'), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 3, 'THIRST', 'HUNGER'), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {
@@ -1021,17 +1022,17 @@ describe(`grow vegetable to adult state and dig up this`, () => {
             expectedMoney: 96, 
             expectedGardenCells: [
                 gardenBedCellDto(0, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 0, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 4)),
-                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 4)),
+                gardenBedCellDto(1, 0, false, vegetableDto('potato', 4), 'health'),
+                gardenBedCellDto(2, 0, false, vegetableDto('tomato', 4), 'health'),
+                gardenBedCellDto(3, 0, false, vegetableDto('tomato', 4), 'health'),
                 gardenBedCellDto(0, 1, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(1, 1, false, vegetableDto('potato', 4)),
-                gardenBedCellDto(2, 1, false, vegetableDto('onion', 4)),
-                gardenBedCellDto(3, 1, false, vegetableDto('onion', 4)),
+                gardenBedCellDto(1, 1, false, vegetableDto('potato', 4), 'health'),
+                gardenBedCellDto(2, 1, false, vegetableDto('onion', 4), 'health'),
+                gardenBedCellDto(3, 1, false, vegetableDto('onion', 4), 'health'),
                 gardenBedCellDto(0, 2, false, null),
-                gardenBedCellDto(1, 2, false, null),
-                gardenBedCellDto(2, 2, false, null),
-                gardenBedCellDto(3, 2, false, null)
+                gardenBedCellDto(1, 2, false, null, 'health'),
+                gardenBedCellDto(2, 2, false, null, 'health'),
+                gardenBedCellDto(3, 2, false, null, 'health')
             ]
         },
         {

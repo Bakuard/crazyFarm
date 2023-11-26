@@ -104,7 +104,7 @@ describe.each([
             notEmptyCellsCoordinates.forEach(pos => grid.write(pos.x, pos.y, createVegetable(pos.x, pos.y)));
             wallet.get(Wallet).sum = money;
             wallet.get(Wallet).seedsPrice = seedsPrice;
-            let gridClone = grid.clone(entity => entity);
+            let gridClone = grid.map((x, y, entity) => entity);
 
             let system = new PlantNewVegetableSystem(() => new VegetableMeta('Potato'), () => createVegetableState());
             system.update(systemHandler(system), worldMock);
