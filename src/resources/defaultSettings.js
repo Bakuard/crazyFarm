@@ -6,14 +6,14 @@ const defaultSettings = {
             timeInMillis: 180000
         },
         immunity: {
-            max: 100,
-            alarmLevel1: 50,
+            max: 90,
+            alarmLevel1: 45,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 90,
-            alarmLevel1: 45,
+            max: 50,
+            alarmLevel1: 25,
             declineRatePerSeconds: 1
         },
         thirst: {
@@ -22,11 +22,11 @@ const defaultSettings = {
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 1.5
+            coff: 0.7001
         },
         seedProbability: {
             min: 0,
-            max: 0.5
+            max: 0.55
         },
         meta: {
             typeName: 'Potato'
@@ -48,27 +48,27 @@ const defaultSettings = {
             timeInMillis: 1001
         },
         immunity: {
-            max: 110,
-            alarmLevel1: 55,
+            max: 100,
+            alarmLevel1: 50,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 80,
-            alarmLevel1: 40,
+            max: 55,
+            alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 60,
-            alarmLevel1: 30,
+            alarmLevel1: 28,
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 2
+            coff: 0.701
         },
         seedProbability: {
-            min: 0.5,
-            max: 0.75
+            min: 0.55,
+            max: 0.9
         },
         meta: {
             typeName: 'Tomato'
@@ -88,14 +88,14 @@ const defaultSettings = {
             cellNumberForDeath: 3
         },
         immunity: {
-            max: 90,
-            alarmLevel1: 45,
+            max: 95,
+            alarmLevel1: 47,
             declineRatePerSeconds: 1,
             probability: 0.005
         },
         satiety: {
-            max: 100,
-            alarmLevel1: 50,
+            max: 65,
+            alarmLevel1: 33,
             declineRatePerSeconds: 1
         },
         thirst: {
@@ -104,10 +104,10 @@ const defaultSettings = {
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 1.2
+            coff: 0.7005
         },
         seedProbability: {
-            min: 0.75,
+            min: 0.9,
             max: 1
         },
         meta: {
@@ -123,7 +123,7 @@ const defaultSettings = {
     wallet: {
         sum: 100,
         fertilizerPrice: 1,
-        sprayerPrice: 2,
+        sprayerPrice: 9,
         seedsPrice: 3
     },
     grid: {
