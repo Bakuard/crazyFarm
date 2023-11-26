@@ -3,7 +3,7 @@
 const defaultSettings = {
     potato: {
         ghost: {
-            timeInMillis: 100000
+            timeInMillis: 180000
         },
         immunity: {
             max: 80,

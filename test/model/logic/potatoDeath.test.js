@@ -206,7 +206,7 @@ describe.each([
             if(hasGrowComps) entity.put( Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30) );
             if(isExploded) entity.addTags('exploded');
             if(isDead) entity.addTags('dead');
-            if(alreadyHasGhostComp) entity.put( new PotatoGhost(10000) );
+            if(alreadyHasGhostComp) entity.put( new PotatoGhost(10000) ).addTags( 'impossibleToDigUp' );
             manager.bindEntity(entity);
             grid.write(0, 0, entity);
 
@@ -222,6 +222,7 @@ describe.each([
                 expect(entityAfterUpdate.hasComponents(Satiety)).toBe(expectedHasGrowComps);
                 expect(entityAfterUpdate.hasComponents(Thirst)).toBe(expectedHasGrowComps);
                 expect(entityAfterUpdate.hasComponents(PotatoGhost)).toBe(expectedHasGhostComp);
+                expect(entityAfterUpdate.hasTags('impossibleToDigUp')).toBe(expectedHasGhostComp);
                 expect(entityAfterUpdate.hasComponents(VegetableState)).toBe(true);
                 expect(entityAfterUpdate.hasComponents(GardenBedCellLink)).toBe(true);
                 expect(entityAfterUpdate.hasComponents(VegetableMeta)).toBe(true);

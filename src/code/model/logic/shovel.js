@@ -57,7 +57,6 @@ module.exports.ShovelSystem = class ShovelSystem {
     #canBeDugUp(vegetable) {
         return vegetable 
             && vegetable.hasComponents(VegetableState, VegetableMeta)
-            && (vegetable.get(VegetableState).current() != lifeCycleStates.death
-                || vegetable.get(VegetableState).previous() == lifeCycleStates.sprout);
+            && !vegetable.hasTags('impossibleToDigUp');
     }
 };
