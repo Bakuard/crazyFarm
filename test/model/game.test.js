@@ -1,7 +1,8 @@
 const {DBConnector} = require('../../src/code/dal/dataBaseConnector.js');
 const {Game} = require('../../src/code/model/logic/game.js');
 const {settings} = require('../resources/settings.js');
-const {GameRepository, UserRepository} = require('../../src/code/dal/repositories.js');
+const {GameRepository} = require('../../src/code/dal/gameRepository.js');
+const {UserRepository} = require('../../src/code/dal/userRepository.js');
 const {Fabric} = require('../../src/code/model/logic/fabric.js');
 const {OutputSystem} = require('../../src/code/model/logic/output.js');
 const {User} = require('../../src/code/model/auth/User.js');
