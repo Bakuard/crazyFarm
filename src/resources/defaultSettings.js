@@ -1,19 +1,19 @@
 'use strict'
 
-module.exports.settings = {
+const defaultSettings = {
     potato: {
         ghost: {
-            timeInMillis: 100000
+            timeInMillis: 180000
         },
         immunity: {
-            max: 60,
-            alarmLevel1: 30,
+            max: 90,
+            alarmLevel1: 45,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.005
         },
         satiety: {
-            max: 60,
-            alarmLevel1: 30,
+            max: 50,
+            alarmLevel1: 25,
             declineRatePerSeconds: 1
         },
         thirst: {
@@ -22,80 +22,80 @@ module.exports.settings = {
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 1.5
+            coff: 0.7001
         },
         seedProbability: {
             min: 0,
-            max: 0.5
+            max: 0.55
         },
         meta: {
             typeName: 'Potato'
         },
         vegetableState: {
-            seedInterval: 3,
-            sproutInterval: 100,
-            childInterval: 100,
-            youthInterval: 100
+            seedInterval: 1,
+            sproutInterval: 70,
+            childInterval: 90,
+            youthInterval: 120
         }
     },
     tomato: {
         explosion: {
             neighboursNumber: {
-                child: 8,
-                youth: 8,
-                adult: 8
+                child: 1,
+                youth: 3,
+                adult: 6
             },
             timeInMillis: 1001
         },
         immunity: {
-            max: 60,
-            alarmLevel1: 30,
+            max: 100,
+            alarmLevel1: 50,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.005
         },
         satiety: {
-            max: 60,
+            max: 55,
             alarmLevel1: 30,
             declineRatePerSeconds: 1
         },
         thirst: {
             max: 60,
-            alarmLevel1: 30,
+            alarmLevel1: 28,
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 2
+            coff: 0.701
         },
         seedProbability: {
-            min: 0.5,
-            max: 0.75
+            min: 0.55,
+            max: 0.9
         },
         meta: {
             typeName: 'Tomato'
         },
         vegetableState: {
-            seedInterval: 3,
-            sproutInterval: 100,
-            childInterval: 100,
-            youthInterval: 100
+            seedInterval: 1,
+            sproutInterval: 70,
+            childInterval: 90,
+            youthInterval: 120
         }
     },
     onion: {
         healer: {
-            cellNumberForChild: 8,
-            cellNumberForYouth: 8,
-            cellNumberForAdult: 8,
-            cellNumberForDeath: 8
+            cellNumberForChild: 1,
+            cellNumberForYouth: 2,
+            cellNumberForAdult: 3,
+            cellNumberForDeath: 3
         },
         immunity: {
-            max: 60,
-            alarmLevel1: 30,
+            max: 95,
+            alarmLevel1: 47,
             declineRatePerSeconds: 1,
-            probability: 0.2
+            probability: 0.005
         },
         satiety: {
-            max: 60,
-            alarmLevel1: 30,
+            max: 65,
+            alarmLevel1: 33,
             declineRatePerSeconds: 1
         },
         thirst: {
@@ -104,26 +104,26 @@ module.exports.settings = {
             declineRatePerSeconds: 1
         },
         price: {
-            coff: 1.2
+            coff: 0.7005
         },
         seedProbability: {
-            min: 0.75,
+            min: 0.9,
             max: 1
         },
         meta: {
             typeName: 'Onion'
         },
         vegetableState: {
-            seedInterval: 3,
-            sproutInterval: 100,
-            childInterval: 100,
-            youthInterval: 100
+            seedInterval: 1,
+            sproutInterval: 70,
+            childInterval: 90,
+            youthInterval: 120
         }
     },
     wallet: {
-        sum: 200,
-        fertilizerPrice: 2,
-        sprayerPrice: 2,
+        sum: 100,
+        fertilizerPrice: 1,
+        sprayerPrice: 9,
         seedsPrice: 3
     },
     grid: {
@@ -161,10 +161,11 @@ module.exports.settings = {
             },
             vegetableState: {
                 seedInterval: 1,
-                sproutInterval: 6,
+                sproutInterval: 3,
                 childInterval: 6,
                 youthInterval: 6
             }
         }
     }
-}; 
+};
+module.exports.defaultSettings = defaultSettings;

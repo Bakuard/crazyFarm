@@ -5,29 +5,30 @@ const {Wallet} = require('./wallet.js');
 const {VegetableState, lifeCycleStates} = require('./vegetableState.js');
 
 module.exports.ShovelSystem = class ShovelSystem {
-    constructor() {
-        
+    constructor(vegetablePrizeFactorFabric) {
+        this.vegetablePrizeFactorFabric = vegetablePrizeFactorFabric;
     }
 
-    update(groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let eventManager = world.getEventManager();
-        let buffer = manager.createCommandBuffer();
-        let fabric = manager.getSingletonEntity('fabric');
-        let wallet = manager.getSingletonEntity('wallet');
-        let grid = manager.getSingletonEntity('grid');
+    update(systemHandler, world) {
+        const manager = world.getEntityComponentManager();
+        const eventManager = world.getEventManager();
+        const buffer = manager.createCommandBuffer();
+        const wallet = manager.getSingletonEntity('wallet');
+        const grid = manager.getSingletonEntity('grid');
 
-        let canBeDugUp = this.#canBeDugUp;
+        const canBeDugUp = this.#canBeDugUp;
         eventManager.forEachEvent('shovel', (event, index) => {
-            let vegetable = grid.get(event.cellX, event.cellY);
+            const vegetable = grid.get(event.cellX, event.cellY);
             if(canBeDugUp(vegetable)) {
                 grid.remove(event.cellX, event.cellY);
                 buffer.removeEntity(vegetable);
 
                 wallet.get(Wallet).sum += this.#calculatePrice(
-                    fabric.vegetablePrizeFactor(vegetable.get(VegetableMeta).typeName),
+                    this.vegetablePrizeFactorFabric(vegetable.get(VegetableMeta).typeName),
                     vegetable.get(VegetableState).current()
                 );
+
+                eventManager.setFlag('gameStateWasChangedEvent');
             }
         });
 
@@ -36,6 +37,7 @@ module.exports.ShovelSystem = class ShovelSystem {
     }
 
     #calculatePrice(vegetablePrizeFactor, lifeCycleState) {
+        console.log(`prizeFactor: ${JSON.stringify(vegetablePrizeFactor, null, 4)}`);
         let price = 0;
 
         if(lifeCycleState.ordinal >= lifeCycleStates.child.ordinal && lifeCycleState.ordinal <= lifeCycleStates.adult.ordinal) {
@@ -44,8 +46,8 @@ module.exports.ShovelSystem = class ShovelSystem {
                 totalSecondInterval += vegetablePrizeFactor.growIntervals[i];
             }
 
-            price = (totalSecondInterval / vegetablePrizeFactor.satietyAlertLevel * vegetablePrizeFactor.fertilizerPrice +
-                        totalSecondInterval / vegetablePrizeFactor.immunityAlertLevel * vegetablePrizeFactor.sprayerPrice +
+            price = (totalSecondInterval / vegetablePrizeFactor.satietyAlarmLevel * vegetablePrizeFactor.fertilizerPrice +
+                        totalSecondInterval / vegetablePrizeFactor.immunityAlarmtLevel * vegetablePrizeFactor.sprayerPrice +
                         vegetablePrizeFactor.seedsPrice) * vegetablePrizeFactor.priceCoff;
         }
         
@@ -55,7 +57,6 @@ module.exports.ShovelSystem = class ShovelSystem {
     #canBeDugUp(vegetable) {
         return vegetable 
             && vegetable.hasComponents(VegetableState, VegetableMeta)
-            && (vegetable.get(VegetableState).current() != lifeCycleStates.death
-                || vegetable.get(VegetableState).previous() == lifeCycleStates.sprout);
+            && !vegetable.hasTags('impossibleToDigUp');
     }
 };

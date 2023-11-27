@@ -25,7 +25,8 @@
         "email": {
             "format": "Email format is incorrect.",
             "notEmpty": "Email musn't be empty.",
-            "max": "Email musn't contain more than 50 characters."
+            "max": "Email musn't contain more than 50 characters.",
+            "unknown": "There is no user with such email."
         },
         "undefined": "User data is undefined"
     }

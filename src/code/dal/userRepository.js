@@ -1,6 +1,5 @@
 'use strict'
 
-const {mongo} = require('./dataBaseConnector.js');
 const ObjectID = require('mongodb').ObjectId;
 const {User} = require('../model/auth/User.js');
 const exceptions = require('../model/exception/exceptions.js');
@@ -21,7 +20,24 @@ module.exports.UserRepository = class UserRepository {
             if(err.code == 11000) {
                 throw new exceptions.DuplicateUserException(
                     'User.logginOrEmail.notUnique',
-                    `User with loggin=${user.loggin} and email=${user.email} already exists`
+                    `User with loggin='${user.loggin}' and email='${user.email}' already exists`
+                );
+            }
+            throw err;
+        }
+    }
+
+    async update(user) {
+        try {
+            const mongo = await this.dbConnector.getConnection();
+            const db = mongo.db(process.env.MONGO_DB_NAME);
+            const collection = db.collection('users');
+            await collection.replaceOne({_id: new ObjectID(user._id)}, user);
+        } catch(err) {
+            if(err.code == 11000) {
+                throw new exceptions.DuplicateUserException(
+                    'User.logginOrEmail.notUnique',
+                    `User with loggin='${user.loggin}' and email='${user.email}' already exists`
                 );
             }
             throw err;
@@ -55,7 +71,29 @@ module.exports.UserRepository = class UserRepository {
         if(!user) {
             throw new exceptions.UnknownUserException(
                 'User.loggin.unknown',
-                `User with loggin=${loggin} doesn't exist`
+                `User with loggin='${loggin}' doesn't exist`
+            );
+        }
+        return user;
+    }
+
+    async findByEmail(email) {
+        const mongo = await this.dbConnector.getConnection();
+        const db = mongo.db(process.env.MONGO_DB_NAME);
+        const collection = db.collection('users');
+        const userDto = await collection.findOne({email: email});
+
+        let result = null;
+        if(userDto) result = new User(userDto);
+        return result;
+    }
+
+    async tryFindByEmail(email) {
+        let user = await this.findByEmail(email);
+        if(!user) {
+            throw new exceptions.UnknownUserException(
+                'User.email.unknown',
+                `User with email='${email}' doesn't exist`
             );
         }
         return user;
@@ -73,30 +111,4 @@ module.exports.UserRepository = class UserRepository {
             );
         }
     }
-
 }
-
-module.exports.GameRepository = class GameRepository {
-
-    constructor(dbConnector) {
-        this.dbConnector = dbConnector;
-    }
-
-    async save(fullGameState) {
-        const mongo = await this.dbConnector.getConnection();
-        const db = mongo.db(process.env.MONGO_DB_NAME);
-        const collection = db.collection('games');
-        collection.deleteOne({userId: fullGameState.userId});
-        await collection.insertOne(fullGameState);
-    }
-
-    async load(userId) {
-        const mongo = await this.dbConnector.getConnection();
-        const db = mongo.db(process.env.MONGO_DB_NAME);
-        const collection = db.collection('games');
-        const result = await collection.findOne({userId: userId});
-
-        return result;
-    }
-
-};

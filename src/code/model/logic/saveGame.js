@@ -12,9 +12,10 @@ module.exports.SaveGameSystem = class SaveGameSystem {
         this.timeUtil = timeUtil;
     }
 
-    update(groupName, world) {
+    update(systemHandler, world) {
         let manager = world.getEntityComponentManager();
         let wallet = manager.getSingletonEntity('wallet').get(Wallet);
+        let tutorialCurrentStep = manager.getSingletonEntity('tutorialCurrentStep');
         let snapshot = manager.getEntityManager().snapshot();
 
         let mapEntity = this.#mapEntity;
@@ -25,6 +26,7 @@ module.exports.SaveGameSystem = class SaveGameSystem {
             deadEntities: snapshot.deadEntities.map(mapEntity),
             wallet,
             userId,
+            tutorialCurrentStep,
             timestamp: now
         };
         

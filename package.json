@@ -19,6 +19,8 @@
     "deep-equal": "^2.2.2",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "generate-password": "^1.7.1",
+    "google-auth-library": "^9.2.0",
     "i18next": "^22.4.15",
     "i18next-http-middleware": "^3.3.0",
     "joi": "^17.9.1",

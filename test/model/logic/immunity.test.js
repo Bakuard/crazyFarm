@@ -4,9 +4,9 @@ const {ComponentIdGenerator} = require('../../../src/code/model/gameEngine/compo
 const {EntityManager} = require('../../../src/code/model/gameEngine/entityManager.js');
 const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
 const {Wallet} = require('../../../src/code/model/logic/wallet.js');
-const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let manager = null;
 let eventManager = null;
@@ -31,6 +31,17 @@ function beforeEachTest() {
         getEventManager: () => eventManager
     };
 };
+
+function createVegetable(cellX, cellY, max, current, isSick, declineRatePerSeconds, probability) {
+    return manager.createEntity().put(
+        new Immunity(max, current, isSick, declineRatePerSeconds, probability, 1),
+        new GardenBedCellLink(cellX, cellY)
+    );
+}
+
+function systemHandler(system) {
+    return new SystemHandler('ImmunitySystem', 'update', system, 0, 1);
+}
 
 describe.each([
     {max: 10, declineRatePerSeconds: 1, updateNumber: 1, probability: 0.5, random: 0.5, expectedImmunity: 9, isDeath: false},
@@ -58,10 +69,10 @@ describe.each([
             manager.bindEntity(vegetable); 
 
             let system = new ImmunitySystem(manager, () => random);
-            for(let i = 0; i < updateNumber; i++) system.update('update', worldMock);
+            for(let i = 0; i < updateNumber; i++) system.update(systemHandler(system), worldMock);
 
             expect(vegetable.get(Immunity).current).toBe(expectedImmunity);
-            expect(vegetable.get(VegetableState).history.at(-1) == lifeCycleStates.death).toBe(isDeath);
+            expect(vegetable.hasTags('dead')).toBe(isDeath);
         });
     }
 );
@@ -160,7 +171,7 @@ describe.each([
             wallet.get(Wallet).sprayerPrice = sprayerPrice;
 
             let system = new ImmunitySystem(manager, () => random);
-            system.update('update', worldMock);
+            system.update(systemHandler(system), worldMock);
 
             expect(wallet.get(Wallet).sum).toBe(expectedMoney);
             expectedImmunity.forEach(param => {
@@ -170,20 +181,3 @@ describe.each([
         });
     }
 );
-
-function createVegetable(cellX, cellY, max, current, isSick, declineRatePerSeconds, probability) {
-    return manager.createEntity().put(
-        vegetableState(),
-        new Immunity(max, current, isSick, declineRatePerSeconds, probability),
-        new GardenBedCellLink(cellX, cellY)
-    );
-}
-
-function vegetableState() {
-    return VegetableState.of(
-        StateDetail.of(10, lifeCycleStates.seed),
-        StateDetail.of(10, lifeCycleStates.sprout),
-        StateDetail.of(10, lifeCycleStates.child),
-        StateDetail.of(10, lifeCycleStates.youth)
-    );
-}

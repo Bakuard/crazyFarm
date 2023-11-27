@@ -24,4 +24,12 @@ module.exports.DBConnector = class DBConnector {
         }
         return this.mongo;
     }
+
+    async closeConnection() {
+        if(this.mongo) {
+            await this.mongo.close();
+            logger.info('close connection to mongodb');
+            this.mongo = null;
+        }
+    }
 };

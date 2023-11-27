@@ -3,7 +3,7 @@
   "info": {
     "title": "Crazy Farm",
     "description": "Official Crazy Farm API",
-    "version": "0.1.1"
+    "version": "1.0.0"
   },
   "paths": {
     "/users/enter": {
@@ -34,6 +34,16 @@
           },
           "403": {
             "description": "В учетных данных допущена ошибка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь с таким логином не найден",
             "content": {
               "application/json": {
                 "schema": {
@@ -107,6 +117,64 @@
           },
           "401": {
             "description": "Если передан не корректный токен или токен не указан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/enter/google": {
+      "post": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Выполняет вход для указанного пользователя обменивая idToken, полученный через Google Sign In, на JWS токен общего доступа к данному приложению.",
+        "security": [{"googleIdToken": []}],
+        "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь с такой почтой не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/registration/google": {
+      "post": {
+        "tags": ["Учетные данные пользователей"],
+        "summary": "Выполняет регистрацию нового пользователя обменивая idToken, полученный через Google Sign In, на JWS токен общего доступа к данному приложению.",
+        "security": [{"googleIdToken": []}],
+        "responses": {
+          "200": {
+            "description": "Учетные данные корректны",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/jwsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Если уже есть пользователь с такой почтой",
             "content": {
               "application/json": {
                 "schema": {
@@ -209,7 +277,7 @@
         "properties": {
           "userId": {
             "type": "string",
-            "example": "uuid"
+            "example": "507f1f77bcf86cd799439011"
           },
           "login": {
             "type": "string",
@@ -288,6 +356,11 @@
         "bearerFormat": "JWT"
       },
       "registrationAuthKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "googleIdToken": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"

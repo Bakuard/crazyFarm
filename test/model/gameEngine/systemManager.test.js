@@ -1,68 +1,116 @@
 const {SystemManager} = require('../../../src/code/model/gameEngine/systemManager.js');
+const {UnknownSystemException} = require('../../../src/code/model/exception/exceptions.js');
 
-test(`putSystem(name, updateMethod, ...groups):
-        there is not system with this name,
-        add system to one group
-        => updateGroup(groupName) must update this system`,
+function system(updateMethod) {
+    return {
+        update: updateMethod
+    };
+}
+
+test(`putSystem(systemName, system), appendGroup(systemName, groupName):
+        there is system with such name,
+        system with such was added to several groups,
+        add system to system manager
+        => updateGroup(groupName) for any group must update new system and doesn't update old system`,
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let systemMock = jest.fn((groupName, world) => {});
+        let oldSystemMock = system(jest.fn());
+        let newSystemMock = system(jest.fn());
 
-        systemManager.putSystem('system1', systemMock, 'groupA');
-        systemManager.updateGroup('groupA');
+        systemManager.putSystem('system', oldSystemMock).
+                    appendToGroup('group1', 'system').
+                    appendToGroup('group2', 'system').
+                    putSystem('system', newSystemMock);
+        systemManager.updateGroup('group1');
+        systemManager.updateGroup('group2');
 
-        expect(systemMock.mock.calls).toHaveLength(1);
+        expect(oldSystemMock.update).toHaveBeenCalledTimes(0);
+        expect(newSystemMock.update).toHaveBeenCalledTimes(2);
+        expect(newSystemMock.update.mock.calls[0][0].groupName).toEqual('group1');
+        expect(newSystemMock.update.mock.calls[1][0].groupName).toEqual('group2');
     });
 
-test(`putSystem(name, updateMethod, ...groups):
-        there is not system with this name,
+test(`appendToGroup(systemName, groupName):
+        there is not system with such name
+        => exception`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+
+        expect(() => systemManager.appendToGroup('system', 'group')).toThrow(UnknownSystemException);
+    });
+
+test(`appendToGroup(systemName, groupName):
         add system to several groups
-        => updateGroup(groupName) for each group must update this system ont time`,
+        => updateGroup(groupName) must update this system one time for each groupName`,
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let systemMock = jest.fn((groupName, world) => {});
+        let systemMock = system(jest.fn());
+        systemManager.putSystem('system', systemMock);
 
-        systemManager.putSystem('system1', systemMock, 'groupA', 'groupB', 'groupC');
-        systemManager.updateGroup('groupA');
-        systemManager.updateGroup('groupB');
-        systemManager.updateGroup('groupC');
+        systemManager.appendToGroup('group1', 'system');
+        systemManager.appendToGroup('group2', 'system');
+        systemManager.appendToGroup('group3', 'system');
+        systemManager.updateGroup('group1');
+        systemManager.updateGroup('group2');
+        systemManager.updateGroup('group3');
 
-        expect(systemMock.mock.calls).toHaveLength(3);
-        expect(systemMock.mock.calls[0][0]).toEqual('groupA');
-        expect(systemMock.mock.calls[1][0]).toEqual('groupB');
-        expect(systemMock.mock.calls[2][0]).toEqual('groupC');
+        expect(systemMock.update).toHaveBeenCalledTimes(3);
     });
 
-test(`putSystem(name, updateMethod, ...groups):
+test(`appendToGroup(systemName, groupName):
         add several systems to one group
         => updateGroup(groupName) must call each system one time in correct order`,
     () => {
+        let actual = [];
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
+        let systemMock1 = system((systemHandler, world) => actual.push(systemHandler.systemName));
+        let systemMock2 = system((systemHandler, world) => actual.push(systemHandler.systemName));
+        let systemMock3 = system((systemHandler, world) => actual.push(systemHandler.systemName));
+        systemManager.putSystem('system1', systemMock1)
+                    .putSystem('system2', systemMock2)
+                    .putSystem('system3', systemMock3);
 
-        let actual = [];
-        systemManager.putSystem('system1', (groupName, world) => actual.push('system1'), 'group');
-        systemManager.putSystem('system2', (groupName, world) => actual.push('system2'), 'group');
-        systemManager.putSystem('system3', (groupName, world) => actual.push('system3'), 'group');
+        systemManager.appendToGroup('group', 'system1')
+                    .appendToGroup('group', 'system2')
+                    .appendToGroup('group', 'system3');
         systemManager.updateGroup('group');
 
         expect(actual).toEqual(['system1', 'system2', 'system3']);
     });
 
-test(`updateMethod(groupName):
+test(`appendToGroup(systemName, groupName):
+        add the same system to group several time
+        => updateGroup(groupName) must call this system several time`,
+    () => {
+        let worldMock = {};
+        let systemManager = new SystemManager(worldMock);
+        let systemMock = system(jest.fn());
+        systemManager.putSystem('system', systemMock);
+
+        systemManager.appendToGroup('group', 'system')
+                    .appendToGroup('group', 'system')
+                    .appendToGroup( 'group', 'system');
+        systemManager.updateGroup('group');
+
+        expect(systemMock.update).toHaveBeenCalledTimes(3);
+    });
+
+test(`updateGroup(groupName):
         there is not group with this name
         => do nothing`,
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let system = jest.fn(() => {});
-        systemManager.putSystem('system1', system, 'group1');
+        let systemMock = system(jest.fn());
+        systemManager.putSystem('system1', systemMock).appendToGroup('group1', 'system1');
 
         systemManager.updateGroup('group2');
 
-        expect(system).toHaveBeenCalledTimes(0);
+        expect(systemMock.update).toHaveBeenCalledTimes(0);
     });
 
 test(`removeSystem(name):
@@ -71,21 +119,27 @@ test(`removeSystem(name):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let system1 = jest.fn(() => {});
-        let system2 = jest.fn(() => {});
-        let system3 = jest.fn(() => {});
-        systemManager.putSystem('system1', system1, 'group1', 'group2', 'group3');
-        systemManager.putSystem('system2', system2, 'group1', 'group2');
-        systemManager.putSystem('system3', system3, 'group1');
+        let system1 = system(jest.fn());
+        let system2 = system(jest.fn());
+        let system3 = system(jest.fn());
+        systemManager.putSystem('system1', system1).
+                    appendToGroup('group1', 'system1').
+                    appendToGroup('group2', 'system1').
+                    appendToGroup('group3', 'system1');
+        systemManager.putSystem('system2', system2).
+                    appendToGroup('group1', 'system2').
+                    appendToGroup('group2', 'system2');
+        systemManager.putSystem('system3', system3).
+                    appendToGroup('group1', 'system3');
 
         systemManager.removeSystem('unknown system');
         systemManager.updateGroup('group1');
         systemManager.updateGroup('group2');
         systemManager.updateGroup('group3');
 
-        expect(system1).toHaveBeenCalledTimes(3);
-        expect(system2).toHaveBeenCalledTimes(2);
-        expect(system3).toHaveBeenCalledTimes(1);
+        expect(system1.update).toHaveBeenCalledTimes(3);
+        expect(system2.update).toHaveBeenCalledTimes(2);
+        expect(system3.update).toHaveBeenCalledTimes(1);
     });
 
 test(`removeSystem(name):
@@ -95,19 +149,25 @@ test(`removeSystem(name):
     () => {
         let worldMock = {};
         let systemManager = new SystemManager(worldMock);
-        let system1 = jest.fn(() => {});
-        let system2 = jest.fn(() => {});
-        let system3 = jest.fn(() => {});
-        systemManager.putSystem('system1', system1, 'group1', 'group2', 'group3');
-        systemManager.putSystem('system2', system2, 'group1', 'group2');
-        systemManager.putSystem('system3', system3, 'group1');
+        let system1 = system(jest.fn());
+        let system2 = system(jest.fn());
+        let system3 = system(jest.fn());
+        systemManager.putSystem('system1', system1).
+                    appendToGroup('group1', 'system1').
+                    appendToGroup('group2', 'system1').
+                    appendToGroup('group3', 'system1');
+        systemManager.putSystem('system2', system2).
+                    appendToGroup('group1', 'system2').
+                    appendToGroup('group2', 'system2');
+        systemManager.putSystem('system3', system3).
+                    appendToGroup('group1', 'system3');
 
         systemManager.removeSystem('system2');
         systemManager.updateGroup('group1');
         systemManager.updateGroup('group2');
         systemManager.updateGroup('group3');
 
-        expect(system1).toHaveBeenCalledTimes(3);
-        expect(system2).toHaveBeenCalledTimes(0);
-        expect(system3).toHaveBeenCalledTimes(1);
+        expect(system1.update).toHaveBeenCalledTimes(3);
+        expect(system2.update).toHaveBeenCalledTimes(0);
+        expect(system3.update).toHaveBeenCalledTimes(1);
     });

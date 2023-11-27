@@ -137,7 +137,7 @@ test(`clone(itemCloner) and equal(otherGrid, itemComparator):
     let grid = new Grid(10, 5);
     grid.fill((x, y) => { return {x, y}});
 
-    let copy = grid.clone(item => { return {x: item.x, y: item.y}});
+    let copy = grid.map((x, y, item) => { return {x, y}});
     let actual = grid.equals(copy, (a, b) => a.x == b.x && a.y == b.y);
 
     expect(actual).toBe(true);

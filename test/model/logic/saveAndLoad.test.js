@@ -18,6 +18,8 @@ const {VegetableMeta} = require('../../../src/code/model/logic/vegetableMeta.js'
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
 const {Fabric} = require('../../../src/code/model/logic/fabric.js');
 const {settings} = require('../../resources/settings.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
 let mockGameRepository = null;
 let manager = null;
@@ -25,8 +27,10 @@ let worldMock = null;
 let wallet = null;
 let grid = null;
 let fabric = null;
+let eventManager = null;
 
 function createNewEmptyGameWorld() {
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     mockGameRepository = {
         save: async function save(fullGameState) {
@@ -35,7 +39,8 @@ function createNewEmptyGameWorld() {
         load: async function load(userId) {}
     }
     worldMock = {
-        getEntityComponentManager: () => manager
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
     };
     wallet = manager.createEntity().put(new Wallet(10, 2, 2, 3));
     manager.putSingletonEntity('wallet', wallet);
@@ -92,9 +97,9 @@ function createGrowingPotato({x, y, stateHistory}) {
                 new VegetableMeta('Potato'),
                 vegetableState([0, 30, 25, 15], [3, 40, 40, 40], stateHistory),
                 new GardenBedCellLink(x, y),
-                new Immunity(60, 20, false, 1, 0.2),
-                new Thirst(60, 20, 1),
-                new Satiety(60, 47, 1)
+                new Immunity(60, 20, false, 1, 0.2, 30),
+                new Thirst(60, 20, 1, 30),
+                new Satiety(60, 47, 1, 30)
             );
     manager.bindEntity(entity);
     grid.write(x, y, entity);
@@ -108,11 +113,15 @@ function createDeadPotato({x, y}) {
                 vegetableState([0, 30, 25, 15], [3, 40, 40, 40], lifeCycleStates.slice(lifeCycleStates.sleepingSeed, lifeCycleStates.death)),
                 new GardenBedCellLink(x, y),
                 new PotatoGhost(25000),
-                new TomatoExplosion(3)
+                new TomatoExplosion(3, 2000)
             );
     manager.bindEntity(entity);
     grid.write(x, y, entity);
     return entity;
+}
+
+function systemHandler(systemName, system) {
+    return new SystemHandler(systemName, 'some group', system, 0, 1);
 }
 
 describe.each([
@@ -167,13 +176,13 @@ describe.each([
                 return result;
             });
             let saveSystem = new SaveGameSystem(1, mockGameRepository, new TimeUtil());
-            let loadSystem = new LoadGameSystem(1);
+            let loadSystem = new LoadGameSystem(1, fabric.componentLoader());
             
-            saveSystem.update('stop', worldMock);
+            saveSystem.update(systemHandler('SaveGameSystem', saveSystem), worldMock);
             let fullGameState = mockGameRepository.fullGameState;
             createNewEmptyGameWorld();
             manager.putSingletonEntity('fullGameState', fullGameState);
-            loadSystem.update('start', worldMock);
+            loadSystem.update(systemHandler('LoadGameSystem', saveSystem), worldMock);
         
             let actual = getEntitiesFromGrid();
             expect(actual).containsEntitiesInTheSameOrder(...expected); 

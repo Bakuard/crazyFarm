@@ -9,18 +9,18 @@ const {EntityManager} = require('../../../src/code/model/gameEngine/entityManage
 const {GardenBedCellLink} = require('../../../src/code/model/logic/gardenBedCellLink.js');
 const {VegetableState, lifeCycleStates, StateDetail} = require('../../../src/code/model/logic/vegetableState.js');
 const {Grid} = require('../../../src/code/model/logic/store/grid.js');
+const {EventManager} = require('../../../src/code/model/gameEngine/eventManager.js');
+const {SystemHandler} = require('../../../src/code/model/gameEngine/systemManager.js');
 
+const {sleepingSeed, seed, sprout, child, youth, adult, death} = lifeCycleStates;
 let manager = null;
 let worldMock = null;
 let grid = null;
+let eventManager = null;
 function beforeEachTest() {
+    eventManager = new EventManager();
     manager = new EntityComponentManager(new EntityManager(), new ComponentIdGenerator());
     grid = new Grid(4, 3);
-    manager.putSingletonEntity('fabric', {
-        potatoGhost() {
-            return new PotatoGhost(2000);
-        }
-    });
     manager.putSingletonEntity('grid', grid);
 
     worldMock = {
@@ -31,20 +31,25 @@ function beforeEachTest() {
                 getElapsedTime: () => et
             }
         },
-        getEntityComponentManager: () => manager
+        getEntityComponentManager: () => manager,
+        getEventManager: () => eventManager
     };
 };
 
-function vegetableState(...states) {
+function vegetableState(stateHistory) {
     let result = VegetableState.of(
         StateDetail.of(10, lifeCycleStates.seed),
         StateDetail.of(10, lifeCycleStates.sprout),
         StateDetail.of(10, lifeCycleStates.child),
         StateDetail.of(10, lifeCycleStates.youth)
     );
-    result.history = states;
+    result.history = stateHistory;
 
     return result;
+}
+
+function systemHandler(system) {
+    return new SystemHandler('PotatoDeathSystem', 'update', system, 0, 1);
 }
 
 describe.each([
@@ -67,8 +72,8 @@ describe.each([
             grid.write(0, 0, entity);
             worldMock.elapsedTime = elapsedTime;
 
-            let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            let system = new PotatoDeathSystem(manager, () => new PotatoGhost(2000));
+            system.update(systemHandler(system), worldMock);
 
             expect(manager.isAlive(entity)).toBe(isAlive);
             expect(grid.get(0, 0) === null).toBe(isCellEmpty);
@@ -77,98 +82,152 @@ describe.each([
 );
 
 describe.each([
-    {state: lifeCycleStates.sleepingSeed, hasGrowComps: true, hasGhostComp: false},
-    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, hasGrowComps: true, hasGhostComp: false},
-    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, hasGrowComps: true, hasGhostComp: false},
-    {state: lifeCycleStates.youth, previousState: lifeCycleStates.sprout, hasGrowComps: true, hasGhostComp: false},
-    {state: lifeCycleStates.adult, previousState: lifeCycleStates.youth, hasGrowComps: true, hasGhostComp: false},
+    {
+        stateHistory: [sleepingSeed], isExploded: false, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: sleepingSeed
+    },
+    {
+        stateHistory: [seed], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: seed
+    },
+    {
+        stateHistory: [sprout], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: sprout
+    },
+    {
+        stateHistory: [child], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: child
+    },
+    {
+        stateHistory: [youth], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: youth
+    },
+    {
+        stateHistory: [adult], isExploded: false, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: true, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: adult
+    },
 
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sleepingSeed, hasGrowComps: false, hasGhostComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.seed, hasGrowComps: false, hasGhostComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, hasGrowComps: false, hasGhostComp: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.child, hasGrowComps: false, hasGhostComp: true},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.youth, hasGrowComps: false, hasGhostComp: true},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.adult, hasGrowComps: false, hasGhostComp: true}
-])(`update(groupName, world):`,
-    ({state, previousState, hasGrowComps, hasGhostComp}) => {
-        beforeEach(beforeEachTest);
 
-        test(`state ${state.name},
-              previousState ${previousState?.name}
-              => hasGrowComps ${hasGrowComps},
-                 hasGhostComp ${hasGhostComp}`,
-        () => {
-            let entity = manager.createEntity().put(
-                new VegetableMeta('Potato'),
-                new GardenBedCellLink(0, 0),
-                vegetableState(previousState, state),
-                Immunity.of(60, 1, 0.2),
-                Satiety.of(60, 1),
-                Thirst.of(60, 1)
-            );
-            manager.bindEntity(entity);
-            grid.write(0, 0, entity);
+    {
+        stateHistory: [sleepingSeed], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [seed], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [sprout], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [child], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [youth], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [adult], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [sleepingSeed, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [seed, death], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [sprout, death], isExploded: true, isDead: false, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [child, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [youth, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [adult, death], isExploded: true, isDead: false, hasGrowComps: false, alreadyHasGhostComp: true,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
 
-            let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
-            let generator = manager.select(manager.createFilter().all(VegetableMeta));
-            let actual = [...generator][0];
 
-            expect(actual.hasComponents(Immunity)).toBe(hasGrowComps);
-            expect(actual.hasComponents(Satiety)).toBe(hasGrowComps);
-            expect(actual.hasComponents(Thirst)).toBe(hasGrowComps);
-            expect(actual.hasComponents(PotatoGhost)).toBe(hasGhostComp);
-            expect(actual.hasComponents(VegetableState)).toBe(true);
-            expect(actual.hasComponents(GardenBedCellLink)).toBe(true);
-            expect(actual.hasComponents(VegetableMeta)).toBe(true);
-        });
+    {
+        stateHistory: [sleepingSeed], isExploded: false, isDead: true, hasGrowComps: false, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [seed], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expcetedAlive: false, expectedCellEmpty: true
+    },
+    {
+        stateHistory: [sprout], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: false, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [child], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [youth], isExploded: false, isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
+    },
+    {
+        stateHistory: [adult], isExploded: false,  isDead: true, hasGrowComps: true, alreadyHasGhostComp: false,
+        expectedHasGrowComps: false, expectedHasGhostComp: true, expcetedAlive: true, expectedCellEmpty: false, expectedState: death
     }
-);
-
-describe.each([
-    {state: lifeCycleStates.sleepingSeed, previousState: lifeCycleStates.sleepingSeed, isExploded: false, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, isExploded: false, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, isExploded: false, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, isExploded: false, isAlive: true, isCellEmtpy: false},
-
-    {state: lifeCycleStates.sleepingSeed, previousState: lifeCycleStates.sleepingSeed, isExploded: true, isAlive: false, isCellEmtpy: true},
-    {state: lifeCycleStates.seed, previousState: lifeCycleStates.sleepingSeed, isExploded: true, isAlive: false, isCellEmtpy: true},
-    {state: lifeCycleStates.sprout, previousState: lifeCycleStates.seed, isExploded: true, isAlive: false, isCellEmtpy: true},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.sprout, isExploded: true, isAlive: false, isCellEmtpy: true},
-
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.adult, isExploded: true, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.youth, isExploded: true, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.death, previousState: lifeCycleStates.child, isExploded: true, isAlive: true, isCellEmtpy: false},
-
-    {state: lifeCycleStates.adult, previousState: lifeCycleStates.youth, isExploded: true, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.youth, previousState: lifeCycleStates.child, isExploded: true, isAlive: true, isCellEmtpy: false},
-    {state: lifeCycleStates.child, previousState: lifeCycleStates.sprout, isExploded: true, isAlive: true, isCellEmtpy: false},
 ])(`update(groupName, world):`,
-    ({state, previousState, isExploded, isAlive, isCellEmtpy}) => {
+    ({stateHistory, isExploded, isDead, hasGrowComps, alreadyHasGhostComp,
+        expectedHasGrowComps, expectedHasGhostComp, expcetedAlive, expectedCellEmpty, expectedState}) => {
         beforeEach(beforeEachTest);
 
-        test(`state: ${state.name},
-            previousState: ${previousState.name},
-            isExploded: ${isExploded}
-            => isAlive: ${isAlive}, isCellEmtpy: ${isCellEmtpy}`,
+        test(`stateHistory: [${stateHistory.map(state => state.name)}],
+              isExploded: ${isExploded},
+              isDead: ${isDead},
+              hasGrowComps: ${hasGrowComps},
+              alreadyHasGhostComp: ${alreadyHasGhostComp}
+              => expectedHasGrowComps: ${expectedHasGrowComps},
+                expectedHasGhostComp: ${expectedHasGhostComp},
+                expcetedAlive: ${expcetedAlive},
+                expectedCellEmpty: ${expectedCellEmpty},
+                expectedState: ${expectedState?.name}`,
         () => {
             let entity = manager.createEntity().put(
                 new VegetableMeta('Potato'),
                 new GardenBedCellLink(0, 0),
-                vegetableState(previousState, state),
-                Immunity.of(60, 1, 0.2),
-                Satiety.of(60, 1),
-                Thirst.of(60, 1)
+                vegetableState(stateHistory)
             );
+            if(hasGrowComps) entity.put( Immunity.of(60, 1, 0.2, 30), Satiety.of(60, 1, 30), Thirst.of(60, 1, 30) );
             if(isExploded) entity.addTags('exploded');
+            if(isDead) entity.addTags('dead');
+            if(alreadyHasGhostComp) entity.put( new PotatoGhost(10000) ).addTags( 'impossibleToDigUp' );
             manager.bindEntity(entity);
             grid.write(0, 0, entity);
 
-            let system = new PotatoDeathSystem(manager);
-            system.update('update', worldMock);
+            let system = new PotatoDeathSystem(manager, () => new PotatoGhost(2000));
+            system.update(systemHandler(system), worldMock);
+            let generator = manager.select(manager.createFilter().all(VegetableMeta));
+            let entityAfterUpdate = [...generator][0];
 
-            expect(grid.get(0, 0) == null).toBe(isCellEmtpy);
-            expect(manager.isAlive(entity)).toBe(isAlive);
+            expect(manager.isAlive(entity)).toBe(expcetedAlive);
+            expect(grid.get(0, 0) == null).toBe(expectedCellEmpty);
+            if(expcetedAlive) {
+                expect(entityAfterUpdate.hasComponents(Immunity)).toBe(expectedHasGrowComps);
+                expect(entityAfterUpdate.hasComponents(Satiety)).toBe(expectedHasGrowComps);
+                expect(entityAfterUpdate.hasComponents(Thirst)).toBe(expectedHasGrowComps);
+                expect(entityAfterUpdate.hasComponents(PotatoGhost)).toBe(expectedHasGhostComp);
+                expect(entityAfterUpdate.hasTags('impossibleToDigUp')).toBe(expectedHasGhostComp);
+                expect(entityAfterUpdate.hasComponents(VegetableState)).toBe(true);
+                expect(entityAfterUpdate.hasComponents(GardenBedCellLink)).toBe(true);
+                expect(entityAfterUpdate.hasComponents(VegetableMeta)).toBe(true);
+                expect(entityAfterUpdate.get(VegetableState).current()).toBe(expectedState);
+            }
         });
     }
 );

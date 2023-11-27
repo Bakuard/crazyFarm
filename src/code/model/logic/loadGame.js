@@ -7,25 +7,27 @@ const {newLogger} = require('../../conf/logConf.js');
 let logger = newLogger('info', 'loadGame.js');
 
 module.exports.LoadGameSystem = class LoadGameSystem {
-    constructor(userId) {
+    constructor(userId, componentLoader) {
         this.userId = userId;
+        this.componentLoader = componentLoader;
     }
 
-    update(groupName, world) {
-        let manager = world.getEntityComponentManager();
-        let entityManager = manager.getEntityManager();
+    update(systemHandler, world) {
+        const eventManager = world.getEventManager();
+        const manager = world.getEntityComponentManager();
+        const entityManager = manager.getEntityManager();
 
-        let fabric = manager.getSingletonEntity('fabric');
-        let grid = manager.getSingletonEntity('grid');
-        let wallet = manager.getSingletonEntity('wallet');
-        let fullGameState = manager.getSingletonEntity('fullGameState');
+        const grid = manager.getSingletonEntity('grid');
+        const wallet = manager.getSingletonEntity('wallet');
+        const fullGameState = manager.getSingletonEntity('fullGameState');
 
-        let loadEntity = this.#loadEntity;
+        const loadEntity = this.#loadEntity;
         if(fullGameState) {
-            wallet.put(fabric.restoreComponentBy('Wallet', fullGameState.wallet));
+            manager.putSingletonEntity('tutorialCurrentStep', fullGameState.tutorialCurrentStep);
+            wallet.put(this.componentLoader('Wallet', fullGameState.wallet));
             let snapshot = {
-                liveEntities: fullGameState.liveEntities.map(e => loadEntity(fabric, e)),
-                deadEntities: fullGameState.deadEntities.map(e => loadEntity(fabric, e))
+                liveEntities: fullGameState.liveEntities.map(e => loadEntity(this.componentLoader, e)),
+                deadEntities: fullGameState.deadEntities.map(e => loadEntity(this.componentLoader, e))
             };
             entityManager.restore(snapshot);     
             snapshot.liveEntities.forEach(entity => {
@@ -42,11 +44,11 @@ module.exports.LoadGameSystem = class LoadGameSystem {
         }
     }
 
-    #loadEntity(fabric, entityLoadedImage) {
+    #loadEntity(componentLoader, entityLoadedImage) {
         let entity = new Entity(entityLoadedImage.personalId, entityLoadedImage.generation);
         entity.addTags(...entityLoadedImage.tags);
         for(let [compName, compLoadedImage] of Object.entries(entityLoadedImage.components)) {
-            entity.put(fabric.restoreComponentBy(compName, compLoadedImage));
+            entity.put(componentLoader(compName, compLoadedImage));
         }
         return entity;
     }

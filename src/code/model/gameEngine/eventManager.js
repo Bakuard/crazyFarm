@@ -2,9 +2,11 @@
 
 module.exports.EventManager = class EventManager {
     #events;
+    #flags;
 
     constructor() {
         this.#events = {};
+        this.#flags = new Set();
     }
 
     writeEvent(name, ...events) {
@@ -43,6 +45,11 @@ module.exports.EventManager = class EventManager {
         return this.#events[eventName]?.length ?? 0;
     }
 
+    events(eventName) {
+        let events = this.#events[eventName];
+        return events ? Array.from(events) : [];
+    }
+
     clearEventQueue(name, label) {
         if(this.#events[name] != undefined) {
             if(label == undefined) this.#events[name].length = 0;
@@ -52,6 +59,19 @@ module.exports.EventManager = class EventManager {
 
     clearAll() {
         this.#events = {};
+        this.#flags.clear();
+    }
+
+    setFlag(flagName) {
+        this.#flags.add(flagName);
+    }
+
+    clearFlag(flagName) {
+        this.#flags.delete(flagName);
+    }
+
+    hasFlag(flagName) {
+        return this.#flags.has(flagName);
     }
 
 };

@@ -7,10 +7,18 @@ const {i18next} = require('../conf/i18nConf.js');
 const {Thirst} = require('../model/logic/thirst.js');
 const {Satiety} = require('../model/logic/satiety.js');
 const {Immunity} = require('../model/logic/immunity.js');
-const {PotatoGhost} = require('../model/logic/potatoDeath.js');
-const {TomatoExplosion} = require('../model/logic/tomatoDeath.js');
 const {VegetableMeta} = require('../model/logic/vegetableMeta.js');
 const {VegetableState, lifeCycleStates} = require('../model/logic/vegetableState.js');
+const {OnionHealer} = require('../model/logic/onionHeal.js');
+
+class UserRequest {
+    constructor({loggin, email, password}) {
+        this.loggin = loggin?.trim();
+        this.email = email?.trim();
+        this.password = password;
+    }
+}
+module.exports.UserRequest = UserRequest;
 
 class UserResponse {
     constructor({_id, loggin, email}) {
@@ -86,33 +94,62 @@ class VegetableResponse {
         else if(state.current() == lifeCycleStates.death && 
                 this.type == 'potato' && 
                 vegetable.hasTags('exploded')) this.stage = 7;
+        else if(state.current() == lifeCycleStates.death &&
+                this.type == 'onion' &&
+                !vegetable.hasTags('exploded')) this.stage = 6;
+        else if(state.current() == lifeCycleStates.death &&
+                this.type == 'onion' &&
+                vegetable.hasTags('exploded')) this.stage = 7;    
 
         if(vegetable.hasComponents(Thirst, Satiety, Immunity)) {
-            if(vegetable.get(Thirst).current <= 30) this.needs.push('THIRST');
-            if(vegetable.get(Satiety).current <= 30) this.needs.push('HUNGER');
-            if(vegetable.get(Immunity).current <= 30) this.needs.push('SICKNESS');
+            if(vegetable.get(Thirst).isAlarm()) this.needs.push('THIRST');
+            if(vegetable.get(Satiety).isAlarm()) this.needs.push('HUNGER');
+            if(vegetable.get(Immunity).isAlarm()) this.needs.push('SICKNESS');
         }
     }
 }
 module.exports.VegetableResponse = VegetableResponse;
 
 class GardenBedCellResponse {
-    constructor(x, y, vegetable) {
+    constructor(x, y, vegetable, activeCell) {
         this.isEmpty = !vegetable;
-        this.isBlocked = Boolean(vegetable?.hasComponents(PotatoGhost));
+        this.isBlocked = Boolean(activeCell && (activeCell.x != x || activeCell.y != y));
         this.name = x + '-' + y;
         this.character = vegetable ? new VegetableResponse(vegetable) : null;
+        this.effects = [];
     }
 }
 module.exports.GardenBedCellResponse = GardenBedCellResponse;
 
+class TutorialResponse {
+    constructor(tutorial) {
+        this.currentStep = tutorial.step;
+        this.isActive = tutorial.isActive;
+        this.blockedTools = tutorial.blockedTools;
+    }
+}
+module.exports.TutorialResponse = TutorialResponse;
+
 class GameResponse {
-    constructor(grid, wallet) {
+    constructor(grid, wallet, tutorial) {
         this.player = {
             cash: wallet.sum
         };
-        this.containers = [];
-        grid.forEach((x, y, value) => this.containers.push(new GardenBedCellResponse(x, y, value)));
+
+        const gridResponse = grid.map((x, y, vegetable) => new GardenBedCellResponse(x, y, vegetable, tutorial?.activeCell));
+        grid.forEach((x, y, vegetable) => {
+            const onionHealer = vegetable?.get(OnionHealer);
+            onionHealer?.cells.
+                slice(0, onionHealer.currentCellNumber).
+                forEach(cell => {
+                    const cellResponse = gridResponse.get(cell.x, cell.y);
+                    if(!cellResponse.effects.some(e => e == 'health')) cellResponse.effects.push('health');
+                }
+            );
+        });
+        this.containers = gridResponse.toArray();
+        
+        this.tutorial = tutorial ? new TutorialResponse(tutorial) : null;
     }
 }
 module.exports.GameResponse = GameResponse;
@@ -126,3 +163,10 @@ class CommandRequest {
     }
 }
 module.exports.CommandRequest = CommandRequest;
+
+class ControllGameCommandRequest {
+    constructor(commandName) {
+        this.commandName = commandName;
+    }
+}
+module.exports.ControllGameCommandRequest = ControllGameCommandRequest;

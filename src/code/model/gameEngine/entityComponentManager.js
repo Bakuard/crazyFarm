@@ -49,13 +49,13 @@ class Archetype {
 class EntityFilter {
 
     #componentIdGenerator;
-    #allMath;
+    #allMatch;
     #oneOfMatch;
     #noneMatch;
 
     constructor(componentIdGenerator) {
         this.#componentIdGenerator = componentIdGenerator;
-        this.#allMath = new BitSet();
+        this.#allMatch = new BitSet();
         this.#oneOfMatch = new BitSet();
         this.#noneMatch = new BitSet();
     }
@@ -63,7 +63,7 @@ class EntityFilter {
     all(...componentTypes) {
         componentTypes.forEach(c => {
             let componentTypeId = this.#componentIdGenerator.getOrAssignIdForComponent(c);
-            this.#allMath.set(componentTypeId, 1);
+            this.#allMatch.set(componentTypeId, 1);
         });
         return this;
     }
@@ -87,7 +87,7 @@ class EntityFilter {
     allTags(...tags) {
         tags.forEach(tag => {
             let tagId = this.#componentIdGenerator.getOrAssignIdForTag(tag);
-            this.#allMath.set(tagId, 1);
+            this.#allMatch.set(tagId, 1);
         });
         return this;
     }
@@ -109,7 +109,7 @@ class EntityFilter {
     }
 
     isMatch(componentsBitMask) {
-        if(!this.#allMath.isEmpty() && !this.#allMath.and(componentsBitMask).equals(this.#allMath))
+        if(!this.#allMatch.isEmpty() && !this.#allMatch.and(componentsBitMask).equals(this.#allMatch))
             return false;
 
         if(!this.#oneOfMatch.isEmpty() && this.#oneOfMatch.and(componentsBitMask).isEmpty())
@@ -122,7 +122,7 @@ class EntityFilter {
     }
 
     toString() {
-        return `EntityFilter: all->${this.#allMath.toString(2)}, oneOf->${this.#oneOfMatch.toString(2)}, none->${this.#noneMatch.toString(2)}`;
+        return `EntityFilter: all->${this.#allMatch.toString(2)}, oneOf->${this.#oneOfMatch.toString(2)}, none->${this.#noneMatch.toString(2)}`;
     }
 
 };
@@ -208,6 +208,13 @@ module.exports.EntityComponentManager = class EntityComponentManager {
 
     createFilter() {
         return new EntityFilter(this.#componentsIdGenerator);
+    }
+
+    clear() {
+        this.#entityManager.clear();
+        this.#arhytypes = [];
+        this.#archytypesByEntityId = [];
+        this.#singletonEntities = {};
     }
 
     getEntityManager() {
