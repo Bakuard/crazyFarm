@@ -29,7 +29,7 @@ module.exports.MailService = class MailService {
 
     async sendMailForRegistration(email, jws, lng) {
         await this.#transporter.sendMail({
-            from: '"Crazy Farm" <flashcardsbox@gmail.com>',
+            from: `"Crazy Farm" <${process.env.MAIL_SENDER_ADDRESS}>`,
             to: email,
             subject: 'confirm registration',
             html: this.#compiledTemplateForRegistration({
